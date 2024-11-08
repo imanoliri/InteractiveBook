@@ -46,9 +46,7 @@ def parse_html_book(html_content):
             if img_src != last_image:
                 if last_name != "img":
                     current_chapter.append("<br>")
-                current_chapter.append(
-                    f'<div class="image-wrapper">{str(element)}</div>'
-                )
+                current_chapter.append(str(element))
                 last_name = element.name
                 last_image = img_src
         else:
@@ -121,56 +119,22 @@ def get_content_links(base_path):
 def generate_contents_page(content_links):
     # HTML template for the contents page without template syntax
     html_template = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Contents</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 20px;
-                background-color: #f9f9f9;
-            }
-            h1 {
-                text-align: center;
-            }
-            .contents-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 10px;
-                margin-top: 20px;
-            }
-            .contents-grid button {
-                padding: 10px;
-                cursor: pointer;
-                background-color: #007BFF;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                text-align: center;
-                transition: background-color 0.3s;
-            }
-            .contents-grid button:hover {
-                background-color: #0056b3;
-            }
-        </style>
-    </head>
-    <body>
         <h1>Contents</h1>
         <div class="contents-grid">
-            <!-- Buttons will be inserted here -->
             {buttons}
         </div>
-    </body>
-    </html>
     """
 
+    def snake_to_camel_with_spaces(snake_str):
+        words = snake_str.split("_")
+        camel_case_str = " ".join(word.capitalize() for word in words)
+        return camel_case_str
+
     def get_name_from_file_path(fp):
-        return fp.split("/")[-1].split(".")[0].replace("_", " ")
+        return snake_to_camel_with_spaces(fp.split("/")[-1].split(".")[0])
 
     # Generate the button HTML
-    button_html = "\n".join(
+    button_html = "\n\t\t\t".join(
         f"<button onclick=\"window.location.href='{content}'\">{get_name_from_file_path(content)}</button>"
         for content in content_links
     )
@@ -229,10 +193,10 @@ def save(data, output_file_path):
 def main():
 
     # Replace with your HTML file path
-    html_file_path = "book.html"
+    html_file_path = "The_Valley_of_Dragons_1_-_Attack_of_the_Dark_God.html"
     contents_dir = "contents"
     title = html_file_path.split("/")[-1].split(".")[0]
-    output_file_path = "interactive_book.html"
+    output_file_path = "index.html"
 
     # Read html
     html_book = read_html_book(html_file_path)
