@@ -5,13 +5,13 @@ Python script that takes an HTML book, divide it into chapters, and generate a s
 - Fully automatic from story:
     - Click images in order of the story.
     - Memory with images from the story.
+    - Word cloud (word sizes by frequency).
 
 - Standard, unrelated to story:
     - Sudoku.
 
 ## Ideas
 - Automatic from story:
-    - Word salad (word sizes by frequency).
     - Crosswords from word salad.
     - Anagrams from word salad.
     - Fill in random words in a paragraph of the story.
