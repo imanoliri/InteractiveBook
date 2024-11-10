@@ -113,12 +113,12 @@ function draw(words) {
 
     // Add event listeners with traditional function expressions
     textElements
-        .on("mouseover", function() {
+        .on("mouseover", function(d) {
             d3.select(this)
                 .style("stroke", "black")  // Apply border
                 .style("stroke-width", "1px");
             
-            tooltip.style("opacity", 1).html(`${this.__data__.size}`); // Show the tooltip with the word count
+            tooltip.style("opacity", 1).html(`${this.__data__.text}\n${this.__data__.size}`); // Show the tooltip with the word count
         })
 
         .on("mousemove", function() {
