@@ -112,7 +112,6 @@ const paragraphs = [
 ]
 
 
-
 document.addEventListener('DOMContentLoaded', () => {
     const slider = document.getElementById('gap-slider');
     const gapCountLabel = document.getElementById('gap-count');
@@ -122,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let numGaps = parseInt(slider.value, 10);
 
     numGaps = parseInt(slider.value, 10);
-    gapCountLabel.textContent = numGaps;// Initial number of images to display
+    gapCountLabel.textContent = numGaps; // Initial number of images to display
     
     showRandomParagraph();
   
@@ -134,14 +133,26 @@ document.addEventListener('DOMContentLoaded', () => {
   
     function showRandomParagraph() {
       if (paragraphs.length === 0) return;
-      const randomParagraph = paragraphs[Math.floor(Math.random() * paragraphs.length)];
-      const words = randomParagraph.split(' ');
+      const randomParagraph = cleanParagraph(paragraphs[Math.floor(Math.random() * paragraphs.length)]);
+      const words = randomParagraph.split(' ');//.split(/[\s,]+/);
+      if (numGaps >= words.length) {
+        numGaps = words.length-1;
+        gapCountLabel.textContent = numGaps;
+        slider.value;
+
+      }
       const gapIndices = getRandomIndices(words.length, numGaps);
   
       // Show paragraph with gaps
       paragraphContainer.innerHTML = words.map((word, index) => {
         if (gapIndices.includes(index)) {
-          return `<input type="text" data-correct="${word}" class="gap-input">`;
+            if (word.endsWith(",")) {
+                if (index+1 != words.length) {
+                    words.splice(index+1, 0, ",")
+                }
+                
+            }
+          return `<input type="text" data-correct="${word.toLowerCase().replace(",","")}" class="gap-input">`;
         } else {
           return word;
         }
@@ -151,6 +162,10 @@ document.addEventListener('DOMContentLoaded', () => {
       fullParagraphContainer.textContent = randomParagraph;
   
       setupInputValidation();
+    }
+
+    function cleanParagraph(paragraph) {
+        return paragraph.replace("\u0180", "'").replace("`", "'");
     }
   
     function getRandomIndices(max, count) {
@@ -165,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const inputs = paragraphContainer.querySelectorAll('input');
       inputs.forEach(input => {
         input.addEventListener('input', () => {
-          if (input.value === input.dataset.correct) {
+          if (input.value.toLowerCase().replace(",","") === input.dataset.correct.toLowerCase().replace(",","")) {
             input.classList.add('correct');
             input.classList.remove('incorrect');
           } else {
