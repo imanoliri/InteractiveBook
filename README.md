@@ -6,6 +6,9 @@ Python script that takes an HTML book, divide it into chapters, and generate a s
     - Click images in order of the story.
     - Memory with images from the story.
 
+- Standard, unrelated to story:
+    - Sudoku.
+
 ## Ideas
 - Automatic from story:
     - Word salad (word sizes by frequency).
