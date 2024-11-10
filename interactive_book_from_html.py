@@ -142,6 +142,14 @@ def filter_and_sort_word_count(
     return dict(sorted(word_count.items(), key=lambda item: item[1], reverse=True))
 
 
+def extract_paragraph_texts(content):
+    return [
+        p.get_text()
+        for p in BeautifulSoup(content, "html.parser").find_all("p")
+        if p.get_text() != ""
+    ]
+
+
 def add_content_tab(chapters, tab_names, content_dir):
     chapters.append(generate_contents_page(get_content_links(content_dir)))
     tab_names.append("Contents")
@@ -240,6 +248,9 @@ def main():
     save_to_json(extract_media(html_book), "interactive_book_media.json")
     save_to_json(extract_images(html_book), "interactive_book_images.json")
     save_to_json(extract_word_count(html_book), "interactive_book_word_count.json")
+    save_to_json(
+        extract_paragraph_texts(html_book), "interactive_book_parapragh_texts.json"
+    )
 
     # Generate html interactive book
     chapters, tab_names = parse_html_book(html_book)

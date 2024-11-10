@@ -6,6 +6,8 @@ Python script that takes an HTML book, divide it into chapters, and generate a s
     - Click images in order of the story.
     - Memory with images from the story.
     - Word cloud (word sizes by frequency).
+    - Anagrams from word salad.
+    - Fill in random words in a paragraph of the story.
 
 - Standard, unrelated to story:
     - Sudoku.
@@ -13,8 +15,6 @@ Python script that takes an HTML book, divide it into chapters, and generate a s
 ## Ideas
 - Automatic from story:
     - Crosswords from word salad.
-    - Anagrams from word salad.
-    - Fill in random words in a paragraph of the story.
     - Mathematical algebraic questions substituting variables for words from word salad ( 2x + y = 5 --> 2 potions and 1 ring is worth 5 coins).
 
 - Standard, unrelated to story:
