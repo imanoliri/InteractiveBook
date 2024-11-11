@@ -33,6 +33,9 @@ Python script that takes an HTML book, divide it into chapters, and generate a s
     - Shorter version
     - Comic.
     - Quiz from the story.
+    - Poems.
+    - Spellcaster -> choose magic: choose the kind of magic that fits the poem the best.
+    - Spellcaster -> fill the gaps: Fill in the poems to launch a spell.
     
 - Manual, probably assisted with AI:
     - Interactive maps with hover and click to go to other maps.
