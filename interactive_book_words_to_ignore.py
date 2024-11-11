@@ -427,3 +427,6 @@ function_words = [
     "nonetheless",
     "otherwise",
 ]
+
+
+function_words = [f.lower() for f in function_words]

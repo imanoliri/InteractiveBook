@@ -44,7 +44,6 @@ const wordCount = {
     "sky": 7,
     "become": 7,
     "ranks": 7,
-    "i": 6,
     "peace": 6,
     "ancient": 6,
     "simple": 6,
@@ -59,7 +58,8 @@ const wordCount = {
     "different": 5,
     "tree": 5,
     "world": 5,
-    "form": 5
+    "form": 5,
+    "face": 5
 };
 
 // Transform data into an array of objects
@@ -67,6 +67,16 @@ const words = Object.keys(wordCount).map(word => ({
     text: word,
     size: wordCount[word]
 }));
+
+// Find the minimum and maximum values in the word count
+const minCount = Math.min(...Object.values(wordCount));
+const maxCount = Math.max(...Object.values(wordCount));
+
+// Create a linear scaling function
+const side = Math.sqrt(window.innerWidth * window.innerHeight)
+const scaleSize = d3.scaleLinear()
+    .domain([minCount, maxCount])
+    .range([20/1000*side, 100/1000*side]); // Scale between 10 and 100
 
 // Tooltip element
 const tooltip = d3.select("#tooltip");
@@ -78,7 +88,7 @@ const layout = d3.layout.cloud()
     .padding(5)
     .rotate(() => ~~(Math.random() * 2) * 90)
     .font("Impact")
-    .fontSize(d => d.size * 2)
+    .fontSize(d => scaleSize(d.size)) // Use the scaling function for font size
     .on("end", draw);
 
 layout.start();

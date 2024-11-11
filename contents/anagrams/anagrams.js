@@ -44,7 +44,6 @@ const wordCounts = {
     "sky": 7,
     "become": 7,
     "ranks": 7,
-    "i": 6,
     "peace": 6,
     "ancient": 6,
     "simple": 6,
@@ -59,8 +58,9 @@ const wordCounts = {
     "different": 5,
     "tree": 5,
     "world": 5,
-    "form": 5
-}
+    "form": 5,
+    "face": 5
+};
 const words = Object.keys(wordCounts);
 let currentWord = "";
 let anagramWord = "";

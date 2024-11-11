@@ -128,9 +128,10 @@ def extract_word_count(html_content):
 def filter_and_sort_word_count(
     word_count, min_word_count: int = 5, max_words: int = 60
 ):
-
     word_count = {
-        word: count for word, count in word_count.items() if word not in function_words
+        word: count
+        for word, count in word_count.items()
+        if word.lower() not in function_words
     }
 
     word_count = {
