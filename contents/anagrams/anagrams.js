@@ -61,9 +61,13 @@ const wordCounts = {
     "form": 5,
     "face": 5
 };
+
+const charsToIgnore = [" ", ",", "-", "—", ";", ".", "'", "`", "´"];
 const words = Object.keys(wordCounts);
 let currentWord = "";
 let anagramWord = "";
+
+
 
 // Function to shuffle letters to create an anagram
 function shuffle(word) {
@@ -82,11 +86,17 @@ function selectNewWord() {
 // Function to check if the user's guess is correct
 function checkGuess() {
     const guess = document.getElementById('guess').value;
-    if (guess.toLowerCase() === currentWord.toLowerCase()) {
+    if (cleanWord(guess) === cleanWord(currentWord)) {
         document.getElementById('guess').className = "correct";
     } else {
         document.getElementById('guess').className = "wrong";
     }
+}
+
+function cleanWord(word) {
+    return charsToIgnore.reduce((cleanedWord, sep) => {
+        return cleanedWord.replace(new RegExp(`\\${sep}`, 'g'), '');
+    }, word).toLowerCase();
 }
 
 // Event listeners
