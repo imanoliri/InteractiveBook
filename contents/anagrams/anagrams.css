@@ -1,47 +1,48 @@
 body {
     font-family: Arial, sans-serif;
+    font-size: 2vh;
     background-color: #f4f4f4;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: 80vh;
     margin: 0;
 }
 
 .container {
     text-align: center;
     background: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 8vh;
+    border-radius: 1vh;
+    box-shadow: 0 0 3vh rgba(0, 0, 0, 0.1);
 }
 
 #anagram {
-    font-size: 24px;
-    margin-bottom: 20px;
+    font-size: 6vh;
+    margin-bottom: 5vh;
 }
 
 input {
-    padding: 10px;
-    width: 300px;
-    font-size: 16px;
-    margin-bottom: 20px;
+    padding: 3vh;
+    width: 40vh;
+    font-size: 3vh;
+    margin-bottom: 3vh;
 }
 
 .buttons {
     display: flex;
-    gap: 10px;
+    gap: 3vh;
     justify-content: center;
 }
 
 button, a {
-    padding: 10px 20px;
-    font-size: 16px;
+    padding: 2vh 4vh;
+    font-size: 3vh;
     text-decoration: none;
     color: #fff;
     background-color: #007BFF;
     border: none;
-    border-radius: 4px;
+    border-radius: 1vh;
     cursor: pointer;
 }
 
@@ -50,9 +51,9 @@ button:hover, a:hover {
 }
 
 input.correct {
-    border: 2px solid green;
+    border: 1vh solid green;
 }
 
 input.wrong {
-    border: 2px solid red;
+    border: 1vh solid red;
 }
