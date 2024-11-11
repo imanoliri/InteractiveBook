@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from collections import Counter
 from jinja2 import Template
 from pathlib import Path
+from PIL import Image
 
 from interactive_book_words_to_ignore import function_words, particles_to_ignore
 
@@ -52,7 +53,11 @@ def parse_html_book(html_content):
             if img_src != last_image:  # Check for image duplication
                 if last_name != "img":
                     current_chapter.append("<br>")
-                current_chapter.append(str(element))
+                png_suffix = ".png"
+                str_element = str(element)
+                if img_src.endswith(png_suffix):
+                    str_element = str_element.replace(png_suffix, ".jpg")
+                current_chapter.append(str_element)
                 last_name = element.name
                 last_image = img_src
         else:
@@ -92,9 +97,32 @@ def extract_images(html_content):
     for img in soup.find_all("img"):
         src = img.get("src")
         if src:
+            suffix = ".png"
+            if src.endswith(suffix):
+                src = f"{src[:-len(suffix)]}.jpg"
             image_list.append(src)
-
     return image_list
+
+
+def images_png_to_jpg(directory):
+
+    for filename in os.listdir(directory):
+        if filename.lower().endswith(".png"):
+
+            png_path = os.path.join(directory, filename)
+            with Image.open(png_path) as img:
+                white_background = Image.new("RGB", img.size, (255, 255, 255))
+
+                img = img.convert("RGBA")
+                white_background.paste(img, mask=img.split()[3])
+
+                jpg_filename = os.path.splitext(filename)[0] + ".jpg"
+                jpg_path = os.path.join(directory, jpg_filename)
+
+                white_background.save(jpg_path, "JPEG")
+                os.remove(png_path)
+
+            print(f"Converted {filename} to {jpg_filename}")
 
 
 def extract_word_count(html_content):
@@ -241,6 +269,7 @@ def main():
 
     html_file_path = "The_Valley_of_Dragons_1_-_Attack_of_the_Dark_God.html"
     contents_dir = "contents"
+    images_dir = "images"
     title = html_file_path.split("/")[-1].split(".")[0]
     output_file_path = "index.html"
 
@@ -248,6 +277,7 @@ def main():
     html_book = read_html_book(html_file_path)
     save_to_json(extract_media(html_book), "interactive_book_media.json")
     save_to_json(extract_images(html_book), "interactive_book_images.json")
+    images_png_to_jpg(images_dir)
     save_to_json(extract_word_count(html_book), "interactive_book_word_count.json")
     save_to_json(
         extract_paragraph_texts(html_book), "interactive_book_parapragh_texts.json"
