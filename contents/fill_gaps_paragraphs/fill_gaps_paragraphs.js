@@ -111,7 +111,7 @@ const paragraphs = [
     "The End"
 ];
 
-const wordSeparators = [",", "-", "—"];
+const wordSeparators = [",", "-", "—", ";", "."];
 
 document.addEventListener('DOMContentLoaded', () => {
     const slider = document.getElementById('gap-slider');
