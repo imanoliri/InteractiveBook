@@ -65,6 +65,7 @@ const wordCount = {
 // Transform data into an array of objects
 const words = Object.keys(wordCount).map(word => ({
     text: word,
+    count: wordCount[word],
     size: wordCount[word]
 }));
 
@@ -128,7 +129,7 @@ function draw(words) {
                 .style("stroke", "black")  // Apply border
                 .style("stroke-width", "1px");
             
-            tooltip.style("opacity", 1).html(`${this.__data__.text}\n${this.__data__.size}`); // Show the tooltip with the word count
+            tooltip.style("opacity", 1).html(`${this.__data__.text}: ${this.__data__.count}`); // Show the tooltip with the word count
         })
 
         .on("mousemove", function() {
