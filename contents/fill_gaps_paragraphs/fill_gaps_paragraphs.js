@@ -109,8 +109,9 @@ const paragraphs = [
     "Furious, Gawain and Alaric unleashed a flurry of powerful strikes, forcing the Dark Lord\u2014still off-balance from his attack\u2014to retreat up the steps to his throne. Gawain delivered a masterful strike, causing the Dark Lord\u2019s black sword to falter for an instant. Alaric seized the opportunity and lunged at the enemy. With a fierce thrust, he drove the Sword of the Dawn deep into the Dark God\u2019s chest and continued pushing with fury until the dark god sat on his throne with the Sword of the Dawn sticking out of his dead body.",
     "The specter kings vanished, leaving only their long swords and black cloaks behind\u2014but not their daggers. Outside, the fire tornado dissipated, the storm calmed, and the Dark God\u2019s forces either escaped from this world or fled in terror. Alaric had defeated the Dark God and fulfilled his destiny. Rid of evil, peace could finally return to the world, and the knights could go home.",
     "The End"
-]
+];
 
+const wordSeparators = [",", "-", "—"];
 
 document.addEventListener('DOMContentLoaded', () => {
     const slider = document.getElementById('gap-slider');
@@ -121,98 +122,94 @@ document.addEventListener('DOMContentLoaded', () => {
     let numGaps = parseInt(slider.value, 10);
 
     numGaps = parseInt(slider.value, 10);
-    gapCountLabel.textContent = numGaps; // Initial number of images to display
-    
+    gapCountLabel.textContent = numGaps; // Initial number of gaps to display
+
     showRandomParagraph();
-  
+
     slider.addEventListener('input', () => {
-      numGaps = parseInt(slider.value, 10);
-      gapCountLabel.textContent = numGaps;
-      showRandomParagraph();
-    });
-  
-    function showRandomParagraph() {
-      if (paragraphs.length === 0) return;
-      const randomParagraph = cleanParagraph(paragraphs[Math.floor(Math.random() * paragraphs.length)]);
-      const words = randomParagraph.split(' ');//.split(/[\s,]+/);
-      if (numGaps >= words.length) {
-        numGaps = words.length-1;
+        numGaps = parseInt(slider.value, 10);
         gapCountLabel.textContent = numGaps;
-        slider.value;
+        showRandomParagraph();
+    });
 
-      }
-      const gapIndices = getRandomIndices(words.length, numGaps);
-  
-      // Show paragraph with gaps
-      paragraphContainer.innerHTML = words.map((word, index) => {
-        if (gapIndices.includes(index)) {
-            if (word.endsWith(",")) {
-                if (index+1 != words.length) {
-                    words.splice(index+1, 0, ",")
-                }
-                
-            }
-          return `<input type="text" data-correct="${word.toLowerCase().replace(",","")}" class="gap-input">`;
-        } else {
-          return word;
+    function showRandomParagraph() {
+        if (paragraphs.length === 0) return;
+        const randomParagraph = paragraphs[Math.floor(Math.random() * paragraphs.length)];
+        const wordsAndPunctuation = randomParagraph.match(/[\w']+|[.,—-]/g); // Match words and punctuation
+
+        if (numGaps >= wordsAndPunctuation.length) {
+            numGaps = wordsAndPunctuation.length - 1;
+            gapCountLabel.textContent = numGaps;
+            slider.value = numGaps;
         }
-      }).join(' ');
-  
-      // Show full paragraph
-      fullParagraphContainer.textContent = randomParagraph;
-  
-      setupInputValidation();
+
+        const gapIndices = getRandomIndices(wordsAndPunctuation.length, numGaps);
+
+        // Show paragraph with gaps
+        paragraphContainer.innerHTML = wordsAndPunctuation.map((word, index) => {
+            if (gapIndices.includes(index) && !wordSeparators.includes(word)) {
+                return `<input type="text" data-correct="${word.toLowerCase()}" class="gap-input">`;
+            } else {
+                return word;
+            }
+        }).join(' ');
+
+        // Show full paragraph
+        fullParagraphContainer.textContent = randomParagraph;
+
+        setupInputValidation();
     }
 
-    function cleanParagraph(paragraph) {
-        return paragraph.replace("\u0180", "'").replace("`", "'");
+    function cleanWord(word) {
+        return wordSeparators.reduce((cleanedWord, sep) => {
+            return cleanedWord.replace(new RegExp(`\\${sep}`, 'g'), '');
+        }, word).toLowerCase();
     }
-  
+
     function getRandomIndices(max, count) {
-      const indices = new Set();
-      while (indices.size < count) {
-        indices.add(Math.floor(Math.random() * max));
-      }
-      return Array.from(indices);
+        const indices = new Set();
+        while (indices.size < count) {
+            indices.add(Math.floor(Math.random() * max));
+        }
+        return Array.from(indices);
     }
-  
+
     function setupInputValidation() {
-      const inputs = paragraphContainer.querySelectorAll('input');
-      inputs.forEach(input => {
-        input.addEventListener('input', () => {
-          if (input.value.toLowerCase().replace(",","") === input.dataset.correct.toLowerCase().replace(",","")) {
-            input.classList.add('correct');
-            input.classList.remove('incorrect');
-          } else {
-            input.classList.add('incorrect');
-            input.classList.remove('correct');
-          }
-          checkAllCorrect();
+        const inputs = paragraphContainer.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                if (cleanWord(input.value) === cleanWord(input.dataset.correct)) {
+                    input.classList.add('correct');
+                    input.classList.remove('incorrect');
+                } else {
+                    input.classList.add('incorrect');
+                    input.classList.remove('correct');
+                }
+                checkAllCorrect();
+            });
         });
-      });
     }
-  
+
     function checkAllCorrect() {
-      const inputs = paragraphContainer.querySelectorAll('input');
-      const allCorrect = Array.from(inputs).every(input => input.value === input.dataset.correct);
-      if (allCorrect) {
-        paragraphContainer.classList.add('correct');
-      } else {
-        paragraphContainer.classList.remove('correct');
-      }
+        const inputs = paragraphContainer.querySelectorAll('input');
+        const allCorrect = Array.from(inputs).every(input => input.value === input.dataset.correct);
+        if (allCorrect) {
+            paragraphContainer.classList.add('correct');
+        } else {
+            paragraphContainer.classList.remove('correct');
+        }
     }
-  
+
     nextButton.addEventListener('click', showRandomParagraph);
-  });
-  
-  function showTab(tabName) {
+});
+
+function showTab(tabName) {
     const tabs = document.querySelectorAll('.tab-content');
     const buttons = document.querySelectorAll('.tab-button');
-  
+
     tabs.forEach(tab => tab.classList.remove('active'));
     buttons.forEach(button => button.classList.remove('active'));
-  
+
     document.getElementById(tabName).classList.add('active');
     document.querySelector(`button[onclick="showTab('${tabName}')"]`).classList.add('active');
-  }
-  
+}
