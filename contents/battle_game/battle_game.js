@@ -28,23 +28,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Units
     let units = [
-        { id: 1, team: 2, name: "gobArch", type: "A", attack: 2, defense: 0, health: 4, node: 1, deployment: 1 },
-        { id: 2, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, node: 2, deployment: 1 },
-        { id: 3, team: 2, name: "gobArch", type: "A", attack: 2, defense: 0, health: 4, node: 3, deployment: 1 },
-        { id: 4, team: 2, name: "gobArch", type: "A", attack: 2, defense: 0, health: 4, node: 4, deployment: 1 },
-        { id: 5, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, node: 5, deployment: 1 },
-        { id: 6, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, node: 6, deployment: 1 },
-        { id: 7, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, node: 7, deployment: 1 },
-        { id: 8, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, node: 8, deployment: 2 },
-        { id: 9, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, node: 9, deployment: 2 },
-        { id: 10, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, node: 10, deployment: 2 },
-        { id: 11, team: 1, name: "dwarfMel", type: "M", attack: 2, defense: 1, health: 6, node: 11, deployment: 1 },
-        { id: 12, team: 1, name: "dwarfMel", type: "M", attack: 2, defense: 1, health: 6, node: 12, deployment: 2 },
-        { id: 13, team: 1, name: "dwarfMel", type: "M", attack: 2, defense: 1, health: 6, node: 13, deployment: 1 },
-        { id: 14, team: 1, name: "dwarfMel", type: "M", attack: 2, defense: 1, health: 6, node: 14, deployment: 2 },
-        { id: 15, team: 1, name: "dwarfArch", type: "A", attack: 2, defense: 0, health: 6, node: 15, deployment: 1 },
-        { id: 16, team: 1, name: "dwarfArch", type: "A", attack: 2, defense: 0, health: 6, node: 16, deployment: 1 },
-        { id: 17, team: 1, name: "dragonRider", type: "F", attack: 3, defense: 2, health: 12, node: 17, deployment: 1 }
+        { id: 1, team: 2, name: "Goblin Archer", type: "A", attack: 2, defense: 0, health: 4, node: 1, deployment: 1 },
+        { id: 2, team: 2, name: "Goblin Warrior", type: "M", attack: 2, defense: 1, health: 4, node: 2, deployment: 1 },
+        { id: 3, team: 2, name: "Goblin Archer", type: "A", attack: 2, defense: 0, health: 4, node: 3, deployment: 1 },
+        { id: 4, team: 2, name: "Goblin Archer", type: "A", attack: 2, defense: 0, health: 4, node: 4, deployment: 1 },
+        { id: 5, team: 2, name: "Goblin Warrior", type: "M", attack: 2, defense: 1, health: 4, node: 5, deployment: 1 },
+        { id: 6, team: 2, name: "Goblin Warrior", type: "M", attack: 2, defense: 1, health: 4, node: 6, deployment: 1 },
+        { id: 7, team: 2, name: "Goblin Warrior", type: "M", attack: 2, defense: 1, health: 4, node: 7, deployment: 1 },
+        { id: 8, team: 2, name: "Goblin Warrior", type: "M", attack: 2, defense: 1, health: 4, node: 8, deployment: 2 },
+        { id: 9, team: 2, name: "Goblin Warrior", type: "M", attack: 2, defense: 1, health: 4, node: 9, deployment: 2 },
+        { id: 10, team: 2, name: "Goblin Warrior", type: "M", attack: 2, defense: 1, health: 4, node: 10, deployment: 2 },
+        { id: 11, team: 1, name: "Dwarf Warrior", type: "M", attack: 2, defense: 1, health: 6, node: 11, deployment: 1 },
+        { id: 12, team: 1, name: "Dwarf Warrior", type: "M", attack: 2, defense: 1, health: 6, node: 12, deployment: 2 },
+        { id: 13, team: 1, name: "Dwarf Warrior", type: "M", attack: 2, defense: 1, health: 6, node: 13, deployment: 1 },
+        { id: 14, team: 1, name: "Dwarf Warrior", type: "M", attack: 2, defense: 1, health: 6, node: 14, deployment: 2 },
+        { id: 15, team: 1, name: "Dwarf Archer", type: "A", attack: 2, defense: 0, health: 6, node: 15, deployment: 1 },
+        { id: 16, team: 1, name: "Dwarf Archer", type: "A", attack: 2, defense: 0, health: 6, node: 16, deployment: 1 },
+        { id: 17, team: 1, name: "Dragon Rider", type: "F", attack: 3, defense: 2, health: 12, node: 17, deployment: 1 }
     ];
 
     const deploymentLevel = 1
