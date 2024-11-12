@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { id: 14, team: 1, name: "dwarfMel", type: "M", attack: 2, defense: 1, health: 6, node: 14, deployment: 2 },
         { id: 15, team: 1, name: "dwarfArch", type: "A", attack: 2, defense: 0, health: 6, node: 15, deployment: 1 },
         { id: 16, team: 1, name: "dwarfArch", type: "A", attack: 2, defense: 0, health: 6, node: 16, deployment: 1 },
-        { id: 17, team: 1, name: "dragonRider", type: "F", attack: 4, defense: 2, health: 12, node: 17, deployment: 1 }
+        { id: 17, team: 1, name: "dragonRider", type: "F", attack: 3, defense: 2, health: 12, node: 17, deployment: 1 }
     ];
 
     const deploymentLevel = 1
@@ -68,15 +68,15 @@ document.addEventListener("DOMContentLoaded", function () {
     
     let meleeNetwork = [
         ...createPairs(1, [5, 2]),
-        ...createPairs(2, [5, 6, 3]),
-        ...createPairs(3, [6, 7, 4]),
-        ...createPairs(4, [7, 3]),
-        ...createPairs(5, [8]),
-        ...createPairs(6, [9]),
-        ...createPairs(7, [10]),
-        ...createPairs(8, [11, 9]),
-        ...createPairs(9, [8, 11, 12]),
-        ...createPairs(10, [13, 12]),
+        ...createPairs(2, [1, 5, 6, 3]),
+        ...createPairs(3, [2, 6, 7, 4]),
+        ...createPairs(4, [3, 7]),
+        ...createPairs(5, [1, 2, 8]),
+        ...createPairs(6, [2, 3, 9]),
+        ...createPairs(7, [3, 4, 10]),
+        ...createPairs(8, [5, 11, 9]),
+        ...createPairs(9, [6, 8, 11, 12]),
+        ...createPairs(10, [12, 13]),
         ...createPairs(11, [8, 9, 12]),
         ...createPairs(12, [11, 9, 10, 13, 14]),
         ...createPairs(13, [10, 12, 14, 15]),
@@ -223,7 +223,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function handleDrop(event) {
         event.preventDefault();
         const targetNodeId = event.target.dataset.nodeId; // Get the ID of the node being dropped on (it can come from the node itself or from a unit that belongs to it)
- 
+
         if (draggedUnitId && targetNodeId) {
             const draggedUnit = units.find(unit => unit.id == draggedUnitId);
             const draggedUnitNodeIdInt = parseInt(draggedUnit.node);
@@ -235,16 +235,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 const targetUnit = units.find(unit => unit.node === targetNodeIdInt); 
 
                 if (targetUnit) {
-                    console.log(`swap unit:${draggedUnit.id} -> unit:${targetUnit.id}`)
-                    // Swap the starting nodes between the dragged unit and the target unit
-                    const tempNode = draggedUnit.node;
-                    draggedUnit.node = targetUnit.node;
-                    targetUnit.node = tempNode;
+                    const targetUnitIdInt = parseInt(targetUnit.id);
+                    console.log(`combat unit:${draggedUnitIdInt} -> unit:${targetUnitIdInt}`)
+                    handleCombat(draggedUnit, targetUnit, draggedUnitNodeIdInt, targetNodeIdInt)
+                    
+                    // // Swap the starting nodes between the dragged unit and the target unit
+                    // const tempNode = draggedUnit.node;
+                    // draggedUnit.node = targetUnit.node;
+                    // targetUnit.node = tempNode;
                 } else {
-                    console.log(`move unit:${draggedUnitIdInt} -> node:${targetNodeId}`)
-                    // If no unit is in the target node, simply move the dragged unit to the target node
+                    console.log(`move unit ${draggedUnitIdInt} from node:${draggedUnitNodeIdInt} -> node:${targetNodeId}`)
+                     // If no unit is in the target node, simply move the dragged unit to the target node
                     if (isValidMove(draggedUnitNodeIdInt, targetNodeIdInt)) {
-                    draggedUnit.node = targetNodeIdInt;
+                        draggedUnit.node = targetNodeIdInt;
                     }
                 }
 
@@ -256,15 +259,99 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function isValidMove(x, y) {
-        console.log(meleeNetwork);
-        console.log([x,y])
-        if (meleeNetwork.some(pair => pair[0] === x && pair[1] === y)){
-            return true
-        } else {
-            return false
-        }
+        return networkContainsConnection(meleeNetwork, x, y);
+    }
+
+    function networkContainsConnection(network, x, y) {
+        return network.some(pair => pair[0] === x && pair[1] === y);
     }
     
+    function handleCombat(u, v, x, y) {
+        console.log('handleCombat')
+        if (u.team === v.team) {
+            console.log(`swap units`)
+            const tempNode = u.node;
+            u.node = v.node;
+            v.node = tempNode;
+            return ;
+        }
+        if (u.type === 'M') {
+            handleMeleeDrag(u, v, x, y)
+        }
+        if (u.type === 'A') {
+            handleArcherDrag(u, v, x, y)
+        }
+        if (u.type === 'F') {
+            handleFlierDrag(u, v, x, y)
+        }
+    }
+
+    function handleMeleeDrag(u, v, x, y) {
+        console.log('handleMeleeDrag')
+        if (networkContainsConnection(meleeNetwork, x, y)) {
+            handleMeleeCombat(u, v, x, y)
+        }
+    }
+
+    function handleArcherDrag(u, v, x, y) {
+        console.log('handleArcherDrag')
+        if (networkContainsConnection(meleeNetwork, x, y)) {
+            handleArcherCombat(u, v, x, y)
+        } else if (networkContainsConnection(archerNetwork, x, y)) {
+            handleArcherCombat(u, v, x, y)
+        }
+    }
+
+    function handleFlierDrag(u, v, x, y) {
+        console.log('handleFlierDrag')
+        if (networkContainsConnection(meleeNetwork, x, y)) {
+            console.log('Flier attacks by land.')
+            handleMeleeCombat(u, v, x, y)
+        } else if (networkContainsConnection(flierNetwork, x, y)){
+            console.log('Flier attacks by air.')
+            handleMeleeCombat(u, v, x, y)
+        }
+    }
+
+    function handleMeleeCombat(attacker, defender, x, y){
+        while (attacker.health > 0 && defender.health > 0) {
+            // Attacker attacks first
+            let damage = Math.max(1, attacker.attack - defender.defense);
+            defender.health -= damage;
+            if (defender.health <= 0) {
+                console.log(`Attacker wins with ${attacker.health} health left.`)
+                // Defender is defeated: move attacker to node, remove defender, stop combat
+                attacker.node = defender.node
+                units = units.filter(u => u.id !== defender.id);
+                break;
+            }
+
+            // Defender attacks back
+            damage = Math.max(1, defender.attack - attacker.defense);
+            attacker.health -= damage;
+            if (attacker.health <= 0) {
+                console.log(`Defender wins with ${defender.health} health left.`)
+                // Attacker is defeated: remove attacker, stop combat
+                units = units.filter(u => u.id !== attacker.id);
+                break;
+            }
+        }
+    }
+
+    function handleArcherCombat(attacker, defender, x, y){
+        let damage = Math.max(1, attacker.attack - defender.defense);
+        console.log(`Archer deals ${damage} damage.`)
+        defender.health -= damage;
+        if (defender.health <= 0) {
+            console.log('Archer kills target.')
+            // Defender is defeated
+            units = units.filter(u => u.id !== defender.id);
+        } else {
+            console.log(`Target has ${defender.health} health left.`)
+        }
+    }
+
+
 
     // Call the function to create the table
     createUnitsTable();
