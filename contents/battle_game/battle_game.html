@@ -8,7 +8,29 @@
 </head>
 <body>
     <h1>Battle Network Visualization</h1>
-    <div id="battlefield" class="battlefield"></div>
+    <div id="container">
+        <div id="battlefield" class="battlefield"></div>
+        <div id="unitTableContainer">
+            <h2>Units Table</h2>
+            <table id="unitTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Team</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Attack</th>
+                        <th>Defense</th>
+                        <th>Health</th>
+                        <th>Starting Node</th>
+                        <th>Deployment</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
+

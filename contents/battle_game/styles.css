@@ -1,21 +1,22 @@
 /* styles.css */
 body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background-color: #f4f4f4;
     margin: 0;
-    padding: 0;
-    overflow: hidden; /* Hide any overflow */
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
 }
 
-.battlefield {
-    position: relative;
-    width: 100vw; /* Use full viewport width */
+#container {
+    display: flex;
+    flex-direction: row; /* Arrange items in a row */
     height: 100vh; /* Use full viewport height */
-    margin: 0;
+}
+
+#battlefield {
+    flex: 2; /* The map takes up 2 parts of the space */
+    position: relative;
+    width: 100%; /* Full width within the flex container */
     background-color: #fff;
-    border: 1px solid #ccc;
-    touch-action: none; /* Disable default touch behaviors like pinch zoom */
+    border-right: 1px solid #ccc; /* Border between map and table */
 }
 
 .node {
@@ -29,4 +30,27 @@ body {
     align-items: center;
     color: white;
     font-size: 0.8em;
+}
+
+#unitTableContainer {
+    flex: 1; /* The table takes up 1 part of the space */
+    padding: 20px;
+    overflow-y: auto; /* Scroll if the content overflows */
+    max-height: 100vh; /* Ensure the table doesn't overflow the viewport */
+    background-color: #f9f9f9;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+th {
+    background-color: #f2f2f2;
 }

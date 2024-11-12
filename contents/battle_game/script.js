@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     const battlefield = document.getElementById("battlefield");
 
-    // Nodes information
+    // Nodes
     let nodes = [
         { id: 1, x: 1, y: 14 }, { id: 2, x: 3, y: 14 },
         { id: 3, x: 9, y: 14 }, { id: 4, x: 12, y: 14 },
@@ -26,7 +26,30 @@ document.addEventListener("DOMContentLoaded", function () {
     // Invert Y scale of the nodes
     nodes = invertYScale(nodes);
 
+    // Units
+    let units = [
+        { id: 1, team: 2, name: "gobArch", type: "A", attack: 2, defense: 0, health: 4, starting_node: 1, deployment: 1 },
+        { id: 2, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, starting_node: 2, deployment: 1 },
+        { id: 3, team: 2, name: "gobArch", type: "A", attack: 2, defense: 0, health: 4, starting_node: 3, deployment: 1 },
+        { id: 4, team: 2, name: "gobArch", type: "A", attack: 2, defense: 0, health: 4, starting_node: 4, deployment: 1 },
+        { id: 5, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, starting_node: 5, deployment: 1 },
+        { id: 6, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, starting_node: 6, deployment: 1 },
+        { id: 7, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, starting_node: 7, deployment: 1 },
+        { id: 8, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, starting_node: 8, deployment: 2 },
+        { id: 9, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, starting_node: 9, deployment: 2 },
+        { id: 10, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, starting_node: 10, deployment: 2 },
+        { id: 11, team: 1, name: "dwarfMel", type: "M", attack: 2, defense: 1, health: 6, starting_node: 11, deployment: 1 },
+        { id: 12, team: 1, name: "dwarfMel", type: "M", attack: 2, defense: 1, health: 6, starting_node: 12, deployment: 2 },
+        { id: 13, team: 1, name: "dwarfMel", type: "M", attack: 2, defense: 1, health: 6, starting_node: 13, deployment: 1 },
+        { id: 14, team: 1, name: "dwarfMel", type: "M", attack: 2, defense: 1, health: 6, starting_node: 14, deployment: 2 },
+        { id: 15, team: 1, name: "dwarfArch", type: "A", attack: 2, defense: 0, health: 6, starting_node: 15, deployment: 1 },
+        { id: 16, team: 1, name: "dwarfArch", type: "A", attack: 2, defense: 0, health: 6, starting_node: 16, deployment: 1 },
+        { id: 17, team: 1, name: "dragonRider", type: "F", attack: 4, defense: 2, health: 12, starting_node: 17, deployment: 1 }
+    ];
 
+
+
+    // Networks
     function createPairs(element, list) {
         // Initialize an empty array to store the pairs
         let pairs = [];
@@ -38,8 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
         return pairs; // Return the array of pairs
     }
-
-    // Networks
+    
     let meleeNetwork = [
         ...createPairs(1, [5, 2]),
         ...createPairs(2, [5, 6, 3]),
@@ -97,6 +119,31 @@ document.addEventListener("DOMContentLoaded", function () {
      let nodeSize = vhToPixels(`${nodeSizePercentage}vh`);
 
     document.documentElement.style.setProperty('--node-size', `${nodeSizePercentage}vh`);
+
+
+    // Function to create the units table
+    function createUnitsTable() {
+        const tableBody = document.querySelector("#unitTable tbody");
+        tableBody.innerHTML = ""; // Clear any existing table rows
+
+        units.forEach(unit => {
+            const row = document.createElement("tr");
+
+            // Create non-editable cells for each property
+            for (let key in unit) {
+                const cell = document.createElement("td");
+                cell.textContent = unit[key]; // Set the cell content
+                row.appendChild(cell); // Append the cell to the row
+            }
+
+            tableBody.appendChild(row); // Append the row to the table body
+        });
+    }
+
+    // Your existing createNodes and connection functions...
+
+    // Call the function to create the table
+    createUnitsTable();
 
 
     // Create nodes
