@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", function () {
         ...createPairs(6, [9]),
         ...createPairs(7, [10]),
         ...createPairs(8, [11, 9]),
-        ...createPairs(9, [11, 12]),
+        ...createPairs(9, [8, 11, 12]),
         ...createPairs(10, [13, 12]),
         ...createPairs(11, [8, 9, 12]),
         ...createPairs(12, [11, 9, 10, 13, 14]),
@@ -222,13 +222,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function handleDrop(event) {
         event.preventDefault();
-        const targetNodeId = event.target.dataset.nodeId; // Get the ID of the node being dropped on
+        const targetNodeId = event.target.dataset.nodeId; // Get the ID of the node being dropped on (it can come from the node itself or from a unit that belongs to it)
  
         if (draggedUnitId && targetNodeId) {
             const draggedUnit = units.find(unit => unit.id == draggedUnitId);
+            const draggedUnitNodeIdInt = parseInt(draggedUnit.node);
             const targetNodeIdInt = parseInt(targetNodeId);
 
             if (draggedUnit) {
+                const draggedUnitIdInt = parseInt(draggedUnit.id);
                 // Check if there is a unit already assigned to the target node
                 const targetUnit = units.find(unit => unit.node === targetNodeIdInt); 
 
@@ -239,9 +241,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     draggedUnit.node = targetUnit.node;
                     targetUnit.node = tempNode;
                 } else {
-                    console.log(`move unit:${draggedUnit.id} -> node:${targetNodeId}`)
+                    console.log(`move unit:${draggedUnitIdInt} -> node:${targetNodeId}`)
                     // If no unit is in the target node, simply move the dragged unit to the target node
+                    if (isValidMove(draggedUnitNodeIdInt, targetNodeIdInt)) {
                     draggedUnit.node = targetNodeIdInt;
+                    }
                 }
 
                 // Redraw the units to update their positions                
@@ -250,6 +254,17 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     }
+
+    function isValidMove(x, y) {
+        console.log(meleeNetwork);
+        console.log([x,y])
+        if (meleeNetwork.some(pair => pair[0] === x && pair[1] === y)){
+            return true
+        } else {
+            return false
+        }
+    }
+    
 
     // Call the function to create the table
     createUnitsTable();
