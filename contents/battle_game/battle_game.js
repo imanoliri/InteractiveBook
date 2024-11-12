@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Add drag and drop event handlers for the nodes
             div.addEventListener("dragover", handleDragOver);
             div.addEventListener("drop", handleDrop);
-            div.addEventListener('mouseenter', handleNodeHoverHighlightNode);
+            div.addEventListener('mouseenter', handleNodeHoverHighlightAccessibleUnitsNodes);
             div.addEventListener('mouseleave', handleNodeLeaveHighlight);
 
             battlefield.appendChild(div);
@@ -191,7 +191,7 @@ document.addEventListener("DOMContentLoaded", function () {
             battlefield.appendChild(circle); // Append the unit circle to the battlefield
 
             // Drag event handler
-            circle.addEventListener('mouseenter', handleNodeHoverHighlightUnit);
+            circle.addEventListener('mouseenter', handleNodeHoverHighlightAccessibleUnitsNodes);
             circle.addEventListener('mouseleave', handleNodeLeaveHighlight);
             circle.addEventListener("dragstart", handleDragStart);
             circle.addEventListener("dragover", handleDragOver);
@@ -218,54 +218,58 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Function to handle hover on a node
-    function handleNodeHoverHighlightNode(event) {
-        const nodeId = parseInt(event.target.dataset.nodeId); // Get the ID of the hovered node
-        const accessibleNodes = meleeNetwork
-            .filter(pair => pair[0] === nodeId || pair[1] === nodeId)
-            .map(pair => (pair[0] === nodeId ? pair[1] : pair[0]));
-
-        // Highlight each accessible node
-        accessibleNodes.forEach(id => {
-            const nodeElement = document.querySelector(`[data-node-id='${id}']`);
-            if (nodeElement) {
-                nodeElement.classList.add('highlight'); // Add highlight class
-            }
-        });
-    }
-
-    function handleNodeHoverHighlightUnit(event) {
-
-        const unitType = event.target.dataset.type; // Get the ID of the hovered unit
-        const nodeId = parseInt(event.target.dataset.nodeId); // Get the ID of its node
-    
-        // Case: Node has a unit, highlight based on unit type
+    // Function to handle hover on a node/unit and highlight nodes/units around it
+    function handleNodeHoverHighlightAccessibleUnitsNodes(event) {
+        let nodeId;
         let networksToUse = [];
-
-        // Determine which networks to use based on unit type
-        if (unitType === 'M') {
-            networksToUse = [meleeNetwork];
-        } else if (unitType === 'A') {
-            networksToUse = [meleeNetwork, archerNetwork];
-        } else if (unitType === 'F') {
-            networksToUse = [meleeNetwork, flierNetwork];
+    
+        // Check if the hovered element is a node
+        if (event.target.classList.contains('node')) {
+            nodeId = parseInt(event.target.dataset.nodeId); // Get the ID of the hovered node
+            networksToUse = [meleeNetwork]; // Use only the melee network for nodes
+        } else {
+            // If the hovered element is a unit, get the unit details
+            const unitType = event.target.dataset.type; // Get the type of the hovered unit
+            nodeId = parseInt(event.target.dataset.nodeId); // Get the ID of its node
+    
+            // Determine which networks to use based on unit type
+            if (unitType === 'M') {
+                networksToUse = [meleeNetwork];
+            } else if (unitType === 'A') {
+                networksToUse = [meleeNetwork, archerNetwork];
+            } else if (unitType === 'F') {
+                networksToUse = [meleeNetwork, flierNetwork];
+            }
         }
-
+    
         // Find and highlight all reachable nodes for each network
         networksToUse.forEach(network => {
             const accessibleNodes = network
                 .filter(pair => pair[0] === nodeId || pair[1] === nodeId)
                 .map(pair => (pair[0] === nodeId ? pair[1] : pair[0]));
-            
+    
             accessibleNodes.forEach(id => {
-                const nodeElement = document.querySelector(`[data-node-id='${id}']`);
-                if (nodeElement) {
-                    nodeElement.classList.add('highlight'); // Add highlight class
+                // Check if there is a unit on the current node
+                const unitOnNode = units.find(unit => unit.node === id);
+    
+                if (unitOnNode) {
+                    // If a unit is found, highlight the unit circle
+                    const unitCircleElement = document.querySelector(`[data-unit-id='${unitOnNode.id}']`);
+                    if (unitCircleElement) {
+                        unitCircleElement.classList.add('highlight'); // Add highlight class to the unit circle
+                    }
+                } else {
+                    // If no unit is found, highlight the node
+                    const nodeElement = document.querySelector(`[data-node-id='${id}']`);
+                    if (nodeElement) {
+                        nodeElement.classList.add('highlight'); // Add highlight class to the node
+                    }
                 }
             });
         });
-        
     }
+        
+    
 
     // Function to handle mouse leave and remove highlights
     function handleNodeLeaveHighlight(event) {
