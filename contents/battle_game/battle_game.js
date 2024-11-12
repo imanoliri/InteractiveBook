@@ -47,7 +47,19 @@ document.addEventListener("DOMContentLoaded", function () {
         { id: 17, team: 1, name: "Dragon Rider", type: "F", attack: 3, defense: 2, health: 12, node: 17, deployment: 1 }
     ];
 
-    const deploymentLevel = 1
+    const slider = document.getElementById("difficultySlider");
+    let sliderValue = document.getElementById("difficultySlider").value;
+    slider.addEventListener("input", function() {
+        sliderValue.textContent = slider.value;
+        drawAll();
+    });
+
+    const setDifficultyButton = document.getElementById("setDifficultyButton");
+    setDifficultyButton.addEventListener("click", function() {
+        location.reload();
+    });
+
+    let deploymentLevel = sliderValue;
 
     units = units.filter(unit => unit.deployment <= deploymentLevel);
 
@@ -76,7 +88,7 @@ document.addEventListener("DOMContentLoaded", function () {
         ...createPairs(7, [3, 4, 10]),
         ...createPairs(8, [5, 11, 9]),
         ...createPairs(9, [6, 8, 11, 12]),
-        ...createPairs(10, [12, 13]),
+        ...createPairs(10, [7, 12, 13]),
         ...createPairs(11, [8, 9, 12]),
         ...createPairs(12, [11, 9, 10, 13, 14]),
         ...createPairs(13, [10, 12, 14, 15]),
@@ -270,7 +282,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
         
     
-
     // Function to handle mouse leave and remove highlights
     function handleNodeLeaveHighlight(event) {
         // Remove highlight from all nodes
@@ -279,17 +290,19 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Attach event listeners to each node
-    document.querySelectorAll('.node').forEach(node => {
        
-    });
-
-
+    // Drag and drop units action
     let draggedUnitId = null; // Variable to store the ID of the dragged unit
 
     function handleDragStart(event) {
         draggedUnitId = event.target.dataset.unitId; // Store the ID of the dragged unit
         event.dataTransfer.effectAllowed = "move";
+
+        // Hide the hover text (tooltip)
+        const tooltip = event.target.querySelector('.unit-tooltip');
+        if (tooltip) {
+            tooltip.style.display = 'none'; // Hide the tooltip
+    }
     }
 
     function handleDragOver(event) {
@@ -322,8 +335,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 // Redraw the units to update their positions                
-                createUnits();
-                createUnitsTable();
+                drawAll();
             }
         }
     }
@@ -337,7 +349,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else if (u.type === 'F' && networkContainsConnection(flierNetwork, x, y)){
             console.log(`fly unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
             u.node = y
-        } else{
+        } else {
             console.log('not')
         }
 
@@ -433,11 +445,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-
-
-    // Call the function to create the table
-    createUnitsTable();
-    createUnits();
 
     // Create SVG element for lines
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -551,11 +558,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const focalPointX = maxNodesX / 2;
     const focalPointY = maxNodesY / 2;
 
-
-    // Example usage to draw nodes and connections
+    function drawAll(){
     createNodes();
-    createConnections(meleeNetwork, "red", nodeSize/10, "", 0, false); // Solid red lines for melee network
-    createConnections(archerNetwork, "green", nodeSize/10, "10,10", 0, false); // Dashed green lines for archer network
-    createConnections(flierNetwork, "blue", nodeSize/300, "", 0, true, focalPointX, focalPointY, 150); // Dotted blue lines for flier network
+        createConnections(meleeNetwork, "red", nodeSize/10, "", 0, false);
+        createConnections(archerNetwork, "green", nodeSize/10, "10,10", 0, false);
+        createConnections(flierNetwork, "blue", nodeSize/300, "", 0, true, focalPointX, focalPointY, 150);
+        createUnitsTable();
+        createUnits();
+    }
 
+    drawAll()
 });
