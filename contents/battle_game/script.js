@@ -28,24 +28,28 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Units
     let units = [
-        { id: 1, team: 2, name: "gobArch", type: "A", attack: 2, defense: 0, health: 4, starting_node: 1, deployment: 1 },
-        { id: 2, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, starting_node: 2, deployment: 1 },
-        { id: 3, team: 2, name: "gobArch", type: "A", attack: 2, defense: 0, health: 4, starting_node: 3, deployment: 1 },
-        { id: 4, team: 2, name: "gobArch", type: "A", attack: 2, defense: 0, health: 4, starting_node: 4, deployment: 1 },
-        { id: 5, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, starting_node: 5, deployment: 1 },
-        { id: 6, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, starting_node: 6, deployment: 1 },
-        { id: 7, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, starting_node: 7, deployment: 1 },
-        { id: 8, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, starting_node: 8, deployment: 2 },
-        { id: 9, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, starting_node: 9, deployment: 2 },
-        { id: 10, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, starting_node: 10, deployment: 2 },
-        { id: 11, team: 1, name: "dwarfMel", type: "M", attack: 2, defense: 1, health: 6, starting_node: 11, deployment: 1 },
-        { id: 12, team: 1, name: "dwarfMel", type: "M", attack: 2, defense: 1, health: 6, starting_node: 12, deployment: 2 },
-        { id: 13, team: 1, name: "dwarfMel", type: "M", attack: 2, defense: 1, health: 6, starting_node: 13, deployment: 1 },
-        { id: 14, team: 1, name: "dwarfMel", type: "M", attack: 2, defense: 1, health: 6, starting_node: 14, deployment: 2 },
-        { id: 15, team: 1, name: "dwarfArch", type: "A", attack: 2, defense: 0, health: 6, starting_node: 15, deployment: 1 },
-        { id: 16, team: 1, name: "dwarfArch", type: "A", attack: 2, defense: 0, health: 6, starting_node: 16, deployment: 1 },
-        { id: 17, team: 1, name: "dragonRider", type: "F", attack: 4, defense: 2, health: 12, starting_node: 17, deployment: 1 }
+        { id: 1, team: 2, name: "gobArch", type: "A", attack: 2, defense: 0, health: 4, node: 1, deployment: 1 },
+        { id: 2, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, node: 2, deployment: 1 },
+        { id: 3, team: 2, name: "gobArch", type: "A", attack: 2, defense: 0, health: 4, node: 3, deployment: 1 },
+        { id: 4, team: 2, name: "gobArch", type: "A", attack: 2, defense: 0, health: 4, node: 4, deployment: 1 },
+        { id: 5, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, node: 5, deployment: 1 },
+        { id: 6, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, node: 6, deployment: 1 },
+        { id: 7, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, node: 7, deployment: 1 },
+        { id: 8, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, node: 8, deployment: 2 },
+        { id: 9, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, node: 9, deployment: 2 },
+        { id: 10, team: 2, name: "gobMel", type: "M", attack: 2, defense: 1, health: 4, node: 10, deployment: 2 },
+        { id: 11, team: 1, name: "dwarfMel", type: "M", attack: 2, defense: 1, health: 6, node: 11, deployment: 1 },
+        { id: 12, team: 1, name: "dwarfMel", type: "M", attack: 2, defense: 1, health: 6, node: 12, deployment: 2 },
+        { id: 13, team: 1, name: "dwarfMel", type: "M", attack: 2, defense: 1, health: 6, node: 13, deployment: 1 },
+        { id: 14, team: 1, name: "dwarfMel", type: "M", attack: 2, defense: 1, health: 6, node: 14, deployment: 2 },
+        { id: 15, team: 1, name: "dwarfArch", type: "A", attack: 2, defense: 0, health: 6, node: 15, deployment: 1 },
+        { id: 16, team: 1, name: "dwarfArch", type: "A", attack: 2, defense: 0, health: 6, node: 16, deployment: 1 },
+        { id: 17, team: 1, name: "dragonRider", type: "F", attack: 4, defense: 2, health: 12, node: 17, deployment: 1 }
     ];
+
+    const deploymentLevel = 1
+
+    units = units.filter(unit => unit.deployment <= deploymentLevel);
 
 
 
@@ -119,6 +123,7 @@ document.addEventListener("DOMContentLoaded", function () {
      let nodeSize = vhToPixels(`${nodeSizePercentage}vh`);
 
     document.documentElement.style.setProperty('--node-size', `${nodeSizePercentage}vh`);
+    document.documentElement.style.setProperty('--unit-size', `${nodeSizePercentage}vh`);
 
 
     // Function to create the units table
@@ -140,10 +145,48 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // Function to create unit circles on the map
+    function createUnits() {
+        units.forEach(unit => {
+            const node = nodes.find(n => n.id === unit.node);
+            if (!node) return; // Skip if the node is not found
+
+            // Create the circular div for the unit
+            const circle = document.createElement("div");
+            circle.classList.add("unit-circle", `team-${unit.team}`, `type-${unit.type}`);
+            circle.textContent = `unit:${unit.id}`;
+
+            // Position the circle at the node's coordinates
+            circle.style.left = `${node.x * nodeSize + nodeSize / 2}px`;
+            circle.style.top = `${node.y * nodeSize + nodeSize / 2}px`;
+
+            // Create a tooltip to show unit details on hover
+            const tooltip = document.createElement("div");
+            tooltip.classList.add("unit-tooltip");
+            tooltip.innerHTML = `
+                <strong>ID:</strong> ${unit.id}<br>
+                <strong>Team:</strong> ${unit.team}<br>
+                <strong>Name:</strong> ${unit.name}<br>
+                <strong>Type:</strong> ${unit.type}<br>
+                <strong>Attack:</strong> ${unit.attack}<br>
+                <strong>Defense:</strong> ${unit.defense}<br>
+                <strong>Health:</strong> ${unit.health}<br>
+                <strong>Node:</strong> ${unit.node}<br>
+                <strong>Deployment:</strong> ${unit.deployment}
+            `;
+
+            // Append the tooltip to the circle
+            circle.appendChild(tooltip);
+            battlefield.appendChild(circle); // Append the unit circle to the battlefield
+        });
+    }
+
+
     // Your existing createNodes and connection functions...
 
     // Call the function to create the table
     createUnitsTable();
+    createUnits();
 
 
     // Create nodes

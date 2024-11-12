@@ -7,16 +7,16 @@ body {
 
 #container {
     display: flex;
-    flex-direction: row; /* Arrange items in a row */
-    height: 100vh; /* Use full viewport height */
+    flex-direction: row;
+    height: 100vh;
 }
 
 #battlefield {
-    flex: 2; /* The map takes up 2 parts of the space */
     position: relative;
-    width: 100%; /* Full width within the flex container */
+    width: 100vh;
+    height: 100vh;
     background-color: #fff;
-    border-right: 1px solid #ccc; /* Border between map and table */
+    border: 1px solid #ccc;
 }
 
 .node {
@@ -30,6 +30,61 @@ body {
     align-items: center;
     color: white;
     font-size: 0.8em;
+    z-index: 1;
+}
+
+.unit-circle {
+    position: absolute;
+    width: var(--unit-size);
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 0.8em;
+    cursor: pointer;
+    border: 3px solid;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+}
+
+.team-1 {
+    background-color: green;
+}
+
+.team-2 {
+    background-color: orange;
+}
+
+/* Border colors based on unit type */
+.type-A {
+    border-color: green;
+}
+
+.type-M {
+    border-color: red;
+}
+
+.type-F {
+    border-color: blue;
+}
+
+.unit-tooltip {
+    display: none;
+    position: absolute;
+    background-color: white;
+    color: black;
+    border: 1px solid #ccc;
+    padding: 5px;
+    font-size: 0.8em;
+    white-space: nowrap;
+    z-index: 10;
+    transform: translate(-50%, -110%);
+}
+
+.unit-circle:hover .unit-tooltip {
+    display: block;
 }
 
 #unitTableContainer {
@@ -54,3 +109,4 @@ th, td {
 th {
     background-color: #f2f2f2;
 }
+
