@@ -126,6 +126,70 @@ document.addEventListener("DOMContentLoaded", function () {
     document.documentElement.style.setProperty('--unit-size', `${nodeSizePercentage}vh`);
 
 
+    // Function to create nodes on the map
+    function createNodes() {
+        nodes.forEach(node => {
+            const div = document.createElement("div");
+            div.classList.add("node");
+            div.style.left = `${node.x * nodeSize}px`;
+            div.style.top = `${node.y * nodeSize}px`;
+            div.dataset.nodeId = node.id; // Assign the node ID as a data attribute
+
+            // Add drag and drop event handlers for the nodes
+            div.addEventListener("dragover", handleDragOver);
+            div.addEventListener("drop", handleDrop);
+
+            battlefield.appendChild(div);
+        });
+    }
+
+    // Function to create unit circles on the map
+    function createUnits() {
+        const existingUnits = document.querySelectorAll(".unit-circle");
+        existingUnits.forEach(unit => unit.remove());
+        
+        units.forEach(unit => {
+            const node = nodes.find(n => n.id === unit.node);
+            if (!node) return; // Skip if the node is not found
+
+            // Create the circular div for the unit
+            const circle = document.createElement("div");
+            circle.classList.add("unit-circle", `team-${unit.team}`, `type-${unit.type}`);
+            circle.textContent = unit.id;
+            circle.setAttribute("draggable", "true"); // Make the unit circle draggable
+
+            // Position the circle at the node's coordinates
+            circle.style.left = `${node.x * nodeSize + nodeSize / 2}px`;
+            circle.style.top = `${node.y * nodeSize + nodeSize / 2}px`;
+
+            // Set unit ID as a data attribute for reference
+            circle.dataset.unitId = unit.id;
+            circle.dataset.nodeId = unit.node;
+
+            // Create a tooltip to show unit details on hover
+            const tooltip = document.createElement("div");
+            tooltip.classList.add("unit-tooltip");
+            tooltip.innerHTML = `
+                <strong>ID:</strong> ${unit.id}<br>
+                <strong>Team:</strong> ${unit.team}<br>
+                <strong>Name:</strong> ${unit.name}<br>
+                <strong>Type:</strong> ${unit.type}<br>
+                <strong>Attack:</strong> ${unit.attack}<br>
+                <strong>Defense:</strong> ${unit.defense}<br>
+                <strong>Health:</strong> ${unit.health}<br>
+                <strong>Node:</strong> ${unit.node}<br>
+                <strong>Deployment:</strong> ${unit.deployment}
+            `;
+            circle.appendChild(tooltip);
+            battlefield.appendChild(circle); // Append the unit circle to the battlefield
+
+            // Drag event handler
+            circle.addEventListener("dragstart", handleDragStart);
+            circle.addEventListener("dragover", handleDragOver);
+            circle.addEventListener("drop", handleDrop);
+        });
+    }
+
     // Function to create the units table
     function createUnitsTable() {
         const tableBody = document.querySelector("#unitTable tbody");
@@ -145,61 +209,51 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Function to create unit circles on the map
-    function createUnits() {
-        units.forEach(unit => {
-            const node = nodes.find(n => n.id === unit.node);
-            if (!node) return; // Skip if the node is not found
+    let draggedUnitId = null; // Variable to store the ID of the dragged unit
 
-            // Create the circular div for the unit
-            const circle = document.createElement("div");
-            circle.classList.add("unit-circle", `team-${unit.team}`, `type-${unit.type}`);
-            circle.textContent = `unit:${unit.id}`;
-
-            // Position the circle at the node's coordinates
-            circle.style.left = `${node.x * nodeSize + nodeSize / 2}px`;
-            circle.style.top = `${node.y * nodeSize + nodeSize / 2}px`;
-
-            // Create a tooltip to show unit details on hover
-            const tooltip = document.createElement("div");
-            tooltip.classList.add("unit-tooltip");
-            tooltip.innerHTML = `
-                <strong>ID:</strong> ${unit.id}<br>
-                <strong>Team:</strong> ${unit.team}<br>
-                <strong>Name:</strong> ${unit.name}<br>
-                <strong>Type:</strong> ${unit.type}<br>
-                <strong>Attack:</strong> ${unit.attack}<br>
-                <strong>Defense:</strong> ${unit.defense}<br>
-                <strong>Health:</strong> ${unit.health}<br>
-                <strong>Node:</strong> ${unit.node}<br>
-                <strong>Deployment:</strong> ${unit.deployment}
-            `;
-
-            // Append the tooltip to the circle
-            circle.appendChild(tooltip);
-            battlefield.appendChild(circle); // Append the unit circle to the battlefield
-        });
+    function handleDragStart(event) {
+        draggedUnitId = event.target.dataset.unitId; // Store the ID of the dragged unit
+        event.dataTransfer.effectAllowed = "move";
     }
 
+    function handleDragOver(event) {
+        event.preventDefault(); // Allow dropping by preventing the default behavior
+    }
 
-    // Your existing createNodes and connection functions...
+    function handleDrop(event) {
+        event.preventDefault();
+        const targetNodeId = event.target.dataset.nodeId; // Get the ID of the node being dropped on
+ 
+        if (draggedUnitId && targetNodeId) {
+            const draggedUnit = units.find(unit => unit.id == draggedUnitId);
+            const targetNodeIdInt = parseInt(targetNodeId);
+
+            if (draggedUnit) {
+                // Check if there is a unit already assigned to the target node
+                const targetUnit = units.find(unit => unit.node === targetNodeIdInt); 
+
+                if (targetUnit) {
+                    console.log(`swap unit:${draggedUnit.id} -> unit:${targetUnit.id}`)
+                    // Swap the starting nodes between the dragged unit and the target unit
+                    const tempNode = draggedUnit.node;
+                    draggedUnit.node = targetUnit.node;
+                    targetUnit.node = tempNode;
+                } else {
+                    console.log(`move unit:${draggedUnit.id} -> node:${targetNodeId}`)
+                    // If no unit is in the target node, simply move the dragged unit to the target node
+                    draggedUnit.node = targetNodeIdInt;
+                }
+
+                // Redraw the units to update their positions                
+                createUnits();
+                createUnitsTable();
+            }
+        }
+    }
 
     // Call the function to create the table
     createUnitsTable();
     createUnits();
-
-
-    // Create nodes
-    function createNodes() {
-        nodes.forEach(node => {
-            const div = document.createElement("div");
-            div.classList.add("node");
-            div.style.left = `${node.x * nodeSize}px`;
-            div.style.top = `${node.y * nodeSize}px`;
-            div.textContent = node.id;
-            battlefield.appendChild(div);
-        });
-    }
 
     // Create SVG element for lines
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
