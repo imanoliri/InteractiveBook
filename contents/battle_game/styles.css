@@ -1,0 +1,32 @@
+/* styles.css */
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Hide any overflow */
+}
+
+.battlefield {
+    position: relative;
+    width: 100vw; /* Use full viewport width */
+    height: 100vh; /* Use full viewport height */
+    margin: 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    touch-action: none; /* Disable default touch behaviors like pinch zoom */
+}
+
+.node {
+    position: absolute;
+    width: var(--node-size);
+    height: var(--node-size);
+    background-color: #3498db;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 0.8em;
+}
