@@ -35,11 +35,16 @@ body {
     font-size: 0.8em;
     z-index: 1;
 }
+.highlight {
+    width: var(--node-size-highlight);
+    height: var(--node-size-highlight);
+}
+
 
 .unit-circle {
     position: absolute;
     width: var(--unit-size);
-    aspect-ratio: 1 / 1;
+    height: var(--unit-size);
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -50,6 +55,10 @@ body {
     border: 3px solid;
     transform: translate(-50%, -50%);
     z-index: 2;
+}
+.highlight {
+    width: var(--unit-size-highlight);
+    height: var(--unit-size-highlight);
 }
 
 .team-1 {
@@ -112,4 +121,6 @@ th, td {
 th {
     background-color: #f2f2f2;
 }
+
+
 
