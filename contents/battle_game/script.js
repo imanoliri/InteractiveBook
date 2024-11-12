@@ -239,16 +239,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     console.log(`combat unit:${draggedUnitIdInt} -> unit:${targetUnitIdInt}`)
                     handleCombat(draggedUnit, targetUnit, draggedUnitNodeIdInt, targetNodeIdInt)
                     
-                    // // Swap the starting nodes between the dragged unit and the target unit
-                    // const tempNode = draggedUnit.node;
-                    // draggedUnit.node = targetUnit.node;
-                    // targetUnit.node = tempNode;
                 } else {
+                    // If no unit is in the target node, simply move the dragged unit to the target node
                     console.log(`move unit ${draggedUnitIdInt} from node:${draggedUnitNodeIdInt} -> node:${targetNodeId}`)
-                     // If no unit is in the target node, simply move the dragged unit to the target node
-                    if (isValidMove(draggedUnitNodeIdInt, targetNodeIdInt)) {
-                        draggedUnit.node = targetNodeIdInt;
-                    }
+                    handleMoveDrag(draggedUnit, draggedUnitNodeIdInt, targetNodeIdInt)
                 }
 
                 // Redraw the units to update their positions                
@@ -258,7 +252,19 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    function isValidMove(x, y) {
+    function handleMoveDrag(u, x, y) {
+        console.log('handleMoveDrag')
+        const draggedUnitIdInt = parseInt(u.id);
+        if (networkContainsConnection(meleeNetwork, x, y)) {
+            console.log(`move unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
+            u.node = y;
+        } else if (u.type === 'F' && networkContainsConnection(flierNetwork, x, y)){
+            console.log(`fly unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
+            u.node = y
+        } else{
+            console.log('not')
+        }
+
         return networkContainsConnection(meleeNetwork, x, y);
     }
 
