@@ -63,6 +63,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     units = units.filter(unit => unit.deployment <= deploymentLevel);
 
+    const logTextbox = document.getElementById("logTextbox");
+    logTextbox.value = ""
+
+    function writeToLog(message) {
+        logTextbox.value = `${logTextbox.value}\n${message}`;
+        logTextbox.scrollTop = logTextbox.scrollHeight;
+    }
+    
+
 
 
     // Networks
@@ -280,8 +289,8 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
     }
-        
     
+
     // Function to handle mouse leave and remove highlights
     function handleNodeLeaveHighlight(event) {
         // Remove highlight from all nodes
@@ -319,18 +328,14 @@ document.addEventListener("DOMContentLoaded", function () {
             const targetNodeIdInt = parseInt(targetNodeId);
 
             if (draggedUnit) {
-                const draggedUnitIdInt = parseInt(draggedUnit.id);
                 // Check if there is a unit already assigned to the target node
                 const targetUnit = units.find(unit => unit.node === targetNodeIdInt); 
 
                 if (targetUnit) {
-                    const targetUnitIdInt = parseInt(targetUnit.id);
-                    console.log(`combat unit:${draggedUnitIdInt} -> unit:${targetUnitIdInt}`)
                     handleCombat(draggedUnit, targetUnit, draggedUnitNodeIdInt, targetNodeIdInt)
                     
                 } else {
                     // If no unit is in the target node, simply move the dragged unit to the target node
-                    console.log(`move unit ${draggedUnitIdInt} from node:${draggedUnitNodeIdInt} -> node:${targetNodeId}`)
                     handleMoveDrag(draggedUnit, draggedUnitNodeIdInt, targetNodeIdInt)
                 }
 
@@ -344,13 +349,13 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log('handleMoveDrag')
         const draggedUnitIdInt = parseInt(u.id);
         if (networkContainsConnection(meleeNetwork, x, y)) {
-            console.log(`move unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
+            writeToLog(`\nmove unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
             u.node = y;
         } else if (u.type === 'F' && networkContainsConnection(flierNetwork, x, y)){
-            console.log(`fly unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
+            writeToLog(`\nfly unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
             u.node = y
         } else {
-            console.log('not')
+            writeToLog(`cannot move unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
         }
 
         return networkContainsConnection(meleeNetwork, x, y);
@@ -363,12 +368,14 @@ document.addEventListener("DOMContentLoaded", function () {
     function handleCombat(u, v, x, y) {
         console.log('handleCombat')
         if (u.team === v.team) {
-            console.log(`swap units`)
+            writeToLog(`\nswap unit:${u.id} <-> unit:${v.id}`)
             const tempNode = u.node;
             u.node = v.node;
             v.node = tempNode;
             return ;
         }
+
+        writeToLog(`\ncombat unit:${u.id} -> unit:${v.id}`)
         if (u.type === 'M') {
             handleMeleeDrag(u, v, x, y)
         }
@@ -399,10 +406,10 @@ document.addEventListener("DOMContentLoaded", function () {
     function handleFlierDrag(u, v, x, y) {
         console.log('handleFlierDrag')
         if (networkContainsConnection(meleeNetwork, x, y)) {
-            console.log('Flier attacks by land.')
+            writeToLog('Flier attacks by land.')
             handleMeleeCombat(u, v, x, y)
         } else if (networkContainsConnection(flierNetwork, x, y)){
-            console.log('Flier attacks by air.')
+            writeToLog('Flier attacks by air.')
             handleMeleeCombat(u, v, x, y)
         }
     }
@@ -413,7 +420,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let damage = Math.max(1, attacker.attack - defender.defense);
             defender.health -= damage;
             if (defender.health <= 0) {
-                console.log(`Attacker wins with ${attacker.health} health left.`)
+                writeToLog(`Attacker wins with ${attacker.health} health left.`)
                 // Defender is defeated: move attacker to node, remove defender, stop combat
                 attacker.node = defender.node
                 units = units.filter(u => u.id !== defender.id);
@@ -424,7 +431,7 @@ document.addEventListener("DOMContentLoaded", function () {
             damage = Math.max(1, defender.attack - attacker.defense);
             attacker.health -= damage;
             if (attacker.health <= 0) {
-                console.log(`Defender wins with ${defender.health} health left.`)
+                writeToLog(`Defender wins with ${defender.health} health left.`)
                 // Attacker is defeated: remove attacker, stop combat
                 units = units.filter(u => u.id !== attacker.id);
                 break;
@@ -434,14 +441,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function handleArcherCombat(attacker, defender, x, y){
         let damage = Math.max(1, attacker.attack - defender.defense);
-        console.log(`Archer deals ${damage} damage.`)
+        writeToLog(`Archer deals ${damage} damage.`)
         defender.health -= damage;
         if (defender.health <= 0) {
-            console.log('Archer kills target.')
+            writeToLog('Archer kills target.')
             // Defender is defeated
             units = units.filter(u => u.id !== defender.id);
         } else {
-            console.log(`Target has ${defender.health} health left.`)
+            writeToLog(`Target has ${defender.health} health left.`)
         }
     }
 
@@ -559,7 +566,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const focalPointY = maxNodesY / 2;
 
     function drawAll(){
-    createNodes();
+        createNodes();
         createConnections(meleeNetwork, "red", nodeSize/10, "", 0, false);
         createConnections(archerNetwork, "green", nodeSize/10, "10,10", 0, false);
         createConnections(flierNetwork, "blue", nodeSize/300, "", 0, true, focalPointX, focalPointY, 150);

@@ -139,5 +139,19 @@ th {
     background-color: #f2f2f2;
 }
 
+/* Styles for the non-editable, scrollable textbox */
+#logContainer {
+    margin-top: 20px;
+}
 
-
+#logTextbox {
+    width: 100%;
+    height: 30vh;
+    resize: none; /* Prevent resizing */
+    overflow-y: scroll; /* Enable vertical scrolling */
+    font-family: Arial, sans-serif;
+    font-size: 0.9em;
+    border: 1px solid #ddd;
+    padding: 10px;
+    background-color: #f9f9f9;
+}
