@@ -53,6 +53,7 @@ body {
     z-index: 1;
 }
 .highlight {
+    transform: translate(-10%, -10%);
     width: var(--node-size-highlight);
     height: var(--node-size-highlight);
 }
@@ -70,10 +71,10 @@ body {
     font-size: 0.8em;
     cursor: pointer;
     border: 3px solid;
-    transform: translate(-50%, -50%);
     z-index: 2;
 }
 .highlight {
+    transform: translate(-10%, -10%);
     width: var(--unit-size-highlight);
     height: var(--unit-size-highlight);
 }

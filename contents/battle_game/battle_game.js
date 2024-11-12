@@ -186,8 +186,8 @@ document.addEventListener("DOMContentLoaded", function () {
             circle.setAttribute("draggable", "true"); // Make the unit circle draggable
 
             // Position the circle at the node's coordinates
-            circle.style.left = `${node.x * nodeSize + nodeSize / 2}px`;
-            circle.style.top = `${node.y * nodeSize + nodeSize / 2}px`;
+            circle.style.left = `${node.x * nodeSize}px`;
+            circle.style.top = `${node.y * nodeSize}px`;
 
             // Set unit ID as a data attribute for reference
             circle.dataset.unitId = unit.id;
