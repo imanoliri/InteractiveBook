@@ -199,7 +199,7 @@ function drawAll(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSi
     drawNodes(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNetwork);
     drawUnits(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNetwork);
     drawUnitsTable(units);
-    
+    updateHealthBar(units);
     
 }
 
@@ -378,6 +378,44 @@ function drawCurvedLine(svg, x1, y1, x2, y2, color, width, dashArray, focalPoint
 
     // Append the colored curved line
     svg.appendChild(path);
+}
+
+
+// BATTLE STATUS callbacks
+function updateHealthBar(units) {
+    const healthBar = document.getElementById("healthBar");
+    healthBar.innerHTML = ""; // Clear previous content
+
+    // Aggregate health points by team
+    const teamHealth = {};
+    let totalHealth = 0;
+
+    units.forEach(unit => {
+        if (unit.health > 0) {
+            if (!teamHealth[unit.team]) {
+                teamHealth[unit.team] = 0;
+            }
+            teamHealth[unit.team] += unit.health;
+            totalHealth += unit.health;
+        }
+    });
+
+    // Create a section for each team
+    Object.keys(teamHealth).forEach(team => {
+        const healthPercentage = (teamHealth[team] / totalHealth) * 100;
+        const teamSection = document.createElement("div");
+        teamSection.classList.add("team-section");
+        teamSection.style.width = `${healthPercentage}%`;
+
+        // Set a color for each team (you can customize these colors)
+        if (team == 1) {
+            teamSection.style.backgroundColor = "green";
+        } else if (team == 2) {
+            teamSection.style.backgroundColor = "orange";
+        }
+
+        healthBar.appendChild(teamSection);
+    });
 }
 
 

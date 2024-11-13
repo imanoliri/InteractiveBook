@@ -11,6 +11,9 @@ Python script that takes an HTML book, divide it into chapters, and generate a s
 
 - Standard, unrelated to story:
     - Sudoku.
+    
+- Manual:
+    - Battle games.
 
 ## Ideas
 - Automatic from story:
