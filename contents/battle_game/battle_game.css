@@ -35,7 +35,8 @@ body {
     position: relative;
     width: 100vh;
     height: 100vh;
-    background-color: #fff;
+    background: url('battle_game__durins_chasm.png') no-repeat center center;
+    background-size: cover;
     border: 1px solid #ccc;
 }
 
