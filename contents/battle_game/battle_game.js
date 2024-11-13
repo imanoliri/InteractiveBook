@@ -26,7 +26,26 @@ document.addEventListener("DOMContentLoaded", function () {
     // Invert Y scale of the nodes
     nodes = invertYScale(nodes);
 
+
+    // Difficulty Slider and button
+    let slider = document.getElementById("difficultySlider");
+    let sliderValue = document.getElementById("sliderValue");
+    sliderValue.textContent =  parseInt(slider.value, 10);
+
+
+    slider.addEventListener("input", function() {
+        sliderValue.textContent = slider.value;
+    });
+
+    const setDifficultyButton = document.getElementById("setDifficultyButton");
+    setDifficultyButton.addEventListener("click", function() {
+        location.reload();
+    });
+
+    let deploymentLevel = parseInt(slider.value, 10);
+
     // Units
+    const dragonRiderHealth = 12 - 2 * Math.max((deploymentLevel - 2), 0);
     let units = [
         { id: 1, team: 2, name: "Goblin Archer", type: "A", attack: 2, defense: 0, health: 4, node: 1, deployment: 1 },
         { id: 2, team: 2, name: "Goblin Warrior", type: "M", attack: 2, defense: 1, health: 4, node: 2, deployment: 1 },
@@ -39,27 +58,13 @@ document.addEventListener("DOMContentLoaded", function () {
         { id: 9, team: 2, name: "Goblin Warrior", type: "M", attack: 2, defense: 1, health: 4, node: 9, deployment: 2 },
         { id: 10, team: 2, name: "Goblin Warrior", type: "M", attack: 2, defense: 1, health: 4, node: 10, deployment: 2 },
         { id: 11, team: 1, name: "Dwarf Warrior", type: "M", attack: 2, defense: 1, health: 6, node: 11, deployment: 1 },
-        { id: 12, team: 1, name: "Dwarf Warrior", type: "M", attack: 2, defense: 1, health: 6, node: 12, deployment: 2 },
+        { id: 12, team: 2, name: "Goblin Warrior", type: "M", attack: 2, defense: 1, health: 4, node: 12, deployment: 2 },
         { id: 13, team: 1, name: "Dwarf Warrior", type: "M", attack: 2, defense: 1, health: 6, node: 13, deployment: 1 },
         { id: 14, team: 1, name: "Dwarf Warrior", type: "M", attack: 2, defense: 1, health: 6, node: 14, deployment: 2 },
         { id: 15, team: 1, name: "Dwarf Archer", type: "A", attack: 2, defense: 0, health: 6, node: 15, deployment: 1 },
         { id: 16, team: 1, name: "Dwarf Archer", type: "A", attack: 2, defense: 0, health: 6, node: 16, deployment: 1 },
-        { id: 17, team: 1, name: "Dragon Rider", type: "F", attack: 3, defense: 2, health: 12, node: 17, deployment: 1 }
+        { id: 17, team: 1, name: "Dragon Rider", type: "F", attack: 3, defense: 2, health: dragonRiderHealth, node: 17, deployment: 1 }
     ];
-
-    const slider = document.getElementById("difficultySlider");
-    let sliderValue = document.getElementById("difficultySlider").value;
-    slider.addEventListener("input", function() {
-        sliderValue.textContent = slider.value;
-        drawAll();
-    });
-
-    const setDifficultyButton = document.getElementById("setDifficultyButton");
-    setDifficultyButton.addEventListener("click", function() {
-        location.reload();
-    });
-
-    let deploymentLevel = sliderValue;
 
     units = units.filter(unit => unit.deployment <= deploymentLevel);
 
