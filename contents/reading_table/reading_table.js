@@ -75,12 +75,9 @@ function cleanWord(word) {
 
 
 
-
 numberOfColumns = 7
 const words = getWordsForGrid(Object.keys(wordCounts).map(cleanWord), numberOfColumns);
 document.documentElement.style.setProperty('--number-of-columns', numberOfColumns);
-
-
 
 
 function allowDrop(ev) {
@@ -114,6 +111,97 @@ function drop(ev) {
         checkMatch(currentElement); // Call checkMatch on the found input box
     }
 }
+
+
+let selectedLetter = null; // Variable to store the selected letter element
+
+function handleClickLetter(ev) {
+    // Check if a letter is already selected
+    if (selectedLetter) {
+        selectedLetter.classList.remove("selected"); // Remove selection highlight
+    }
+
+    // Set the clicked letter as the selected letter
+    selectedLetter = ev.target;
+    selectedLetter.classList.add("selected"); // Highlight the selected letter
+}
+
+function handleClickCell(ev) {
+    if (selectedLetter && ev.target.innerHTML === "") { // Only proceed if a letter is selected and the cell is empty
+        ev.target.innerHTML = selectedLetter.innerHTML; // Place the selected letter in the cell
+        selectedLetter.classList.remove("selected"); // Remove selection highlight
+        selectedLetter = null; // Reset the selected letter
+
+        // Find the input box in the same row and call checkMatch
+        let currentElement = ev.target;
+        while (currentElement && !currentElement.classList.contains("word-input")) {
+            currentElement = currentElement.nextElementSibling;
+        }
+        if (currentElement && currentElement.classList.contains("word-input")) {
+            checkMatch(currentElement); // Call checkMatch on the found input box
+        }
+    }
+}
+
+// Function to clear the content of a cell on double-click
+function handleDoubleClick(ev) {
+    ev.target.innerHTML = ""; // Clear content on double-click
+
+    // Find the input box in the same row and call checkMatch
+    let currentElement = ev.target;
+    while (currentElement && !currentElement.classList.contains("word-input")) {
+        currentElement = currentElement.nextElementSibling;
+    }
+    if (currentElement && currentElement.classList.contains("word-input")) {
+        checkMatch(currentElement); // Call checkMatch on the found input box
+    }
+}
+
+// Function to check for matches and convert to uppercase
+function checkMatch(input) {
+    input.value = input.value.toUpperCase(); // Convert input to uppercase
+
+    // Get the consonant letter, which is the first sibling in the same row
+    const rowLetter = input.previousElementSibling.textContent;
+
+    // Get all the cells in the same row by traversing backwards from the input
+    let currentElement = input.previousElementSibling;
+    const rowCells = [];
+
+    // Traverse backwards until we reach the consonant letter at the start of the row
+    while (currentElement && !currentElement.classList.contains("letter")) {
+        if (!currentElement.classList.contains("delete-cell")) {
+            rowCells.unshift(currentElement.textContent); // Collect cell content
+        }
+        currentElement = currentElement.previousElementSibling;
+    }
+
+    // Construct the word from the row cells
+    const constructedWord = rowCells.join("");
+
+    // Check if the constructed word matches the input value
+    if (constructedWord === input.value) {
+        input.style.backgroundColor = "lightgreen"; // Light up the input if it matches
+    } else {
+        input.style.backgroundColor = ""; // Remove background color if it doesn't match
+    }
+}
+
+// Function to fill text boxes with random words from the words array
+function fillTextBoxes() {
+    // Get all word-input elements
+    const textInputs = document.querySelectorAll(".word-input");
+    const numberOfWords = Math.min(words.length, textInputs.length);
+    
+    // Shuffle the words array and take the first numberOfWords items
+    const shuffledWords = words.sort(() => 0.5 - Math.random()).slice(0, numberOfWords);
+
+    // Fill the text boxes with the selected words
+    shuffledWords.forEach((word, index) => {
+        textInputs[index].value = word;
+    });
+}
+
 
 // Function to clear the content of a cell on double-click
 function handleDoubleClick(ev) {
@@ -183,13 +271,29 @@ function fillTextBoxes() {
     });
 }
 
+
+
 // Add event listeners for drag-and-drop interactions
 window.onload = function() {
+
+    // DRAG AND DROP
     const allCells = document.querySelectorAll(".grid div");
     allCells.forEach(cell => {
         cell.addEventListener("dragover", allowDrop);
         cell.addEventListener("drop", drop);
         cell.addEventListener("dblclick", handleDoubleClick);
+    });
+
+    // CLICK AND CLICK
+    const letterElements = document.querySelectorAll(".letter");
+    letterElements.forEach(letter => {
+        letter.addEventListener("click", handleClickLetter); // Add click event to letters
+    });
+
+    const droppableCells = document.querySelectorAll(".grid div:not(.letter):not(.delete-cell)");
+    droppableCells.forEach(cell => {
+        cell.addEventListener("click", handleClickCell); // Add click event to droppable cells
+        cell.addEventListener("dblclick", handleDoubleClick); // Double-click to clear
     });
 
     // Make the first cell (trash bin) draggable
@@ -198,3 +302,21 @@ window.onload = function() {
     emptyCell.addEventListener("dragstart", drag);
     fillTextBoxes();
 };
+
+
+// Add event listeners for click interactions
+window.onload = function() {
+    const letterElements = document.querySelectorAll(".letter");
+    letterElements.forEach(letter => {
+        letter.addEventListener("click", handleClickLetter); // Add click event to letters
+    });
+
+    const droppableCells = document.querySelectorAll(".grid div:not(.letter):not(.delete-cell)");
+    droppableCells.forEach(cell => {
+        cell.addEventListener("click", handleClickCell); // Add click event to droppable cells
+        cell.addEventListener("dblclick", handleDoubleClick); // Double-click to clear
+    });
+
+    fillTextBoxes();
+};
+
