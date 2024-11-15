@@ -137,27 +137,26 @@ def main():
 
     df_nodes_mountain_left = df_nodes.loc[df_nodes.x <= 2]
     df_nodes_mountain_2_valley_left = get_pairs(df_nodes_mountain_left, df_nodes_valley)
+    df_archer_network_left = df_nodes_mountain_2_valley_left.loc[
+        (df_nodes_mountain_2_valley_left.x_distance <= 2)
+        & (df_nodes_mountain_2_valley_left.y_distance <= 2)
+    ]
     archer_network_mountain_left = (
-        df_nodes_mountain_2_valley_left.loc[
-            (df_nodes_mountain_2_valley_left.x_distance <= 2)
-            & (df_nodes_mountain_2_valley_left.y_distance <= 2)
-        ]
-        .loc[:, ["id1", "id2"]]
-        .values.tolist()
-    )
+        df_archer_network_left.loc[:, ["id1", "id2"]].values.tolist()
+    ) + (df_archer_network_left.loc[:, ["id2", "id1"]].values.tolist())
 
     df_nodes_mountain_right = df_nodes.loc[6 <= df_nodes.x]
     df_nodes_mountain_2_valley_right = get_pairs(
         df_nodes_mountain_right, df_nodes_valley
     )
+    df_archer_network_right = df_nodes_mountain_2_valley_right.loc[
+        (df_nodes_mountain_2_valley_right.x_distance <= 2)
+        & (df_nodes_mountain_2_valley_right.y_distance <= 2)
+    ]
+
     archer_network_mountain_right = (
-        df_nodes_mountain_2_valley_right.loc[
-            (df_nodes_mountain_2_valley_right.x_distance <= 2)
-            & (df_nodes_mountain_2_valley_right.y_distance <= 2)
-        ]
-        .loc[:, ["id1", "id2"]]
-        .values.tolist()
-    )
+        df_archer_network_right.loc[:, ["id1", "id2"]].values.tolist()
+    ) + (df_archer_network_right.loc[:, ["id2", "id1"]].values.tolist())
 
     save_to_json(
         archer_network_mountain_left + archer_network_mountain_right,
