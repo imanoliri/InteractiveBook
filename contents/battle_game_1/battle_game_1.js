@@ -123,6 +123,12 @@ function createMeleeNetwork() {
 
 function createArcherNetwork() {
     return [
+        [5, 6],
+        [6, 5], [6, 7],
+        [7, 6],
+        [8, 9],
+        [9, 8], [9, 10],
+        [10, 9],
         ...createPairs(10, [14]),
         ...createPairs(12, [13]),
         ...createPairs(11, [14]),
