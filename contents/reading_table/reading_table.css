@@ -6,7 +6,7 @@ body {
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(7, 100px);
+    grid-template-columns: repeat(var(--number-of-columns), 100px);
     gap: 10px;
     margin-top: 20px;
 }
