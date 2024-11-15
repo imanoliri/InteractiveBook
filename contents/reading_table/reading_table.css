@@ -6,7 +6,7 @@ body {
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(6, 100px);
+    grid-template-columns: repeat(7, 100px);
     gap: 10px;
     margin-top: 20px;
 }
@@ -35,6 +35,10 @@ body {
     cursor: pointer;
 }
 
+.heading {
+    background-color: lightgray;
+}
+
 [draggable="true"] {
-    background-color: lightgray; /* Light gray background for draggable cells */
+    background-color: lightgray;
 }
