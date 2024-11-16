@@ -801,7 +801,7 @@ document.getElementById("mapInfoButton").addEventListener("click", function() {
     const mapInfoText = document.getElementById("mapInfoText");
 
     mapInfoText.innerHTML = `
-        Welcome to Durin's Chasm. Deep of the mountain, the dwarves mine in search of the gold, gems and stone, but they discover a nest of goblins and retreat to the fort at Durin's Chasm to defend from the invasion.<br><br>
+        Welcome to Durin's Chasm! Deep of the mountain, the dwarves mine in search of the gold, gems and stone, but they discover a nest of goblins and retreat to the fort at Durin's Chasm to defend from the invasion.<br><br>
         
         The goblins will try to cross the chasm using the three bridges in beige. The mountain dwarves and an ally dragon rider (green team) must work together to repell the attack of the goblin invaders (orange).<br><br>
 
