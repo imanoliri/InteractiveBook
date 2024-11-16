@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Set CSS variables
     const numberNodes = nodes.length;
-    const nodeSizePercentage = 100/Math.sqrt(numberNodes**2)
+    const nodeSizePercentage = 100/Math.sqrt(numberNodes**2);
     let nodeSize = vhToPixels(`${nodeSizePercentage}vh`);
     setCSSVariables(nodeSizePercentage)
 
@@ -217,11 +217,14 @@ function drawNodes(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNet
         div.style.top = `${node.y * nodeSize}px`;
         div.dataset.nodeId = node.id; // Assign the node ID as a data attribute
 
-        // Add drag and drop event handlers for the nodes
+        // Drag and drop callbacks
         div.addEventListener("dragover", handleDragOver);
         div.addEventListener("drop", (event) => {handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize);});
         div.addEventListener('mouseenter', (event) => {handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork, archerNetwork, flierNetwork);});
         div.addEventListener('mouseleave', handleNodeLeaveHighlight);
+
+        // Click and click callbacks
+        div.addEventListener('click', (event) => {handleNodeClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize);});
 
         battlefield.appendChild(div);
     });
@@ -266,12 +269,17 @@ function drawUnits(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNet
         circle.appendChild(tooltip);
         battlefield.appendChild(circle); // Append the unit circle to the battlefield
 
-        // Drag event handler
+        // Drag and drop callbacks
         circle.addEventListener('mouseenter', (event) => {handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork, archerNetwork, flierNetwork);});
         circle.addEventListener('mouseleave', handleNodeLeaveHighlight);
         circle.addEventListener("dragstart", handleDragStart);
         circle.addEventListener("dragover", handleDragOver);
         circle.addEventListener("drop", (event) => {handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize);});
+        
+
+        // Click and click callback
+        circle.addEventListener("click", (event) => {handleUnitClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize);});
+
     });
 }
 
@@ -549,6 +557,95 @@ function networkContainsConnection(network, x, y) {
     return network.some(pair => pair[0] === x && pair[1] === y);
 }
 
+// CLICK AND CLICK callbacks
+let selectedUnitId = null; // Variable to store the ID of the selected unit
+
+// Function to handle click on a unit
+function handleUnitClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize) {
+    console.log(selectedUnitId)
+    // If a unit is already selected and the user clicks on another unit of the same team, swap positions
+    if (selectedUnitId) {
+        console.log(selectedUnitId)
+        const clickedUnitId = event.target.dataset.unitId;
+        const clickedUnit = units.find(unit => unit.id == clickedUnitId);
+        const selectedUnit = units.find(unit => unit.id == selectedUnitId);
+        console.log(clickedUnitId)
+
+        if (clickedUnit && selectedUnit) {
+            if (clickedUnit.team === selectedUnit.team) {
+                // Swap the nodes
+                const tempNode = selectedUnit.node;
+                selectedUnit.node = clickedUnit.node;
+                clickedUnit.node = tempNode;
+                writeToLog(`\nSwapped unit:${selectedUnit.id} <-> unit:${clickedUnit.id}`);
+                selectedUnitId = null; // Reset the selected unit
+                console.log('draw')
+                drawAll(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize);
+                return;
+            } else {
+                // Different teams: initiate combat
+                units = handleCombat(selectedUnit, clickedUnit, selectedUnit.node, clickedUnit.node, units, meleeNetwork, archerNetwork, flierNetwork);
+                selectedUnitId = null; // Reset the selected unit
+                console.log('draw')
+                drawAll(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize);
+                return;
+            }
+        }
+    }
+
+    // If no unit is selected, select this unit
+    selectedUnitId = event.target.dataset.unitId;
+    writeToLog(`\nSelected unit: ${selectedUnitId}`);
+}
+
+// Function to handle click on a node
+function handleNodeClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize) {
+    if (selectedUnitId) {
+        const targetNodeId = parseInt(event.target.dataset.nodeId);
+        const selectedUnit = units.find(unit => unit.id == selectedUnitId);
+
+        if (selectedUnit) {
+            // Check if there's another unit on the target node
+            const targetUnit = units.find(unit => unit.node === targetNodeId);
+
+            if (targetUnit) {
+                // If there's a unit on the target node, handle combat or swapping
+                if (targetUnit.team === selectedUnit.team) {
+                    // Friendly unit: swap nodes
+                    const tempNode = selectedUnit.node;
+                    selectedUnit.node = targetNodeId;
+                    targetUnit.node = tempNode;
+                    writeToLog(`\nSwapped unit:${selectedUnit.id} <-> unit:${targetUnit.id}`);
+                } else {
+                    // Enemy unit: initiate combat
+                    units = handleCombat(selectedUnit, targetUnit, selectedUnit.node, targetNodeId, units, meleeNetwork, archerNetwork, flierNetwork);
+                }
+            } else {
+                // No unit on the target node: move the selected unit
+                handleMoveDrag(selectedUnit, selectedUnit.node, targetNodeId, meleeNetwork, archerNetwork, flierNetwork);
+            }
+
+            selectedUnitId = null; // Reset the selected unit
+            console.log('draw')
+            drawAll(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize);
+        }
+    }
+}
+
+// Add click event listeners to units and nodes
+function addClickEventListeners() {
+    const unitCircles = document.querySelectorAll(".unit-circle");
+    unitCircles.forEach(circle => {
+        circle.addEventListener("click", handleUnitClick);
+    });
+
+    const nodeElements = document.querySelectorAll(".node");
+    nodeElements.forEach(node => {
+        node.addEventListener("click", handleNodeClick);
+    });
+}
+
+
 
 // COMBAT logic
 function handleCombat(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork) {
@@ -574,6 +671,7 @@ function handleCombat(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwo
         writeToLog(`\ncannot attack unit:${u.id} -> unit:${v.id}`)
     }
 
+    console.log('filter health units')
     return units.filter(u => u.health > 0)
 }
 
@@ -707,7 +805,7 @@ document.getElementById("mapInfoButton").addEventListener("click", function() {
         
         The goblins will try to cross the chasm using the three bridges in beige. The mountain dwarves and an ally dragon rider (green team) must work together to repell the attack of the goblin invaders (orange).<br><br>
 
-        Optional victory condition: don't let a goblin unit stay more than two consecutive turns on the hills.<br><br>
+        Optional victory condition: don't let a goblin unit stay more than two consecutive turns on any of the towers.<br><br>
 
         Hardcore victory condition: don't let a goblin unit step at the other side of the bridges.
     `;
