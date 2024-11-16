@@ -651,13 +651,11 @@ function handleArcherCombat(attacker, defender, x, y, units){
 }
 
 
-// INFO
-document.getElementById("infoButton").addEventListener("click", function() {
-    // Get the modal and instructions text elements
+// Instructions Modal
+document.getElementById("instructionsButton").addEventListener("click", function() {
     const modal = document.getElementById("instructionsModal");
     const instructionsText = document.getElementById("instructionsText");
 
-    // Set the instructions text
     instructionsText.innerHTML = `
         Welcome to Battle! This is a tactics battlefield game where two or more teams clash in a turn-based battle until one side has no units left. Each team is controlled by one human player, in a shared PC or tablet like a tabletop game. The players can decide on a different victory condition and some maps propose ideas. Master your strategy, plan your moves, and outwit your opponent to emerge victorious!<br><br>
 
@@ -692,12 +690,32 @@ document.getElementById("infoButton").addEventListener("click", function() {
         <strong>Strategies</strong><br>
         Use melee units to engage directly and be aggresive, archers for ranged attacks to whittle the enemy down without taking damage, and fliers for superior mobility. Plan carefully and outmaneuver your opponent to win!
     `;
-
-    // Show the modal
     modal.style.display = "flex";
 });
 
-// Close the modal when the "Close" button is clicked
-document.getElementById("closeModal").addEventListener("click", function() {
+document.getElementById("closeInstructionsModal").addEventListener("click", function() {
     document.getElementById("instructionsModal").style.display = "none";
 });
+
+// Map Info Modal
+document.getElementById("mapInfoButton").addEventListener("click", function() {
+    const modal = document.getElementById("mapInfoModal");
+    const mapInfoText = document.getElementById("mapInfoText");
+
+    mapInfoText.innerHTML = `
+        Welcome to Durin's Chasm. Deep of the mountain, the dwarves mine in search of the gold, gems and stone, but they discover a nest of goblins and retreat to the fort at Durin's Chasm to defend from the invasion.<br><br>
+        
+        The goblins will try to cross the chasm using the three bridges in beige. The mountain dwarves and an ally dragon rider (green team) must work together to repell the attack of the goblin invaders (orange).<br><br>
+
+        Optional victory condition: don't let a goblin unit stay more than two consecutive turns on the hills.<br><br>
+
+        Hardcore victory condition: don't let a goblin unit step at the other side of the bridges.
+    `;
+    modal.style.display = "flex";
+});
+
+document.getElementById("closeMapInfoModal").addEventListener("click", function() {
+    document.getElementById("mapInfoModal").style.display = "none";
+});
+
+
