@@ -284,7 +284,7 @@ def create_feedback_page(chapter_titles):
         th, td {
             padding: 12px 15px;
             text-align: center;
-            border-bottom: 1px solid #ddd;
+            border: 1px solid white;
         }
 
         th {
@@ -300,7 +300,7 @@ def create_feedback_page(chapter_titles):
         td[contenteditable="true"] {
             background-color: #f3f7fa;
             outline: none;
-            border: 1px solid transparent;
+            border: 1px solid white;
             transition: border-color 0.3s;
         }
 
@@ -315,7 +315,7 @@ def create_feedback_page(chapter_titles):
             background-color: #f1f1f1;
         }
 
-        button {
+        .feedbackButton {
             display: block;
             margin: 30px auto;
             padding: 12px 24px;
@@ -328,7 +328,7 @@ def create_feedback_page(chapter_titles):
             transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
         }
 
-        button:hover {
+        .feedbackButton:hover {
             background-color: #357ABD;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(106, 137, 204, 0.3);
@@ -436,7 +436,7 @@ def create_feedback_page(chapter_titles):
             <tr><th>Chapter</th>{aspects_headers}</tr>
             {chapter_rows_comments}
         </table>
-        <button onclick="finalizeFeedback()">Send Feedback</button>
+        <button class="feedbackButton" onclick="finalizeFeedback()">Send Feedback</button>
         {script}
     </body>
     </html>
