@@ -16,6 +16,7 @@ function showTab(index) {
 }
 
 let userName
+
 function sendChapterFeedback() {
     const aspects = ["General", "World-Building", "Plot", "Pacing", "Dialogue", "Character Development", "Conflict/Tension", "Themes", "Emotional Impact"];
 
@@ -45,7 +46,6 @@ function sendChapterFeedback() {
 
 
     // Add metadata
-    console.log(chapterFeedback)
     feedbackData = [{
         userName: userName,
         storyID: storyId,
@@ -54,23 +54,33 @@ function sendChapterFeedback() {
         ...chapterFeedback
     }];
 
-    console.log(feedbackData)
 
-    // Send feedback to the Netlify serverless function
-    fetch('/.netlify/functions/logFeedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(feedbackData)
-    })
-    .then(response => {
-        if (response.ok) {
-            alert("Feedback sent successfully!");
-        } else {
-            alert("Failed to send feedback. Please try again.");
-        }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        alert("An error occurred. Please try again.");
-    });
+    if (chapterFeedbackIsEmpty(chapterFeedback) !== true) {
+
+        console.log(chapterFeedback)
+
+        // Send feedback to the Netlify serverless function
+        fetch('/.netlify/functions/logFeedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(feedbackData)
+        })
+        .then(response => {
+            if (response.ok) {
+                alert("Feedback sent successfully!");
+            } else {
+                alert("Failed to send feedback. Please try again.");
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An error occurred. Please try again.");
+        });
+    }
+}
+
+function chapterFeedbackIsEmpty(chapterFeedback) {
+    const allRatingsAreEmpty = Object.values(chapterFeedback.ratings).every(value => value === null);
+    const allCommentsAreEmpty = Object.values(chapterFeedback.comments).every(value => value === null || value.trim() === "");
+    return allRatingsAreEmpty && allCommentsAreEmpty;
 }

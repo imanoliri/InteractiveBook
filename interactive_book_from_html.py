@@ -353,6 +353,7 @@ def create_feedback_page(chapter_titles):
         """
     <script>
         let userName
+
         function finalizeFeedback() {
             const aspects = ["General", "World-Building", "Plot", "Pacing", "Dialogue", "Character Development", "Conflict/Tension", "Themes", "Emotional Impact"];
             const chapterTitles = """
@@ -376,8 +377,10 @@ def create_feedback_page(chapter_titles):
                 commentCells.forEach((cell, i) => {
                     chapterFeedback.comments[aspects[i]] = cell.innerText.trim() || null;
                 });
-
-                feedbackData.push(chapterFeedback);
+                
+                if (chapterFeedbackIsEmpty(chapterFeedback) !== true) {
+                    feedbackData.push(chapterFeedback);
+                }
             });
 
             // Add metadata
@@ -393,6 +396,8 @@ def create_feedback_page(chapter_titles):
                 date: currentDate,
                 ...feedback
             }));
+
+            console.log(feedbackData)
 
             // Send feedback to the Netlify serverless function
             fetch('/.netlify/functions/logFeedback', {
@@ -412,6 +417,13 @@ def create_feedback_page(chapter_titles):
                 alert("An error occurred. Please try again.");
             });
         }
+
+        function chapterFeedbackIsEmpty(chapterFeedback) {
+            const allRatingsAreEmpty = Object.values(chapterFeedback.ratings).every(value => value === null);
+            const allCommentsAreEmpty = Object.values(chapterFeedback.comments).every(value => value === null || value.trim() === "");
+            return allRatingsAreEmpty && allCommentsAreEmpty;
+        }
+
     </script>
     """
     )
