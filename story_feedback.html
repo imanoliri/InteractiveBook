@@ -50,16 +50,16 @@
     <script>
         // Aspects to rate
         const aspects = ["General", "World-Building", "Plot", "Pacing", "Dialogue", "Character Development", "Conflict/Tension", "Themes", "Emotional Impact"];
-        const story_index = 1; // Set story index
+        const storyId = 1;
         let chapterNumber = 0;
         let feedbackData = [];
 
         // Initialize feedback for the overall story
         renderFeedbackTable("Overall Story");
 
-        function renderFeedbackTable(chapterTitle) {
+        function renderFeedbackTable(chapterNumber) {
             const container = document.getElementById("feedbackTableContainer");
-            container.innerHTML = `<h3>${chapterTitle}</h3>`;
+            container.innerHTML = `<h3>$Chapter ${chapterNumber}</h3>`;
 
             let table = document.createElement("table");
             let headerRow = "<tr><th>Aspect</th>";
@@ -80,8 +80,8 @@
             container.appendChild(table);
         }
 
-        function collectFeedback(chapterTitle) {
-            let chapterFeedback = { chapter: chapterTitle, ratings: {}, comments: {} };
+        function collectFeedback(chapterNumber) {
+            let chapterFeedback = { chapter: chapterNumber, ratings: {}, comments: {} };
 
             aspects.forEach(aspect => {
                 const rating = document.getElementById(`${aspect}-rating`).value;
@@ -91,12 +91,12 @@
                 chapterFeedback.comments[aspect] = comment ? comment : null;
             });
 
-            feedbackData[chapterNumber] = chapterFeedback; // Store feedback at the current chapter index
+            feedbackData[chapterNumber] = chapterFeedback;
         }
 
-        function loadFeedback(chapterTitle) {
+        function loadFeedback(chapterNumber) {
             const chapterFeedback = feedbackData[chapterNumber];
-            if (!chapterFeedback) return; // If no feedback exists, do nothing
+            if (!chapterFeedback) return;
 
             aspects.forEach(aspect => {
                 document.getElementById(`${aspect}-rating`).value = chapterFeedback.ratings[aspect] || "";
@@ -105,24 +105,24 @@
         }
 
         function nextChapter() {
-            collectFeedback(`Chapter ${chapterNumber}`); // Collect current feedback
+            collectFeedback(chapterNumber);
 
             chapterNumber++;
-            renderFeedbackTable(`Chapter ${chapterNumber}`);
-            loadFeedback(`Chapter ${chapterNumber}`); // Load feedback if it exists
+            renderFeedbackTable(chapterNumber);
+            loadFeedback(chapterNumber);
 
             // Update button visibility
             document.getElementById("previousChapter").style.display = chapterNumber > 0 ? "inline" : "none";
-            document.getElementById("finalize").style.display = "inline"; // Show finalize button
+            document.getElementById("finalize").style.display = "inline";
         }
 
         function previousChapter() {
-            collectFeedback(`Chapter ${chapterNumber}`); // Collect current feedback
+            collectFeedback(chapterNumber);
 
             if (chapterNumber > 0) {
                 chapterNumber--;
-                renderFeedbackTable(`Chapter ${chapterNumber}`);
-                loadFeedback(`Chapter ${chapterNumber}`); // Load feedback if it exists
+                renderFeedbackTable(chapterNumber);
+                loadFeedback(chapterNumber);
             }
 
             // Update button visibility
@@ -130,7 +130,7 @@
         }
 
         function finalizeFeedback() {
-            collectFeedback(`Chapter ${chapterNumber}`); // Collect current feedback
+            collectFeedback(chapterNumber);
 
             // Get user name and current date
             const userName = document.getElementById("userName").value || "Anonymous";
@@ -139,7 +139,7 @@
             // Add metadata to each feedback item
             feedbackData = feedbackData.map(feedback => ({
                 userName: userName,
-                story_index: story_index,
+                storyID: storyId,
                 date: currentDate,
                 ...feedback
             }));
