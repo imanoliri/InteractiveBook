@@ -28,10 +28,18 @@
             font-size: 14px;
             padding: 5px;
         }
+        input[type="text"] {
+            width: 100%;
+            height: 30px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <h1>Story Feedback Form</h1>
+    <label for="userName">Your Name (optional):</label>
+    <input type="text" id="userName" placeholder="Enter your name">
     <div id="feedbackForm">
         <div id="feedbackTableContainer"></div>
         <button id="previousChapter" onclick="previousChapter()" style="display: none;">Previous Chapter</button>
@@ -40,9 +48,9 @@
     </div>
 
     <script>
-
         // Aspects to rate
         const aspects = ["General", "World-Building", "Plot", "Pacing", "Dialogue", "Character Development", "Conflict/Tension", "Themes", "Emotional Impact"];
+        const story_index = 1; // Set story index
         let chapterNumber = 0;
         let feedbackData = [];
 
@@ -73,7 +81,7 @@
         }
 
         function collectFeedback(chapterTitle) {
-            let chapterFeedback = {chapter: chapterTitle, ratings: {}, comments: {} };
+            let chapterFeedback = { chapter: chapterTitle, ratings: {}, comments: {} };
 
             aspects.forEach(aspect => {
                 const rating = document.getElementById(`${aspect}-rating`).value;
@@ -123,7 +131,19 @@
 
         function finalizeFeedback() {
             collectFeedback(`Chapter ${chapterNumber}`); // Collect current feedback
-            
+
+            // Get user name and current date
+            const userName = document.getElementById("userName").value || "Anonymous";
+            const currentDate = new Date().toISOString();
+
+            // Add metadata to each feedback item
+            feedbackData = feedbackData.map(feedback => ({
+                userName: userName,
+                story_index: story_index,
+                date: currentDate,
+                ...feedback
+            }));
+
             // Log all feedback to the console with metadata
             console.log("Feedback Data:", feedbackData);
 
