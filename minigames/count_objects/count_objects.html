@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counting Object Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        .container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 150px);
+            gap: 20px;
+        }
+        .grid div {
+            width: 150px;
+            height: 150px;
+            border: 2px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        .number {
+            width: 50px;
+            height: 50px;
+            background-color: #ffcccb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Counting Object Game</h1>
+    <p>Drag the numbers to match the number of objects shown!</p>
+    <div class="container">
+        <div class="grid" id="objectGrid">
+            <div data-count="3">🍎🍎🍎</div>
+            <div data-count="5">⭐️⭐️⭐️⭐️⭐️</div>
+            <div data-count="2">🍌🍌</div>
+        </div>
+        <div class="grid" id="numberGrid">
+            <div class="number" draggable="true" ondragstart="drag(event)" data-number="2">2</div>
+            <div class="number" draggable="true" ondragstart="drag(event)" data-number="3">3</div>
+            <div class="number" draggable="true" ondragstart="drag(event)" data-number="5">5</div>
+        </div>
+    </div>
+    <button onclick="checkMatches()">Check Matches</button>
+    <div id="feedback" style="margin-top: 20px; font-size: 1.2em;"></div>
+
+    <script>
+        function drag(ev) {
+            ev.dataTransfer.setData("number", ev.target.getAttribute("data-number"));
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            var number = ev.dataTransfer.getData("number");
+            ev.target.innerHTML = number;
+            ev.target.setAttribute("data-number", number);
+        }
+
+        function checkMatches() {
+            const objects = document.querySelectorAll("#objectGrid div");
+            let isCorrect = true;
+
+            objects.forEach((object) => {
+                const count = object.getAttribute("data-count");
+                const number = object.getAttribute("data-number");
+                if (count !== number) {
+                    isCorrect = false;
+                }
+            });
+
+            const feedback = document.getElementById("feedback");
+            if (isCorrect) {
+                feedback.textContent = "Correct! Great job!";
+                feedback.style.color = "green";
+            } else {
+                feedback.textContent = "Some matches are incorrect. Try again!";
+                feedback.style.color = "red";
+            }
+        }
+
+        window.onload = function() {
+            const objectGrid = document.getElementById("objectGrid");
+            objectGrid.querySelectorAll("div").forEach((el) => {
+                el.ondrop = drop;
+                el.ondragover = allowDrop;
+            });
+        };
+    </script>
+</body>
+</html>
