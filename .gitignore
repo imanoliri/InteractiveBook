@@ -3,3 +3,11 @@
 
 
 riddles
+
+node_modules
+.netlify
+.env
+feedback_ratings.csv
+feedback_comments.csv
+
+
