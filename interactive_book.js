@@ -18,7 +18,7 @@ function showTab(index) {
 let userName
 
 function sendChapterFeedback() {
-    const aspects = ["General", "World-Building", "Plot", "Pacing", "Dialogue", "Character Development", "Conflict/Tension", "Themes", "Emotional Impact"];
+    const aspects = ["Overall", "World-Building", "Plot", "Pacing", "Dialogue", "Character Development", "Conflict/Tension", "Themes", "Emotional Impact"];
 
     // Metadata
     if (!userName) {

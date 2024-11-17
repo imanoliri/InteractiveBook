@@ -236,7 +236,7 @@ def create_feedback_page(chapter_titles):
         "Emotional Impact",
     ]
 
-    chapters = ["General Story"] + chapter_titles
+    chapters = ["Whole Story"] + chapter_titles
 
     # Generate the HTML structure for the tables
     aspects_headers = "".join(f"<th>{aspect}</th>" for aspect in aspects)
@@ -355,7 +355,7 @@ def create_feedback_page(chapter_titles):
         let userName
 
         function finalizeFeedback() {
-            const aspects = ["General", "World-Building", "Plot", "Pacing", "Dialogue", "Character Development", "Conflict/Tension", "Themes", "Emotional Impact"];
+            const aspects = ["Overall", "World-Building", "Plot", "Pacing", "Dialogue", "Character Development", "Conflict/Tension", "Themes", "Emotional Impact"];
             const chapterTitles = """
         + str(chapters)
         + """;
