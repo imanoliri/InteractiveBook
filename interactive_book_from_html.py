@@ -530,7 +530,7 @@ def main():
     feedback_html_path = "story_feedback.html"
     title = html_file_path.split("/")[-1].split(".")[0]
     output_file_path = "index.html"
-    add_feedback_to_each_chapter = True
+    add_feedback_to_each_chapter = False
 
     # Read html
     html_book = read_html_book(html_file_path)
