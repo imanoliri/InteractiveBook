@@ -217,6 +217,21 @@ def generate_contents_page(content_links):
     return html_template.replace("{buttons}", button_html)
 
 
+def add_story_feedback_tab(chapters, tab_names, feedback_html_link):
+    """Add a Story Feedback tab to the interactive book via a link."""
+    # Create an iframe that loads the external story_feedback.html file
+    feedback_tab_content = f"""
+    <h3>Story Feedback</h3>
+    <iframe src="{feedback_html_link}" width="100%" height="800px" frameborder="0"></iframe>
+    """
+
+    # Add the iframe as a new tab
+    chapters.append(feedback_tab_content)
+    tab_names.append("Story Feedback")
+
+    return chapters, tab_names
+
+
 def generate_static_html(chapters, tab_names, title):
     html_template = """
 <!DOCTYPE html>
@@ -270,6 +285,7 @@ def main():
     html_file_path = "The_Valley_of_Dragons_1_-_Attack_of_the_Dark_God.html"
     contents_dir = "contents"
     images_dir = "images"
+    feedback_html_path = "story_feedback.html"
     title = html_file_path.split("/")[-1].split(".")[0]
     output_file_path = "index.html"
 
@@ -286,6 +302,9 @@ def main():
     # Generate html interactive book
     chapters, tab_names = parse_html_book(html_book)
     chapters, tab_names = add_content_tab(chapters, tab_names, contents_dir)
+    chapters, tab_names = add_story_feedback_tab(
+        chapters, tab_names, feedback_html_path
+    )
     interactive_book = generate_static_html(chapters, tab_names, title)
 
     # Save book locally
