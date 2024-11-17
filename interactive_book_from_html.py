@@ -217,6 +217,221 @@ def generate_contents_page(content_links):
     return html_template.replace("{buttons}", button_html)
 
 
+def create_feedback_page(chapter_titles):
+    # Aspects to rate
+    aspects = [
+        "General",
+        "World-Building",
+        "Plot",
+        "Pacing",
+        "Dialogue",
+        "Character Development",
+        "Conflict/Tension",
+        "Themes",
+        "Emotional Impact",
+    ]
+
+    # Generate the HTML structure for the tables
+    aspects_headers = "".join(f"<th>{aspect}</th>" for aspect in aspects)
+    chapter_rows_ratings = "".join(
+        f"<tr><td class='chapter-title'>{chapter}</td>"
+        + "".join(f"<td contenteditable='true'></td>" for _ in aspects)
+        + "</tr>"
+        for chapter in ["General Story"] + chapter_titles
+    )
+    chapter_rows_comments = "".join(
+        f"<tr><td class='chapter-title'>{chapter}</td>"
+        + "".join(f"<td contenteditable='true'></td>" for _ in aspects)
+        + "</tr>"
+        for chapter in ["General Story"] + chapter_titles
+    )
+
+    # Use the CSS from `interactive_book.css`
+    style = """
+    <style>
+        /* General page styling */
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f4f9;
+            color: #4a4a4a;
+            margin: 20px;
+        }
+
+        h2, h3 {
+            text-align: center;
+            color: #6a89cc;
+        }
+
+        table {
+            width: 100%;
+            max-width: 90vw;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #6a89cc;
+            color: white;
+            font-weight: bold;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        td[contenteditable="true"] {
+            background-color: #f3f7fa;
+            outline: none;
+            border: 1px solid transparent;
+            transition: border-color 0.3s;
+        }
+
+        td[contenteditable="true"]:focus {
+            border-color: #6a89cc;
+            background-color: #e9f4fe;
+        }
+
+        .chapter-title {
+            font-weight: bold;
+            color: #4a4a4a;
+            background-color: #f1f1f1;
+        }
+
+        button {
+            display: block;
+            margin: 30px auto;
+            padding: 12px 24px;
+            font-size: 16px;
+            color: white;
+            background-color: #6a89cc;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            background-color: #357ABD;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(106, 137, 204, 0.3);
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            th, td {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+            button {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
+    """
+
+    # JavaScript to collect and send feedback
+    script = """
+    <script>
+        function finalizeFeedback() {
+            const aspects = ["General", "World-Building", "Plot", "Pacing", "Dialogue", "Character Development", "Conflict/Tension", "Themes", "Emotional Impact"];
+            const chapterTitles = ["General Story"].concat([...document.querySelectorAll('.tab-button')].map(btn => btn.innerText).slice(1));
+            let feedbackData = [];
+
+            // Collect data from both tables
+            chapterTitles.forEach((chapter, index) => {
+                let chapterFeedback = { chapter: chapter, ratings: {}, comments: {} };
+
+                // Collect ratings
+                document.querySelectorAll("#ratingsTable tr")[index + 1].querySelectorAll("td[contenteditable='true']").forEach((cell, i) => {
+                    const value = parseInt(cell.innerText.trim(), 10);
+                    chapterFeedback.ratings[aspects[i]] = isNaN(value) ? null : value;
+                });
+
+                // Collect comments
+                document.querySelectorAll("#commentsTable tr")[index + 1].querySelectorAll("td[contenteditable='true']").forEach((cell, i) => {
+                    chapterFeedback.comments[aspects[i]] = cell.innerText.trim() || null;
+                });
+
+                feedbackData.push(chapterFeedback);
+            });
+
+            // Add metadata
+            const userName = prompt("Please enter your name (or leave blank for anonymous):") || "Anonymous";
+            const storyId = 1;
+            const currentDate = new Date().toISOString();
+
+            feedbackData = feedbackData.map(feedback => ({
+                userName: userName,
+                storyID: storyId,
+                date: currentDate,
+                ...feedback
+            }));
+
+            // Send feedback to the Netlify serverless function
+            fetch('/.netlify/functions/logFeedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(feedbackData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Feedback sent successfully!");
+                } else {
+                    alert("Failed to send feedback. Please try again.");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("An error occurred. Please try again.");
+            });
+        }
+    </script>
+    """
+
+    # HTML for the feedback page, including the DOCTYPE declaration
+    feedback_page_html = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Story Feedback</title>
+        {style}
+    </head>
+    <body>
+        <h2>Story Feedback</h2>
+        <h3>Ratings (1-10)</h3>
+        <table id="ratingsTable" border="1">
+            <tr><th>Chapter</th>{aspects_headers}</tr>
+            {chapter_rows_ratings}
+        </table>
+        <h3>Comments</h3>
+        <table id="commentsTable" border="1">
+            <tr><th>Chapter</th>{aspects_headers}</tr>
+            {chapter_rows_comments}
+        </table>
+        <button onclick="finalizeFeedback()">Send Feedback</button>
+        {script}
+    </body>
+    </html>
+    """
+
+    return feedback_page_html
+
+
 def add_story_feedback_tab(chapters, tab_names, feedback_html_link):
     """Add a Story Feedback tab to the interactive book via a link."""
     # Create an iframe that loads the external story_feedback.html file
@@ -302,6 +517,10 @@ def main():
     # Generate html interactive book
     chapters, tab_names = parse_html_book(html_book)
     chapters, tab_names = add_content_tab(chapters, tab_names, contents_dir)
+
+    feedback_page = create_feedback_page(tab_names[1:])
+    save_html(feedback_page, feedback_html_path)
+
     chapters, tab_names = add_story_feedback_tab(
         chapters, tab_names, feedback_html_path
     )
