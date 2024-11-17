@@ -352,6 +352,7 @@ def create_feedback_page(chapter_titles):
     script = (
         """
     <script>
+        let userName
         function finalizeFeedback() {
             const aspects = ["General", "World-Building", "Plot", "Pacing", "Dialogue", "Character Development", "Conflict/Tension", "Themes", "Emotional Impact"];
             const chapterTitles = """
@@ -380,7 +381,9 @@ def create_feedback_page(chapter_titles):
             });
 
             // Add metadata
-            const userName = prompt("Please enter your name (or leave blank for anonymous):") || "Anonymous";
+            if (!userName) {
+                userName = prompt("Please enter your name (or leave blank for anonymous):") || "Anonymous";
+            }
             const storyId = 1;
             const currentDate = new Date().toISOString();
 

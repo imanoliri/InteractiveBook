@@ -15,12 +15,14 @@ function showTab(index) {
     buttons[index].classList.add('active');
 }
 
-
+let userName
 function sendChapterFeedback() {
     const aspects = ["General", "World-Building", "Plot", "Pacing", "Dialogue", "Character Development", "Conflict/Tension", "Themes", "Emotional Impact"];
 
     // Metadata
-    const userName = prompt("Please enter your name (or leave blank for anonymous):") || "Anonymous";
+    if (!userName) {
+        userName = prompt("Please enter your name (or leave blank for anonymous):") || "Anonymous";
+    }
     const storyId = 1;
     const chapter = document.querySelector(".tab-button.active")?.textContent.trim();
     const currentDate = new Date().toISOString();

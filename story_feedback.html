@@ -115,6 +115,7 @@
         <button class="feedbackButton" onclick="finalizeFeedback()">Send Feedback</button>
         
     <script>
+        let userName
         function finalizeFeedback() {
             const aspects = ["General", "World-Building", "Plot", "Pacing", "Dialogue", "Character Development", "Conflict/Tension", "Themes", "Emotional Impact"];
             const chapterTitles = ['General Story', 'Chapter 1: Valley of Dragons', 'Chapter 2: Attack of the Dark God', 'Chapter 3: Alaric', 'Chapter 4: The Decision', 'Chapter 5: River City', 'Chapter 6: Forest City', 'Chapter 7: Battle of Greystone Pass', 'Chapter 8: Champion', 'Chapter 9: Paladin', 'Chapter 10: Evil’s Lair'];
@@ -141,7 +142,9 @@
             });
 
             // Add metadata
-            const userName = prompt("Please enter your name (or leave blank for anonymous):") || "Anonymous";
+            if (!userName) {
+                userName = prompt("Please enter your name (or leave blank for anonymous):") || "Anonymous";
+            }
             const storyId = 1;
             const currentDate = new Date().toISOString();
 
