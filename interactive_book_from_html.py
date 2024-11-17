@@ -231,19 +231,21 @@ def create_feedback_page(chapter_titles):
         "Emotional Impact",
     ]
 
+    chapters = ["General Story"] + chapter_titles
+
     # Generate the HTML structure for the tables
     aspects_headers = "".join(f"<th>{aspect}</th>" for aspect in aspects)
     chapter_rows_ratings = "".join(
         f"<tr><td class='chapter-title'>{chapter}</td>"
         + "".join(f"<td contenteditable='true'></td>" for _ in aspects)
         + "</tr>"
-        for chapter in ["General Story"] + chapter_titles
+        for chapter in chapters
     )
     chapter_rows_comments = "".join(
         f"<tr><td class='chapter-title'>{chapter}</td>"
         + "".join(f"<td contenteditable='true'></td>" for _ in aspects)
         + "</tr>"
-        for chapter in ["General Story"] + chapter_titles
+        for chapter in chapters
     )
 
     # Use the CSS from `interactive_book.css`
@@ -342,11 +344,14 @@ def create_feedback_page(chapter_titles):
     """
 
     # JavaScript to collect and send feedback
-    script = """
+    script = (
+        """
     <script>
         function finalizeFeedback() {
             const aspects = ["General", "World-Building", "Plot", "Pacing", "Dialogue", "Character Development", "Conflict/Tension", "Themes", "Emotional Impact"];
-            const chapterTitles = ["General Story"].concat([...document.querySelectorAll('.tab-button')].map(btn => btn.innerText).slice(1));
+            const chapterTitles = """
+        + str(chapters)
+        + """;
             let feedbackData = [];
 
             // Collect data from both tables
@@ -354,13 +359,15 @@ def create_feedback_page(chapter_titles):
                 let chapterFeedback = { chapter: chapter, ratings: {}, comments: {} };
 
                 // Collect ratings
-                document.querySelectorAll("#ratingsTable tr")[index + 1].querySelectorAll("td[contenteditable='true']").forEach((cell, i) => {
+                const ratingCells = document.querySelectorAll("#ratingsTable tr")[index + 1].querySelectorAll("td[contenteditable='true']");
+                ratingCells.forEach((cell, i) => {
                     const value = parseInt(cell.innerText.trim(), 10);
                     chapterFeedback.ratings[aspects[i]] = isNaN(value) ? null : value;
                 });
 
                 // Collect comments
-                document.querySelectorAll("#commentsTable tr")[index + 1].querySelectorAll("td[contenteditable='true']").forEach((cell, i) => {
+                const commentCells = document.querySelectorAll("#commentsTable tr")[index + 1].querySelectorAll("td[contenteditable='true']");
+                commentCells.forEach((cell, i) => {
                     chapterFeedback.comments[aspects[i]] = cell.innerText.trim() || null;
                 });
 
@@ -399,6 +406,7 @@ def create_feedback_page(chapter_titles):
         }
     </script>
     """
+    )
 
     # HTML for the feedback page, including the DOCTYPE declaration
     feedback_page_html = f"""

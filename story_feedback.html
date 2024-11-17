@@ -117,7 +117,7 @@
     <script>
         function finalizeFeedback() {
             const aspects = ["General", "World-Building", "Plot", "Pacing", "Dialogue", "Character Development", "Conflict/Tension", "Themes", "Emotional Impact"];
-            const chapterTitles = ["General Story"].concat([...document.querySelectorAll('.tab-button')].map(btn => btn.innerText).slice(1));
+            const chapterTitles = ['General Story', 'Chapter 1: Valley of Dragons', 'Chapter 2: Attack of the Dark God', 'Chapter 3: Alaric', 'Chapter 4: The Decision', 'Chapter 5: River City', 'Chapter 6: Forest City', 'Chapter 7: Battle of Greystone Pass', 'Chapter 8: Champion', 'Chapter 9: Paladin', 'Chapter 10: Evil’s Lair', 'Contents'];
             let feedbackData = [];
 
             // Collect data from both tables
@@ -125,13 +125,15 @@
                 let chapterFeedback = { chapter: chapter, ratings: {}, comments: {} };
 
                 // Collect ratings
-                document.querySelectorAll("#ratingsTable tr")[index + 1].querySelectorAll("td[contenteditable='true']").forEach((cell, i) => {
+                const ratingCells = document.querySelectorAll("#ratingsTable tr")[index + 1].querySelectorAll("td[contenteditable='true']");
+                ratingCells.forEach((cell, i) => {
                     const value = parseInt(cell.innerText.trim(), 10);
                     chapterFeedback.ratings[aspects[i]] = isNaN(value) ? null : value;
                 });
 
                 // Collect comments
-                document.querySelectorAll("#commentsTable tr")[index + 1].querySelectorAll("td[contenteditable='true']").forEach((cell, i) => {
+                const commentCells = document.querySelectorAll("#commentsTable tr")[index + 1].querySelectorAll("td[contenteditable='true']");
+                commentCells.forEach((cell, i) => {
                     chapterFeedback.comments[aspects[i]] = cell.innerText.trim() || null;
                 });
 
@@ -149,6 +151,7 @@
                 date: currentDate,
                 ...feedback
             }));
+            console.log(feedbackData)
 
             // Send feedback to the Netlify serverless function
             fetch('/.netlify/functions/logFeedback', {
