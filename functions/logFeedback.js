@@ -14,22 +14,26 @@ const db = admin.firestore();
 exports.handler = async (event) => {
     try {
         // Parse the feedback data from the request body
-        let feedbackData = JSON.parse(event.body);
+        const feedbackData = JSON.parse(event.body);
 
+        // Check if feedbackData is an array
+        if (!Array.isArray(feedbackData)) {
+            throw new Error("Parsed feedback data is not a valid array of objects");
+        }
+
+        // Log the type and structure of the data
         console.log("Type of feedbackData:", typeof feedbackData);
         console.log("Feedback data structure:", feedbackData);
 
-        // Check if feedbackData is an object
-        if (typeof feedbackData !== 'object' || feedbackData === null || Array.isArray(feedbackData)) {
-            throw new Error("Parsed feedback data is not a valid plain JavaScript object");
+        // Iterate over each item in the feedbackData array and add to Firestore
+        for (const feedback of feedbackData) {
+            if (typeof feedback === 'object' && feedback !== null) {
+                await db.collection('feedback').add(feedback);
+                console.log('Feedback saved:', feedback);
+            } else {
+                console.warn('Invalid feedback object skipped:', feedback);
+            }
         }
-
-        // Log the feedback data to the Netlify function logs
-        console.log("Received feedback data:", feedbackData);
-
-        // Save the feedback data to Firestore
-        const docRef = await db.collection('feedback').add(feedbackData);
-        console.log('Feedback saved with ID:', docRef.id);
 
         // Respond with a success message
         return {
