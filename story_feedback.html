@@ -33,15 +33,13 @@
 <body>
     <h1>Story Feedback Form</h1>
     <div id="feedbackForm">
-        <h2>Overall Story Feedback</h2>
         <div id="feedbackTableContainer"></div>
+        <button id="previousChapter" onclick="previousChapter()" style="display: none;">Previous Chapter</button>
         <button id="nextChapter" onclick="nextChapter()">Next Chapter</button>
         <button id="finalize" onclick="finalizeFeedback()" style="display: none;">That was the last chapter. Log all feedback</button>
     </div>
 
     <script>
-        // Metadata
-        const storyId = 1; // Example story ID
 
         // Aspects to rate
         const aspects = ["General", "World-Building", "Plot", "Pacing", "Dialogue", "Character Development", "Conflict/Tension", "Themes", "Emotional Impact"];
@@ -75,7 +73,7 @@
         }
 
         function collectFeedback(chapterTitle) {
-            let chapterFeedback = { storyId: storyId, date: new Date().toISOString(), chapter: chapterTitle, ratings: {}, comments: {} };
+            let chapterFeedback = {chapter: chapterTitle, ratings: {}, comments: {} };
 
             aspects.forEach(aspect => {
                 const rating = document.getElementById(`${aspect}-rating`).value;
@@ -85,26 +83,69 @@
                 chapterFeedback.comments[aspect] = comment ? comment : null;
             });
 
-            feedbackData.push(chapterFeedback);
+            feedbackData[chapterNumber] = chapterFeedback; // Store feedback at the current chapter index
+        }
+
+        function loadFeedback(chapterTitle) {
+            const chapterFeedback = feedbackData[chapterNumber];
+            if (!chapterFeedback) return; // If no feedback exists, do nothing
+
+            aspects.forEach(aspect => {
+                document.getElementById(`${aspect}-rating`).value = chapterFeedback.ratings[aspect] || "";
+                document.getElementById(`${aspect}-comment`).value = chapterFeedback.comments[aspect] || "";
+            });
         }
 
         function nextChapter() {
-            if (chapterNumber === 0) {
-                collectFeedback("Overall Story");
-            } else {
-                collectFeedback(`Chapter ${chapterNumber}`);
-            }
+            collectFeedback(`Chapter ${chapterNumber}`); // Collect current feedback
 
             chapterNumber++;
             renderFeedbackTable(`Chapter ${chapterNumber}`);
+            loadFeedback(`Chapter ${chapterNumber}`); // Load feedback if it exists
+
+            // Update button visibility
+            document.getElementById("previousChapter").style.display = chapterNumber > 0 ? "inline" : "none";
             document.getElementById("finalize").style.display = "inline"; // Show finalize button
         }
 
+        function previousChapter() {
+            collectFeedback(`Chapter ${chapterNumber}`); // Collect current feedback
+
+            if (chapterNumber > 0) {
+                chapterNumber--;
+                renderFeedbackTable(`Chapter ${chapterNumber}`);
+                loadFeedback(`Chapter ${chapterNumber}`); // Load feedback if it exists
+            }
+
+            // Update button visibility
+            document.getElementById("previousChapter").style.display = chapterNumber > 0 ? "inline" : "none";
+        }
+
         function finalizeFeedback() {
-            collectFeedback(`Chapter ${chapterNumber}`);
+            collectFeedback(`Chapter ${chapterNumber}`); // Collect current feedback
             
-            // Log all feedback to the console
+            // Log all feedback to the console with metadata
             console.log("Feedback Data:", feedbackData);
+
+            // Send the feedback data to the Netlify function
+            fetch('/.netlify/functions/logFeedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(feedbackData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Feedback logged successfully!");
+                } else {
+                    alert("Failed to log feedback.");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("An error occurred. Please try again.");
+            });
         }
     </script>
 </body>
