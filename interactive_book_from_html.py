@@ -444,7 +444,6 @@ def add_story_feedback_tab(chapters, tab_names, feedback_html_link):
     """Add a Story Feedback tab to the interactive book via a link."""
     # Create an iframe that loads the external story_feedback.html file
     feedback_tab_content = f"""
-    <h3>Story Feedback</h3>
     <iframe src="{feedback_html_link}" width="100%" height="800px" frameborder="0"></iframe>
     """
 
@@ -526,7 +525,7 @@ def main():
     chapters, tab_names = parse_html_book(html_book)
     chapters, tab_names = add_content_tab(chapters, tab_names, contents_dir)
 
-    feedback_page = create_feedback_page(tab_names[1:])
+    feedback_page = create_feedback_page(tab_names[1:-1])
     save_html(feedback_page, feedback_html_path)
 
     chapters, tab_names = add_story_feedback_tab(
