@@ -14,7 +14,15 @@ const db = admin.firestore();
 exports.handler = async (event) => {
     try {
         // Parse the feedback data from the request body
-        const feedbackData = JSON.parse(event.body);
+        let feedbackData = JSON.parse(event.body);
+
+        console.log("Type of feedbackData:", typeof feedbackData);
+        console.log("Feedback data structure:", feedbackData);
+
+        // Check if feedbackData is an object
+        if (typeof feedbackData !== 'object' || feedbackData === null || Array.isArray(feedbackData)) {
+            throw new Error("Parsed feedback data is not a valid plain JavaScript object");
+        }
 
         // Log the feedback data to the Netlify function logs
         console.log("Received feedback data:", feedbackData);
