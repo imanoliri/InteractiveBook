@@ -220,7 +220,7 @@ def generate_contents_page(content_links):
 def create_feedback_page(chapter_titles):
     # Aspects to rate
     aspects = [
-        "General",
+        "Overall",
         "World-Building",
         "Plot",
         "Pacing",
