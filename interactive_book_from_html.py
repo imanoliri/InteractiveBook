@@ -76,6 +76,11 @@ def parse_html_book(html_content):
     return ["".join(chapter) for chapter in chapters], tab_names
 
 
+def add_feedback_box_to_each_chapter(chapters):
+    feedback_box_html = """<table id="feedbackTable" border="1"><tr><th>Chapter</th><th>Overall</th><th>World-Building</th><th>Plot</th><th>Pacing</th><th>Dialogue</th><th>Character Development</th><th>Conflict/Tension</th><th>Themes</th><th>Emotional Impact</th></tr><tr><td class='chapter-title'>Rating</td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td></tr><tr><td class='chapter-title'>Comments</td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td></tr></table><button class="feedbackButton" onclick="sendChapterFeedback()">Send Feedback</button>"""
+    return [c + feedback_box_html for c in chapters]
+
+
 def extract_media(html_content):
 
     soup = BeautifulSoup(html_content, "html.parser")
@@ -510,6 +515,7 @@ def main():
     feedback_html_path = "story_feedback.html"
     title = html_file_path.split("/")[-1].split(".")[0]
     output_file_path = "index.html"
+    add_feedback_to_each_chapter = True
 
     # Read html
     html_book = read_html_book(html_file_path)
@@ -523,6 +529,8 @@ def main():
 
     # Generate html interactive book
     chapters, tab_names = parse_html_book(html_book)
+    if add_feedback_to_each_chapter:
+        chapters = [chapters[0], *add_feedback_box_to_each_chapter(chapters[1:])]
     chapters, tab_names = add_content_tab(chapters, tab_names, contents_dir)
 
     feedback_page = create_feedback_page(tab_names[1:-1])
