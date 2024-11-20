@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alphabet Adventure Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        .adventure-area {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .item {
+            width: 100px;
+            height: 100px;
+            border: 2px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+        .item.correct {
+            background-color: lightgreen;
+        }
+        .item.incorrect {
+            background-color: lightcoral;
+        }
+    </style>
+</head>
+<body>
+    <h1>Alphabet Adventure Game</h1>
+    <p>Help the character collect the items that start with the letter: <span id="currentLetter">A</span></p>
+    <div class="adventure-area" id="adventureArea">
+        <div class="item" data-letter="A">Apple</div>
+        <div class="item" data-letter="B">Ball</div>
+        <div class="item" data-letter="C">Cat</div>
+        <div class="item" data-letter="D">Dog</div>
+        <div class="item" data-letter="A">Ant</div>
+        <div class="item" data-letter="B">Book</div>
+        <div class="item" data-letter="C">Car</div>
+        <div class="item" data-letter="D">Drum</div>
+    </div>
+    <button onclick="nextLetter()">Next Letter</button>
+    <div id="feedback" style="margin-top: 20px; font-size: 1.2em;"></div>
+
+    <script>
+        let currentLetterIndex = 0;
+        const letters = ["A", "B", "C", "D"];
+        const feedback = document.getElementById("feedback");
+
+        function nextLetter() {
+            currentLetterIndex = (currentLetterIndex + 1) % letters.length;
+            document.getElementById("currentLetter").textContent = letters[currentLetterIndex];
+            resetItems();
+        }
+
+        function resetItems() {
+            const items = document.querySelectorAll(".item");
+            items.forEach(item => {
+                item.classList.remove("correct", "incorrect");
+                item.addEventListener("click", checkItem);
+            });
+            feedback.textContent = "";
+        }
+
+        function checkItem(event) {
+            const item = event.target;
+            const itemLetter = item.getAttribute("data-letter");
+            const currentLetter = letters[currentLetterIndex];
+
+            if (itemLetter === currentLetter) {
+                item.classList.add("correct");
+                feedback.textContent = "Great job! Keep going!";
+                feedback.style.color = "green";
+            } else {
+                item.classList.add("incorrect");
+                feedback.textContent = "Oops! Try again!";
+                feedback.style.color = "red";
+            }
+
+            item.removeEventListener("click", checkItem); // Prevent multiple clicks on the same item
+        }
+
+        window.onload = resetItems;
+    </script>
+</body>
+</html>

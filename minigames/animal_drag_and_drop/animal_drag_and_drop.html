@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Sound Matching Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        .container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 150px);
+            gap: 20px;
+        }
+        .grid div {
+            width: 150px;
+            height: 150px;
+            border: 2px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        .sound {
+            width: 100px;
+            height: 50px;
+            background-color: #ffcccb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Animal Sound Matching Game</h1>
+    <p>Drag the sound icons to the correct animals!</p>
+    <div class="container">
+        <div class="grid" id="animalGrid">
+            <div data-animal="Cow">🐄</div>
+            <div data-animal="Dog">🐶</div>
+            <div data-animal="Cat">🐱</div>
+        </div>
+        <div class="grid" id="soundGrid">
+            <div class="sound" draggable="true" ondragstart="drag(event)" data-sound="Cow">Moo</div>
+            <div class="sound" draggable="true" ondragstart="drag(event)" data-sound="Dog">Bark</div>
+            <div class="sound" draggable="true" ondragstart="drag(event)" data-sound="Cat">Meow</div>
+        </div>
+    </div>
+    <button onclick="checkMatches()">Check Matches</button>
+    <div id="feedback" style="margin-top: 20px; font-size: 1.2em;"></div>
+
+    <script>
+        function drag(ev) {
+            ev.dataTransfer.setData("sound", ev.target.getAttribute("data-sound"));
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            var sound = ev.dataTransfer.getData("sound");
+            ev.target.innerHTML = sound;
+            ev.target.setAttribute("data-sound", sound);
+        }
+
+        function checkMatches() {
+            const animals = document.querySelectorAll("#animalGrid div");
+            let isCorrect = true;
+
+            animals.forEach((animal) => {
+                const animalType = animal.getAttribute("data-animal");
+                const sound = animal.getAttribute("data-sound");
+                if (animalType !== sound) {
+                    isCorrect = false;
+                }
+            });
+
+            const feedback = document.getElementById("feedback");
+            if (isCorrect) {
+                feedback.textContent = "Correct! Well done!";
+                feedback.style.color = "green";
+            } else {
+                feedback.textContent = "Some matches are incorrect. Try again!";
+                feedback.style.color = "red";
+            }
+        }
+
+        window.onload = function() {
+            const animalGrid = document.getElementById("animalGrid");
+            animalGrid.querySelectorAll("div").forEach((el) => {
+                el.ondrop = drop;
+                el.ondragover = allowDrop;
+            });
+        };
+    </script>
+</body>
+</html>

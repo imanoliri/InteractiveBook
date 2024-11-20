@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Animal Habitat Matching</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .habitat-puzzle {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .habitat-slot {
+      width: 150px;
+      height: 150px;
+      border: 2px dashed #ccc;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: #f9f9f9;
+      transition: background-color 0.3s;
+    }
+
+    .habitat-name {
+      margin-top: 5px;
+      font-size: 16px;
+    }
+
+    .animal {
+      width: 100px;
+      height: 100px;
+      background-color: lightgrey;
+      border: 1px solid #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 36px;
+      cursor: grab;
+    }
+
+    .correct {
+      background-color: lightgreen;
+      border-color: green;
+    }
+
+    .incorrect {
+      background-color: lightcoral;
+      border-color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>Animal Habitat Matching</h1>
+  <div class="container">
+    <div class="habitat-puzzle" id="habitat-puzzle">
+      <!-- Habitat slots will be dynamically created here -->
+    </div>
+    <div class="habitat-puzzle" id="animal-container">
+      <!-- Animals will be randomly arranged here -->
+    </div>
+  </div>
+  <!-- Victory and Failure Sounds -->
+  <audio id="victory-sound" src="https://www.myinstants.com/media/sounds/tada.mp3"></audio>
+  <audio id="failure-sound" src="https://www.myinstants.com/media/sounds/error.mp3"></audio>
+  <script>
+    // Habitat and Animal data
+    const habitats = [
+      { id: "forest", name: "Forest", emoji: "🌲" },
+      { id: "ocean", name: "Ocean", emoji: "🌊" },
+      { id: "desert", name: "Desert", emoji: "🏜️" },
+      { id: "jungle", name: "Jungle", emoji: "🌴" },
+      { id: "savannah", name: "Savannah", emoji: "🌾" },
+      { id: "arctic", name: "Arctic", emoji: "❄️" },
+      { id: "mountain", name: "Mountain", emoji: "⛰️" },
+      { id: "river", name: "River", emoji: "🏞️" },
+      { id: "wetland", name: "Wetland", emoji: "🌾" },
+      { id: "reef", name: "Reef", emoji: "🪸" }
+    ];
+
+    const animals = [
+      { id: "deer", name: "Deer", emoji: "🦌", habitat: "forest" },
+      { id: "fish", name: "Fish", emoji: "🐟", habitat: "ocean" },
+      { id: "camel", name: "Camel", emoji: "🐫", habitat: "desert" },
+      { id: "monkey", name: "Monkey", emoji: "🐒", habitat: "jungle" },
+      { id: "lion", name: "Lion", emoji: "🦁", habitat: "savannah" },
+      { id: "polar-bear", name: "Penguin", emoji: "🐧", habitat: "arctic" },
+      { id: "goat", name: "Goat", emoji: "🐐", habitat: "mountain" },
+      { id: "otter", name: "Otter", emoji: "🦦", habitat: "river" },
+      { id: "frog", name: "Frog", emoji: "🐸", habitat: "wetland" },
+      { id: "clownfish", name: "Clownfish", emoji: "🐠", habitat: "reef" }
+    ];
+
+    // Generate habitat slots dynamically
+    const habitatPuzzle = document.getElementById('habitat-puzzle');
+    habitats.forEach(habitat => {
+      const slot = document.createElement('div');
+      slot.className = 'habitat-slot';
+      slot.id = `${habitat.id}-slot`;
+      
+      const emoji = document.createElement('div');
+      emoji.textContent = habitat.emoji;
+      emoji.style.fontSize = '36px';
+
+      const name = document.createElement('div');
+      name.className = 'habitat-name';
+      name.textContent = habitat.name;
+
+      slot.appendChild(emoji);
+      slot.appendChild(name);
+      habitatPuzzle.appendChild(slot);
+    });
+
+    // Randomize the order of the animals
+    animals.sort(() => Math.random() - 0.5);
+
+    // Append randomized animals to the container
+    const animalContainer = document.getElementById('animal-container');
+    animals.forEach(animal => {
+      const animalElement = document.createElement('div');
+      animalElement.className = 'animal';
+      animalElement.id = animal.id;
+      animalElement.draggable = true;
+      animalElement.textContent = animal.emoji;
+      animalContainer.appendChild(animalElement);
+
+      // Add event listener for dragstart to speak the animal name
+      animalElement.addEventListener('click', () => {
+        speak(animal.name);
+      });
+    });
+
+    const animalElements = document.querySelectorAll('.animal');
+    const habitatSlots = document.querySelectorAll('.habitat-slot');
+    let draggedCount = 0;
+
+    animalElements.forEach(animal => {
+      animal.addEventListener('dragstart', dragStart);
+    });
+
+    habitatSlots.forEach(slot => {
+      slot.addEventListener('dragover', dragOver);
+      slot.addEventListener('drop', drop);
+    });
+
+    function dragStart(event) {
+      event.dataTransfer.setData('text', event.target.id);
+    }
+
+    function dragOver(event) {
+      event.preventDefault();
+    }
+
+    function drop(event) {
+      event.preventDefault();
+      const animalId = event.dataTransfer.getData('text');
+      const animalElement = document.getElementById(animalId);
+      const habitatId = event.target.closest('.habitat-slot').id.split('-')[0];
+
+      // Check if the animal's habitat matches the target slot
+      const animalData = animals.find(animal => animal.id === animalId);
+      const slot = event.target.closest('.habitat-slot');
+
+      if (slot.children.length === 2) {
+        slot.appendChild(animalElement);
+        draggedCount++;
+
+        if (animalData.habitat === habitatId) {
+          slot.classList.add('correct');
+          speak(`${animalData.name} belongs to the ${habitatId}`);
+        }
+
+        if (draggedCount === animals.length) {
+          checkMatching();
+        }
+      } else {
+        alert('This slot is already occupied!');
+      }
+    }
+
+    function checkMatching() {
+      let isCorrect = true;
+      habitatSlots.forEach(slot => {
+        if (slot.children.length > 2) {
+          const animalId = slot.children[2].id;
+          const animalData = animals.find(animal => animal.id === animalId);
+          if (!animalData || animalData.habitat !== slot.id.split('-')[0]) {
+            isCorrect = false;
+          }
+        } else {
+          isCorrect = false;
+        }
+      });
+
+      if (isCorrect) {
+        document.getElementById('victory-sound').play();
+      } else {
+        habitatSlots.forEach(slot => {
+          if (!slot.classList.contains('correct')) {
+            slot.classList.add('incorrect');
+          }
+        });
+      }
+    }
+
+    // Text-to-Speech function
+    function speak(text) {
+      const speech = new SpeechSynthesisUtterance();
+      speech.text = text;
+      speech.lang = "en-US";
+      window.speechSynthesis.speak(speech);
+    }
+  </script>
+</body>
+</html>

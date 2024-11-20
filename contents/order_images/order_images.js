@@ -1,74 +1,92 @@
-// Define the list of image sources
 const imageDir = "../.."
-const imageSources = [
-    "images/image26.jpg",
-    "images/image23.jpg",
-    "images/image15.jpg",
-    "images/image17.jpg",
-    "images/image12.jpg",
-    "images/image3.jpg",
-    "images/image21.jpg",
-    "images/image8.jpg",
-    "images/image33.png",
-    "images/image35.png",
-    "images/image20.jpg",
-    "images/image11.jpg",
-    "images/image5.jpg",
-    "images/image34.jpg",
-    "images/image30.png",
-    "images/image32.jpg",
-    "images/image1.png",
-    "images/image24.png",
-    "images/image25.jpg",
-    "images/image22.jpg",
-    "images/image28.jpg",
-    "images/image18.jpg",
-    "images/image6.jpg",
-    "images/image29.jpg",
-    "images/image10.jpg",
-    "images/image9.jpg",
-    "images/image19.jpg",
-    "images/image13.png",
-    "images/image7.png",
-    "images/image31.png",
-    "images/image16.png",
-    "images/image36.png",
-    "images/image27.png",
-    "images/image14.png",
-    "images/image2.jpg",
-    "images/image4.jpg"
-];
 
-const imagesWithIndices = imageSources.map((src, index) => ({ src, index }));
+async function fetchImages() {
+    try {
+        const response = await fetch('./../../interactive_book_images.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        imageSources = await response.json();
+        console.log("Images fetched:", imageSources);
 
 
-const numImagesSelect = 6; // Number of images to display
-const containerSize = 0.9 * Math.min(window.innerWidth, window.innerHeight); // Size of the circular container (adaptative)
-const maxImageRadius = (containerSize * Math.sin(Math.PI / numImagesSelect)) / (1 + Math.sin(Math.PI / numImagesSelect)) / 2;
-const imageSize = 2 * maxImageRadius * 0.9; // Adjust image size
-const centerSize = (containerSize - 2 * imageSize) * 0.85;
-const centerPosition = containerSize / 2;
+    } catch (error) {
+        console.error("Error fetching paragraphs:", error);
+    }
+}
+
+let imageSources
+let imagesWithIndices;
+
+let numImagesSelect;
+let selectedImages;
+let imagesToSelect;
+
+let slider;
+let numImagesLabel;
+
+let circleContainer;
+let popupSolved;
+let popupFailed;
 
 
-// Set CSS variables
-document.documentElement.style.setProperty('--container-size', `${containerSize}px`);
-document.documentElement.style.setProperty('--image-size', `${imageSize}px`);
-document.documentElement.style.setProperty('--highlight-size', `${imageSize * 3 / 100}px`);
-document.documentElement.style.setProperty('--center-size', `${centerSize}px`);
-document.documentElement.style.setProperty('--center-position', `${centerPosition}px`);
 
-const circleContainer = document.getElementById('circle-container');
-const popupSolved = document.getElementById('popup-solved');
-const popupFailed = document.getElementById('popup-failed');
 
-console.log(JSON.stringify(imageSources));
+document.addEventListener('DOMContentLoaded', () => {
+    fetchImages().then(createOrder);
+});
 
-// Declare variables to share between callbacks
-let selectedImages; // Original set of selected images
-let imagesToSelect; // Images the user needs to select in order
+
+function createOrder() {
+    imagesWithIndices = imageSources.map((src, index) => ({ src, index }));
+
+    slider = document.getElementById('numImagesSlider');
+    numImagesLabel = document.getElementById('numImagesLabel');
+
+    numImagesSelect = parseInt(slider.value, 10);
+    numImagesLabel.textContent = numImagesSelect;// Initial number of images to display
+
+
+    // Update the number of images based on the slider value
+    slider.addEventListener('input', () => {
+        numImagesSelect = parseInt(slider.value, 10);
+        numImagesLabel.textContent = numImagesSelect;
+        createAndPositionImages(); // Recreate the images with the new number
+    });
+
+
+    circleContainer = document.getElementById('circle-container');
+    popupSolved = document.getElementById('popup-solved');
+    popupFailed = document.getElementById('popup-failed');
+
+    console.log(JSON.stringify(imageSources));
+
+    // Initialize the puzzle
+    createAndPositionImages();
+}
 
 // Function to create and position images in a circular pattern
 function createAndPositionImages() {
+
+    // CSS and sizes
+    let containerSize = 0.9 * Math.min(window.innerWidth, window.innerHeight); // Size of the circular container (adaptative)
+    let maxImageRadius = (containerSize * Math.sin(Math.PI / numImagesSelect)) / (1 + Math.sin(Math.PI / numImagesSelect)) / 2;
+    let imageSize = 2 * maxImageRadius * 0.9; // Adjust image size
+    let centerSize = (containerSize - 2 * imageSize) * 0.85;
+    let centerPosition = containerSize / 2;
+
+
+    // Set CSS variables
+    document.documentElement.style.setProperty('--container-size', `${containerSize}px`);
+    document.documentElement.style.setProperty('--image-size', `${imageSize}px`);
+    document.documentElement.style.setProperty('--highlight-size', `${imageSize * 3 / 100}px`);
+    document.documentElement.style.setProperty('--center-size', `${centerSize}px`);
+    document.documentElement.style.setProperty('--center-position', `${centerPosition}px`);
+
+    adjustFontSize()
+
+
+
     // Clear previous images
     const images = document.querySelectorAll('.circle-container .image');
     images.forEach(image => image.remove());
@@ -194,11 +212,3 @@ function adjustFontSize() {
         centerText.style.fontSize = `${fontSize}px`;
     }
 }
-
-// Call the function to adjust font size on load and on window resize
-window.addEventListener('load', adjustFontSize);
-window.addEventListener('resize', adjustFontSize);
-
-
-// Initialize the puzzle
-createAndPositionImages();

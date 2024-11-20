@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Number Sequencing Puzzle</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .number-puzzle {
+      display: flex;
+      gap: 10px;
+    }
+
+    .number-slot {
+      width: 50px;
+      height: 50px;
+      border: 2px dashed #ccc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      background-color: #f9f9f9;
+    }
+
+    .number {
+      width: 50px;
+      height: 50px;
+      background-color: lightgrey;
+      border: 1px solid #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      cursor: grab;
+    }
+
+    .correct {
+      background-color: lightgreen;
+      border-color: green;
+    }
+
+    .incorrect {
+      background-color: lightcoral;
+      border-color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>Number Sequencing Puzzle</h1>
+  <div class="container">
+    <div class="number-puzzle" id="number-puzzle">
+      <!-- Number slots will be dynamically created here -->
+    </div>
+    <div class="number-puzzle" id="number-container">
+      <!-- Number squares will be randomly arranged here -->
+    </div>
+  </div>
+  <!-- Victory and Failure Sounds -->
+  <audio id="victory-sound" src="https://www.myinstants.com/media/sounds/tada.mp3"></audio>
+  <audio id="failure-sound" src="https://www.myinstants.com/media/sounds/error.mp3"></audio>
+  <script>
+    // Generate number slots dynamically
+    const numberPuzzle = document.getElementById('number-puzzle');
+    for (let i = 1; i <= 5; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'number-slot';
+      slot.id = `slot-${i}`;
+      numberPuzzle.appendChild(slot);
+    }
+
+    // Create number elements
+    const numbers = [
+      { id: "number-1", text: "1" },
+      { id: "number-2", text: "2" },
+      { id: "number-3", text: "3" },
+      { id: "number-4", text: "4" },
+      { id: "number-5", text: "5" }
+    ];
+
+    // Randomize the order of the numbers
+    numbers.sort(() => Math.random() - 0.5);
+
+    // Append randomized numbers to the container
+    const numberContainer = document.getElementById('number-container');
+    numbers.forEach(number => {
+      const numberElement = document.createElement('div');
+      numberElement.className = 'number';
+      numberElement.id = number.id;
+      numberElement.draggable = true;
+      numberElement.textContent = number.text;
+      numberContainer.appendChild(numberElement);
+    });
+
+    const slots = document.querySelectorAll('.number-slot');
+    let draggedCount = 0;
+
+    numbers.forEach(number => {
+      const numberElement = document.getElementById(number.id);
+      numberElement.addEventListener('dragstart', dragStart);
+    });
+
+    slots.forEach(slot => {
+      slot.addEventListener('dragover', dragOver);
+      slot.addEventListener('drop', drop);
+    });
+
+    function dragStart(event) {
+      event.dataTransfer.setData('text', event.target.id);
+    }
+
+    function dragOver(event) {
+      event.preventDefault();
+    }
+
+    function drop(event) {
+      event.preventDefault();
+      const numberId = event.dataTransfer.getData('text');
+      const numberElement = document.getElementById(numberId);
+      if (event.target.children.length === 0) {
+        event.target.appendChild(numberElement);
+        draggedCount++;
+
+        if (draggedCount === 5) {
+          checkSequence();
+        }
+      } else {
+        alert('This slot is already occupied!');
+      }
+    }
+
+    function checkSequence() {
+      let isCorrect = true;
+      for (let i = 1; i <= 5; i++) {
+        const slot = document.getElementById(`slot-${i}`);
+        if (slot.children.length === 0 || slot.children[0].id !== `number-${i}`) {
+          isCorrect = false;
+          break;
+        }
+      }
+
+      if (isCorrect) {
+        slots.forEach(slot => slot.classList.add('correct'));
+        document.getElementById('victory-sound').play();
+      } else {
+        slots.forEach(slot => slot.classList.add('incorrect'));
+      }
+    }
+  </script>
+</body>
+</html>

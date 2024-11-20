@@ -1,61 +1,77 @@
-// Define the list of image sources
 const imageDir = "../.."
-const imageSources = [
-    "images/image26.jpg",
-    "images/image23.jpg",
-    "images/image15.jpg",
-    "images/image17.jpg",
-    "images/image12.jpg",
-    "images/image3.jpg",
-    "images/image21.jpg",
-    "images/image8.jpg",
-    "images/image33.png",
-    "images/image35.png",
-    "images/image20.jpg",
-    "images/image11.jpg",
-    "images/image5.jpg",
-    "images/image34.jpg",
-    "images/image30.png",
-    "images/image32.jpg",
-    "images/image1.png",
-    "images/image24.png",
-    "images/image25.jpg",
-    "images/image22.jpg",
-    "images/image28.jpg",
-    "images/image18.jpg",
-    "images/image6.jpg",
-    "images/image29.jpg",
-    "images/image10.jpg",
-    "images/image9.jpg",
-    "images/image19.jpg",
-    "images/image13.png",
-    "images/image7.png",
-    "images/image31.png",
-    "images/image16.png",
-    "images/image36.png",
-    "images/image27.png",
-    "images/image14.png",
-    "images/image2.jpg",
-    "images/image4.jpg"
-];
-numImagesSelect = 8
+
+async function fetchImages() {
+    try {
+        const response = await fetch('./../../interactive_book_images.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        imageSources = await response.json();
+        console.log("Images fetched:", imageSources);
 
 
+    } catch (error) {
+        console.error("Error fetching paragraphs:", error);
+    }
+}
+
+let imageSources
 
 document.addEventListener('DOMContentLoaded', () => {
+    fetchImages().then(createMemory);
+});
+
+function createMemory() {
+    const slider = document.getElementById('slider');
+    const numImagesLabel = document.getElementById('numImagesLabel');
+    const decreaseButton = document.getElementById('decreaseButton');
+    const increaseButton = document.getElementById('increaseButton');
+
+    numImagesSelect = parseInt(slider.value, 10);
+    numImagesLabel.textContent = numImagesSelect;// Initial number of images to display
+
+
+    decreaseButton.addEventListener('click', () => {
+        slider.value = parseInt(slider.value) - 1;
+        slider.dispatchEvent(new Event('input')); // Trigger input event
+
+    });
+
+    increaseButton.addEventListener('click', () => {
+        slider.value = parseInt(slider.value) + 1;
+        slider.dispatchEvent(new Event('input')); // Trigger input event
+
+    });
+
+    // Update the number of images based on the slider value
+    slider.addEventListener('input', () => {
+        numImagesSelect = parseInt(slider.value, 10);
+        numImagesLabel.textContent = numImagesSelect;
+        initializeGame(); // Recreate the images with the new number
+    });
+
     const gameContainer = document.getElementById('game-container');
     const resetButton = document.getElementById('reset-button');
 
     // Array of image paths
-    const symbols = shuffleSelectArray([...imageSources]);
+    let symbols
 
     let cards = [];
     let flippedCards = [];
     let matchedPairs = 0;
 
+
+    // Reset the game
+    resetButton.addEventListener('click', initializeGame);
+
+    // Start the game on load
+    initializeGame();
+
+
     // Initialize the game
     function initializeGame() {
         gameContainer.innerHTML = '';
+        symbols = shuffleSelectArray([...imageSources]);
         cards = createCardDeck();
         shuffleArray(cards);
 
@@ -120,6 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to select and shuffle a number of elements from the array
     function shuffleSelectArray(images) {
+        console.log(numImagesSelect)
         shuffleArray(images);
         return images.slice(0, numImagesSelect);
     }
@@ -133,9 +150,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Reset the game
-    resetButton.addEventListener('click', initializeGame);
-
-    // Start the game on load
-    initializeGame();
-});
+}
