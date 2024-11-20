@@ -1,4 +1,3 @@
-// Define the list of image sources
 const imageDir = "../.."
 
 async function fetchImages() {
