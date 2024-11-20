@@ -81,7 +81,7 @@ function addListenersAndRender() {
     textInputs.forEach(tinput => {
         tinput.addEventListener("input", checkMatch);
     });
-    word-input
+    
     fillTextBoxes();
 };
 
