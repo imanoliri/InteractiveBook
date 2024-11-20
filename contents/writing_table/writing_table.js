@@ -1,48 +1,48 @@
-// Fetch word counts asynchronously and only then create Grid
-async function fetchCreateGrid() {
+async function fetchwWordCount() {
     try {
         const response = await fetch('./../../interactive_book_word_count.json');
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        const wordCount = await response.json();
+        wordCount = await response.json();
         console.log("Word counts fetched:", wordCount);
-
-        // Initialize the grid and text boxes with the processed words
-        createGrid(wordCount);
 
     } catch (error) {
         console.error("Error fetching word counts:", error);
     }
 }
 
-
 const charsToIgnore = [" ", ",", "-", "—", ";", ".", "'", "`", "´"];
 let numberOfColumns
+let wordCount
 let words
 let speakLettersWhenDropped = true;
 let speakWhenCorrectSolution = true;
 let currentElement
 let selectedLetter = null;
 
-fetchCreateGrid()
+
+document.addEventListener('DOMContentLoaded', () => {
+    fetchwWordCount().then(createTable);
+});
 
 
-function createGrid(wordCount) {
+
+function createTable() {
+    document.getElementById("checkSpeakLettersWhenDropped").checked = speakLettersWhenDropped;
+    document.getElementById("checkSpeakWordsWhenCorrect").checked = speakWhenCorrectSolution;
 
 
-    
-document.getElementById("checkSpeakLettersWhenDropped").checked = speakLettersWhenDropped;
-document.getElementById("checkSpeakWordsWhenCorrect").checked = speakWhenCorrectSolution;
+    numberOfColumns = 7
+    words = Object.keys(wordCount);
+    words = getWordsForGrid(Object.keys(wordCount).map(cleanWord), numberOfColumns);
+    document.documentElement.style.setProperty('--number-of-columns', numberOfColumns);
 
+    addListenersAndRender()
 
-numberOfColumns = 7
-words = getWordsForGrid(Object.keys(wordCount).map(cleanWord), numberOfColumns);
-document.documentElement.style.setProperty('--number-of-columns', numberOfColumns);
+}
 
-
-// Add event listeners for drag-and-drop interactions
-window.onload = function() {
+function addListenersAndRender() {
 
     // DRAG AND DROP
     const allCells = document.querySelectorAll(".grid div");
@@ -71,10 +71,8 @@ window.onload = function() {
     fillTextBoxes();
 };
 
-}
 
-
-function refreshChecboxes() {
+function refreshCheckboxes() {
     speakLettersWhenDropped = document.getElementById("checkSpeakLettersWhenDropped").checked;
     speakWhenCorrectSolution = document.getElementById("checkSpeakWordsWhenCorrect").checked;
 }

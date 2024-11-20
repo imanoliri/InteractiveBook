@@ -1,28 +1,34 @@
-async function fetchCreateWordCount() {
+async function fetchwWordCount() {
     try {
         const response = await fetch('./../../interactive_book_word_count.json');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const wordCount = await response.json();
+        
+        wordCount = await response.json();
 
         // Transform data into an array of objects
-        const words = Object.keys(wordCount).map(word => ({
+        words = Object.keys(wordCount).map(word => ({
             text: word,
             count: wordCount[word],
             size: wordCount[word]
         }));
 
         console.log("Word count data fetched:", wordCount);
-        console.log("Words transformed:", words);
 
-        createWordCloud(wordCount, words);
     } catch (error) {
         console.error('Error fetching JSON:', error);
     }
 }
 
-function createWordCloud(wordCount, words) {
+let wordCount
+let words
+
+document.addEventListener('DOMContentLoaded', () => {
+    fetchwWordCount().then(createWordCloud);
+});
+
+function createWordCloud() {
     const minCount = Math.min(...Object.values(wordCount));
     const maxCount = Math.max(...Object.values(wordCount));
 
@@ -83,12 +89,6 @@ function createWordCloud(wordCount, words) {
             });
     }
 
-    // Debounced resize event to optimize performance
-    window.addEventListener("resize", debounce(() => {
-        d3.select("svg").remove();
-        createWordCloud(wordCount, words);
-    }, 300));
 }
 
 
-fetchCreateWordCount();
