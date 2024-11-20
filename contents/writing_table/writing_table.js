@@ -31,6 +31,13 @@ document.addEventListener('DOMContentLoaded', () => {
 function createTable() {
     document.getElementById("checkSpeakLettersWhenDropped").checked = speakLettersWhenDropped;
     document.getElementById("checkSpeakWordsWhenCorrect").checked = speakWhenCorrectSolution;
+    document.getElementById("checkSpeakLettersWhenDropped").addEventListener('change', (event) => {
+        speakLettersWhenDropped = event.target.checked;
+    });
+    
+    document.getElementById("checkSpeakWordsWhenCorrect").addEventListener('change', (event) => {
+        speakWhenCorrectSolution = event.target.checked;
+    });
 
 
     numberOfColumns = 7
@@ -44,22 +51,21 @@ function createTable() {
 
 function addListenersAndRender() {
 
-    // DRAG AND DROP
-    const allCells = document.querySelectorAll(".grid div");
-    allCells.forEach(cell => {
-        cell.addEventListener("dragover", allowDrop);
-        cell.addEventListener("drop", drop);
-        cell.addEventListener("dblclick", handleDoubleClick);
-    });
 
-    // CLICK AND CLICK
+    // DRAG AND DROP + CLICK AND CLICK
+
+    // Letters
     const letterElements = document.querySelectorAll(".letter");
     letterElements.forEach(letter => {
+        letter.addEventListener("dragstart", drag); // Add click event to letters
         letter.addEventListener("click", handleClickLetter); // Add click event to letters
     });
 
-    const droppableCells = document.querySelectorAll(".grid div:not(.letter):not(.delete-cell)");
+    // Drop cells
+    const droppableCells = document.querySelectorAll(".grid div.droppable");
     droppableCells.forEach(cell => {
+        cell.addEventListener("dragover", allowDrop);
+        cell.addEventListener("drop", drop);
         cell.addEventListener("click", handleClickCell); // Add click event to droppable cells
         cell.addEventListener("dblclick", handleDoubleClick); // Double-click to clear
     });
@@ -68,6 +74,14 @@ function addListenersAndRender() {
     const emptyCell = document.querySelector(".delete-cell");
     emptyCell.setAttribute("draggable", "true");
     emptyCell.addEventListener("dragstart", drag);
+
+
+    // TextBoxes
+    const textInputs = document.querySelectorAll(".grid div.droppable");
+    textInputs.forEach(tinput => {
+        tinput.addEventListener("input", checkMatch);
+    });
+    word-input
     fillTextBoxes();
 };
 
@@ -139,7 +153,11 @@ function handleClickLetter(ev) {
 function handleClickCell(ev) {
     if (selectedLetter && ev.target.innerHTML === "") { // Only proceed if a letter is selected and the cell is empty
         ev.target.innerHTML = selectedLetter.innerHTML; // Place the selected letter in the cell
+        if (speakLettersWhenDropped) {
+            speak(selectedLetter.innerHTML)
+        }
         selectedLetter.classList.remove("selected"); // Remove selection highlight
+        
         selectedLetter = null; // Reset the selected letter
 
         // Find the input box in the same row and call checkMatch
