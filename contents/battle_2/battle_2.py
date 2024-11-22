@@ -60,9 +60,6 @@ def interactions_from_nodes_and_interactions(df_nodes, df_interactions, network)
             if id1 == id2:
                 continue
 
-            if id1 == 13 and id2 == 42:
-                patata = 1
-
             node_1 = df_nodes.loc[df_nodes.id == id1].iloc[0]
             node_2 = df_nodes.loc[df_nodes.id == id2].iloc[0]
 
