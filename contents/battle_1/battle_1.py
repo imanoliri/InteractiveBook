@@ -130,8 +130,8 @@ def valid_melee_interaction(
 def valid_archer_interaction(
     node_1, node_2, archer_distance_threshold: float = 4.5, gain_per_height: float = 0.5
 ) -> bool:
-    return (
-        distance(node_1, node_2) < archer_distance_threshold * (1 + max([0, (node_1.z - node_2.z)])) * gain_per_height
+    return distance(node_1, node_2) < archer_distance_threshold * (
+        1 + gain_per_height * max([0, (node_1.z - node_2.z)])
     )
 
 
