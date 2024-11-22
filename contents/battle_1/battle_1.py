@@ -55,10 +55,6 @@ def df_to_json(df, nr_cols=None) -> List[dict]:
 
 
 def interactions_from_nodes_and_interactions(df_nodes, df_interactions, network) -> pd.DataFrame:
-    pairs_to_debug = [[15, 10], [17, 11], [17, 13], [17, 10]]
-    pairs_to_debug = [[18, 11]]
-    pairs_to_debug = [[18, 12], [12, 18], [18, 5]]
-    pairs_to_debug = [[16, 8], [5, 16]]
     interactions = []
     for id1 in df_nodes.id:
         for id2 in df_nodes.id:
@@ -67,10 +63,7 @@ def interactions_from_nodes_and_interactions(df_nodes, df_interactions, network)
 
             node_1 = df_nodes.loc[df_nodes.id == id1].iloc[0]
             node_2 = df_nodes.loc[df_nodes.id == id2].iloc[0]
-            if [id1, id2] in pairs_to_debug:
-                print(node_1.x, node_1.y, node_2.x, node_2.y)
-                print(euclidean_distance(node_1.x, node_1.y, node_2.x, node_2.y))
-                patata = 1
+            
             if nodes_valid_interaction(node_1, node_2, df_interactions, network):
                 interactions.append([id1, id2])
 
