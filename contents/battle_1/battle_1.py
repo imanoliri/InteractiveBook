@@ -5,8 +5,9 @@ from typing import List
 
 
 def main():
-    battle_dir = "contents/battle_1"
-    excel_file = f"{battle_dir}/battle_1.xlsx"
+    battle_name = "battle_1"
+    battle_dir = f"contents/{battle_name}"
+    excel_file = f"{battle_dir}/{battle_name}.xlsx"
 
     df_nodes = pd.read_excel(excel_file, "nodes")
     df_interactions = pd.read_excel(excel_file, "interactions")
@@ -24,7 +25,7 @@ def main():
 
         dfn = pd.DataFrame()
         if not df_interactions.empty:
-            dfn = df_interactions.loc[~df_interactions.loc[:, network].isna()]  # [*df_interactions.columns[:2], n]
+            dfn = df_interactions.loc[~df_interactions.loc[:, network].isna()]
 
         network_interactions = interactions_from_nodes_and_interactions(df_nodes, dfn, network)
 
@@ -63,7 +64,7 @@ def interactions_from_nodes_and_interactions(df_nodes, df_interactions, network)
 
             node_1 = df_nodes.loc[df_nodes.id == id1].iloc[0]
             node_2 = df_nodes.loc[df_nodes.id == id2].iloc[0]
-            
+
             if nodes_valid_interaction(node_1, node_2, df_interactions, network):
                 interactions.append([id1, id2])
 
@@ -97,8 +98,6 @@ def nodes_valid_interaction(node_1, node_2, df_interactions, network) -> bool:
 
 
 def nodes_in_interaction(node_1, node_2, interaction) -> bool:
-    if ["h4", "all"] == interaction[["from", "to"]].values.tolist():
-        patata = 1
     if node_in_interaction(node_1, interaction["from"]) and node_in_interaction(node_2, interaction["to"]):
         return True
     return False
