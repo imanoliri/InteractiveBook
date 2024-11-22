@@ -1,167 +1,158 @@
 import pandas as pd
-import json
-import os
 import math
-from itertools import product
-
-
-def read_json(filepath):
-    with open(filepath, "r") as file:
-        return json.load(file)
-
-
-def get_battle_game_xlsx_links(base_path):
-    return [
-        f"{base_path}/{content_name}/{content_name}.xlsx"
-        for content_name in os.listdir(base_path)
-        if os.path.isfile(f"{base_path}/{content_name}/{content_name}.xlsx")
-        and "battle_game" in content_name
-    ]
-
-
-def nodes_to_json(df):
-    return [{"id": int(i), "x": x, "y": y} for _, (i, x, y) in df.iterrows()]
-
-
-def units_to_json(df):
-    return [
-        {
-            "id": int(i),
-            "team": int(t),
-            "name": n,
-            "type": y,
-            "attack": int(a),
-            "defense": int(d),
-            "health": int(h),
-            "node": int(o),
-            "min_deployment": int(md) if not pd.isnull(md) else md,
-            "max_deployment": int(Md) if not pd.isnull(Md) else Md,
-        }
-        for _, (i, t, n, y, a, d, h, o, md, Md) in df.iterrows()
-    ]
-
-
-def pairs_nodes_closer_than(nodes, distance_function, max_distance):
-    pairs = []
-    for n1 in nodes:
-        for n2 in nodes:
-            if n1["id"] == n1["id"]:
-                continue
-            if distance_function(n1["x"], n1["y"], n2["x"], n2["y"]) < max_distance:
-                pairs.append([n1, n2])
-    return pairs
-
-
-def euclidean_distance(x1, y1, x2, y2):
-    return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-
-
-def manhattan_distance(x1, y1, x2, y2):
-    return abs(x2 - x1) + abs(y2 - y1)
-
-
-def x_distance(x1, y1, x2, y2):
-    return abs(x2 - x1)
-
-
-def y_distance(x1, y1, x2, y2):
-    return abs(y2 - y1)
-
-
-def node_in_coord_range(node, coord_range, coord: str):
-    return coord_range[0] < node[0][coord] < coord_range[1]
-
-
-def get_pairs(df, df_other=None, add_distances: bool = True):
-    if df_other is None:
-        df_other = df
-
-    pairs = []
-    columns = ["id1", "x1", "y1", "id2", "x2", "y2"]
-    for vals1, vals2 in product(
-        df.itertuples(index=False, name=None),
-        df_other.itertuples(index=False, name=None),
-    ):
-        pairs.append([*vals1, *vals2])
-
-    df_pairs = pd.DataFrame(pairs, columns=columns)
-    df_pairs = df_pairs[df_pairs["id1"] != df_pairs["id2"]]
-
-    if add_distances:
-        df_pairs["euclidean_distance"] = df_pairs.apply(
-            lambda row: euclidean_distance(*row[["x1", "y1", "x2", "y2"]]), axis=1
-        )
-        df_pairs["manhattan_distance"] = df_pairs.apply(
-            lambda row: manhattan_distance(*row[["x1", "y1", "x2", "y2"]]), axis=1
-        )
-        df_pairs["x_distance"] = df_pairs.apply(
-            lambda row: x_distance(*row[["x1", "y1", "x2", "y2"]]), axis=1
-        )
-        df_pairs["y_distance"] = df_pairs.apply(
-            lambda row: y_distance(*row[["x1", "y1", "x2", "y2"]]), axis=1
-        )
-
-    return df_pairs
-
-
-def save_to_json(data, filepath):
-    with open(filepath, "w", encoding="utf-8") as file:
-        json.dump(data, file)
+import json
+from typing import List
 
 
 def main():
-    battle_game_xlsx = "contents/battle_game_2/battle_game_2.xlsx"
+    battle_name = "battle_2"
+    battle_dir = f"contents/{battle_name}"
+    excel_file = f"{battle_dir}/{battle_name}.xlsx"
 
-    df_nodes = pd.read_excel(battle_game_xlsx, sheet_name="Nodes")
-    save_to_json(
-        nodes_to_json(df_nodes),
-        battle_game_xlsx.replace(".xlsx", "_nodes.json"),
+    df_nodes = pd.read_excel(excel_file, "nodes")
+    df_interactions = pd.read_excel(excel_file, "interactions")
+    df_units = pd.read_excel(excel_file, "units")
+
+    networks = dict.fromkeys(["melee", "archer", "flier"])
+
+    with open(f"{battle_dir}/nodes.json", "w") as fp:
+        json.dump(nodes_to_json(df_nodes), fp)
+
+    with open(f"{battle_dir}/units.json", "w") as fp:
+        json.dump(units_to_json(df_units), fp)
+
+    for network in networks:
+
+        dfn = pd.DataFrame()
+        if not df_interactions.empty:
+            dfn = df_interactions.loc[~df_interactions.loc[:, network].isna()]
+
+        network_interactions = interactions_from_nodes_and_interactions(df_nodes, dfn, network)
+
+        if network == "archer":  # Remove archer interactions if there is an equivalent melee one to avoid redundancy
+            melee_network = networks["melee"]
+            network_interactions = [i for i in network_interactions if i not in melee_network]
+
+        networks[network] = network_interactions
+        with open(f"{battle_dir}/{network}_interactions.json", "w") as fp:
+            json.dump(network_interactions, fp)
+
+
+def nodes_to_json(df_nodes) -> List[dict]:
+    return df_to_json(df_nodes, 3)
+
+
+def units_to_json(df_units) -> List[dict]:
+    return df_to_json(df_units)
+
+
+def df_to_json(df, nr_cols=None) -> List[dict]:
+    cols = df.columns
+    if nr_cols is not None:
+        cols = df.columns[:nr_cols]
+    return [dict(zip(cols, [None if pd.isnull(v) else v for v in vals])) for vals in df.loc[:, cols].values]
+
+
+def interactions_from_nodes_and_interactions(df_nodes, df_interactions, network) -> pd.DataFrame:
+    interactions = []
+    for id1 in df_nodes.id:
+        for id2 in df_nodes.id:
+            if id1 == id2:
+                continue
+
+            if id1 == 13 and id2 == 42:
+                patata = 1
+
+            node_1 = df_nodes.loc[df_nodes.id == id1].iloc[0]
+            node_2 = df_nodes.loc[df_nodes.id == id2].iloc[0]
+
+            if nodes_valid_interaction(node_1, node_2, df_interactions, network):
+                interactions.append([id1, id2])
+
+    return interactions
+
+
+def nodes_valid_interaction(node_1, node_2, df_interactions, network) -> bool:
+    networks = network
+    if isinstance(network, str):
+        networks = [network]
+
+    if df_interactions.empty:  # If not manual interactions, just use network's validation function
+        return validation_functions[network](node_1, node_2)
+
+    # If no manual interactions found for this pair, just use network's validation function
+    validity = any(validation_functions[n](node_1, node_2) for n in networks)
+    for i, interaction in df_interactions.iterrows():
+        if not nodes_in_interaction(node_1, node_2, interaction):
+            continue
+
+        valid_flags = interaction[networks]
+        if valid_flags.min() == -2:  # Force false! Overcomes any further interaction rules!
+            return False
+        if valid_flags.max() == +2:  # Force true! Overcomes any further interaction rules!
+            return True
+        if valid_flags.min() == -1:  # False! Overcomes any other rules in the selected interaction!
+            validity = False
+        if valid_flags.max() == +1:  # Force true! Overcomes other rules in the selected interaction!
+            validity = True
+    return validity
+
+
+def nodes_in_interaction(node_1, node_2, interaction) -> bool:
+    if node_in_interaction(node_1, interaction["from"]) and node_in_interaction(node_2, interaction["to"]):
+        return True
+    return False
+
+
+def node_in_interaction(node, inter) -> bool:
+    ints = inter.split(",")
+    group_columns = [c for c in node.index if c.startswith("group_")]
+    if node.id in ints or any(g in ints or "all" in ints for g in node[group_columns] if not pd.isnull(g)):
+        return True
+    return False
+
+
+def valid_melee_interaction(
+    node_1, node_2, melee_height_threshold: float = 2, melee_distance_threshold: float = 4.5
+) -> bool:
+    if abs(node_1.z - node_2.z) > melee_height_threshold:
+        return False
+    return distance(node_1, node_2) < melee_distance_threshold
+
+
+def valid_archer_interaction(
+    node_1, node_2, archer_distance_threshold: float = 4.5, gain_per_height: float = 0.5
+) -> bool:
+    return distance(node_1, node_2) < archer_distance_threshold * (
+        1 + gain_per_height * max([0, (node_1.z - node_2.z)])
     )
 
-    save_to_json(
-        units_to_json(pd.read_excel(battle_game_xlsx, sheet_name="Units")),
-        battle_game_xlsx.replace(".xlsx", "_units.json"),
-    )
 
-    df_nodes_valley = df_nodes.loc[(3 <= df_nodes.x) & (df_nodes.x <= 5)]
-    df_nodes_pairs_valley = get_pairs(df_nodes_valley)
-    melee_network_valley = (
-        df_nodes_pairs_valley.loc[df_nodes_pairs_valley.euclidean_distance < 1.5]
-        .loc[:, ["id1", "id2"]]
-        .values.tolist()
-    )
-    save_to_json(
-        melee_network_valley,
-        battle_game_xlsx.replace(".xlsx", "_melee_network.json"),
-    )
+def valid_flier_interaction(node_1, node_2, flier_distance_threshold: float = 10.0) -> bool:
+    return distance_3d(node_1, node_2) < flier_distance_threshold
 
-    df_nodes_mountain_left = df_nodes.loc[df_nodes.x <= 2]
-    df_nodes_mountain_2_valley_left = get_pairs(df_nodes_mountain_left, df_nodes_valley)
-    df_archer_network_left = df_nodes_mountain_2_valley_left.loc[
-        (df_nodes_mountain_2_valley_left.x_distance <= 2)
-        & (df_nodes_mountain_2_valley_left.y_distance <= 2)
-    ]
-    archer_network_mountain_left = (
-        df_archer_network_left.loc[:, ["id1", "id2"]].values.tolist()
-    ) + (df_archer_network_left.loc[:, ["id2", "id1"]].values.tolist())
 
-    df_nodes_mountain_right = df_nodes.loc[6 <= df_nodes.x]
-    df_nodes_mountain_2_valley_right = get_pairs(
-        df_nodes_mountain_right, df_nodes_valley
-    )
-    df_archer_network_right = df_nodes_mountain_2_valley_right.loc[
-        (df_nodes_mountain_2_valley_right.x_distance <= 2)
-        & (df_nodes_mountain_2_valley_right.y_distance <= 2)
-    ]
+def distance(node_1, node_2) -> float:
+    return euclidean_distance(node_1.x, node_1.y, node_2.x, node_2.y)
 
-    archer_network_mountain_right = (
-        df_archer_network_right.loc[:, ["id1", "id2"]].values.tolist()
-    ) + (df_archer_network_right.loc[:, ["id2", "id1"]].values.tolist())
 
-    save_to_json(
-        archer_network_mountain_left + archer_network_mountain_right,
-        battle_game_xlsx.replace(".xlsx", "_archer_network.json"),
-    )
+def distance_3d(node_1, node_2) -> float:
+    return euclidean_distance_3d(node_1.x, node_1.y, node_1.z, node_2.x, node_2.y, node_2.z)
+
+
+def euclidean_distance(x1, y1, x2, y2) -> float:
+    return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+
+
+def euclidean_distance_3d(x1, y1, z1, x2, y2, z2) -> float:
+    return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
+
+
+validation_functions = {
+    "melee": valid_melee_interaction,
+    "archer": valid_archer_interaction,
+    "flier": valid_flier_interaction,
+}
 
 
 if __name__ == "__main__":

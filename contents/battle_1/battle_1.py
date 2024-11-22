@@ -37,8 +37,6 @@ def main():
         with open(f"{battle_dir}/{network}_interactions.json", "w") as fp:
             json.dump(network_interactions, fp)
 
-        patata = 1
-
 
 def nodes_to_json(df_nodes) -> List[dict]:
     return df_to_json(df_nodes, 3)
