@@ -801,13 +801,13 @@ document.getElementById("mapInfoButton").addEventListener("click", function() {
     const mapInfoText = document.getElementById("mapInfoText");
 
     mapInfoText.innerHTML = `
-        Welcome to Durin's Chasm! Deep of the mountain, the dwarves mine in search of the gold, gems and stone. Unfortunately, they discover a nest of goblins and retreat to the fort at Durin's Chasm to defend from the invasion.<br><br>
-        
-        The goblins will try to cross the chasm using the three bridges in beige. The mountain dwarves and an ally dragon rider (green team) must work together to repell the attack of the goblin invaders (orange).<br><br>
+        Welcome to Greystone Pass! The evil Lich King's army is marching towards the Valley of Dragons and all efforts to stop them by the Order of the Dragon Knights have been in vain.<br><br>
 
-        Optional victory condition: don't let a goblin unit stay more than two consecutive turns on any of the towers.<br><br>
+        Gather your knights at the Greystone Pass to ambush the advancing army before they can reach castle Tarn. Protect your knights in the peaks (light grey) and attack where the enemy is most vulnerable. Beware the Lich King, because it can cast deadly ranged magic attacks!<br><br>
 
-        Hardcore victory condition: don't let a goblin unit step at the other side of the bridges.
+        Optional victory condition: don't let more than 3 units (apart from the Lich King) reach the south end of the map.<br><br>
+
+        Hardcore victory condition: don't let any unit other than the Lich King reac the south end of the map.
     `;
     modal.style.display = "flex";
 });
