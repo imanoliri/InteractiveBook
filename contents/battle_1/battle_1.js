@@ -76,7 +76,7 @@ function createBattle() {
     // Nodes & units
     deploymentLevel = parseInt(slider.value, 10);
     nodes = createNodes(nodes);
-    units = createUnits(units);
+    units = createUnits(units, deploymentLevel);
 
     
     // Networks
@@ -109,6 +109,7 @@ function invertYScale(nodes) {
 }
 
 function createUnits(units) {
+    units = units.filter(unit => (unit.min_deployment <= deploymentLevel) & (deploymentLevel <=  unit.max_deployment));
     return units
 }
 
