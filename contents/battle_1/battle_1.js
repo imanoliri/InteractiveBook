@@ -1,5 +1,62 @@
+async function fetchBattleData() {
+    try {
 
-document.addEventListener("DOMContentLoaded", function () {
+        //files = ['nodes.json', 'units.json', 'melee_interactions.json', 'archer_interactions.json', 'flier_interactions.json']
+
+        
+        const response_nodes = await fetch('nodes.json');
+        if (!response_nodes.ok) {
+            throw new Error(`HTTP error! status: ${response_nodes.status}`);
+        }
+        const response_units = await fetch('units.json');
+        if (!response_units.ok) {
+            throw new Error(`HTTP error! status: ${response_units.status}`);
+        }
+        const response_meleeNetwork = await fetch('melee_interactions.json');
+        if (!response_meleeNetwork.ok) {
+            throw new Error(`HTTP error! status: ${response_meleeNetwork.status}`);
+        }
+        const response_archerNetwork = await fetch('archer_interactions.json');
+        if (!response_archerNetwork.ok) {
+            throw new Error(`HTTP error! status: ${response_archerNetwork.status}`);
+        }
+        const response_flierNetwork = await fetch('flier_interactions.json');
+        if (!response_flierNetwork.ok) {
+            throw new Error(`HTTP error! status: ${response_flierNetwork.status}`);
+        }
+
+
+
+        nodes = await response_nodes.json();
+        console.log("Nodes fetched:", nodes);
+        units = await response_units.json();
+        console.log("Units fetched:", units);
+
+        meleeNetwork = await response_meleeNetwork.json();
+        console.log("meleeNetwork fetched:", meleeNetwork);
+        archerNetwork = await response_archerNetwork.json();
+        console.log("archerNetwork fetched:", archerNetwork);
+        flierNetwork = await response_flierNetwork.json();
+        console.log("flierNetwork fetched:", flierNetwork);
+
+    } catch (error) {
+        console.error('Error fetching JSON:', error);
+    }
+}
+
+let deploymentLevel
+let nodes
+let units
+
+let meleeNetwork
+let archerNetwork
+let flierNetwork
+
+document.addEventListener('DOMContentLoaded', () => {
+    fetchBattleData().then(createBattle);
+});
+    
+function createBattle() {
 
     // Get HTML elements
     const battlefield = document.getElementById("battlefield");
@@ -17,20 +74,18 @@ document.addEventListener("DOMContentLoaded", function () {
     setDifficultyButton.addEventListener("click", function() {
         location.reload();
     });
-
-
     
 
     // Nodes & units
-    let deploymentLevel = parseInt(slider.value, 10);
-    let nodes = createNodes();
-    let units = createUnits(deploymentLevel);
+    deploymentLevel = parseInt(slider.value, 10);
+    nodes = createNodes(nodes);
+    units = createUnits(deploymentLevel, units);
 
     
     // Networks
-    let meleeNetwork = createMeleeNetwork();
-    let archerNetwork = createArcherNetwork();
-    let flierNetwork = createFlierNetwork();
+    meleeNetwork = createMeleeNetwork(meleeNetwork);
+    archerNetwork = createArcherNetwork(archerNetwork);
+    flierNetwork = createFlierNetwork(flierNetwork);
 
     
     // Set CSS variables
@@ -39,30 +94,14 @@ document.addEventListener("DOMContentLoaded", function () {
     let nodeSize = vhToPixels(`${nodeSizePercentage}vh`);
     setCSSVariables(nodeSizePercentage)
 
-function setCSSVariables(nodeSizePercentage) {
-    document.documentElement.style.setProperty('--node-size', `${nodeSizePercentage}vh`);
-    document.documentElement.style.setProperty('--unit-size', `${nodeSizePercentage}vh`);
-    document.documentElement.style.setProperty('--node-size-highlight', `${nodeSizePercentage*1.2}vh`);
-    document.documentElement.style.setProperty('--unit-size-highlight', `${nodeSizePercentage*1.2}vh`);
-}
-
     drawAll(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize)
-});
+}
 
 
 // CREATE functions
-function createNodes() {
-    let nodes = [
-        { id: 1, x: 1, y: 14 }, { id: 2, x: 3, y: 14 },
-        { id: 3, x: 9, y: 14 }, { id: 4, x: 12, y: 14 },
-        { id: 5, x: 2, y: 12 }, { id: 6, x: 7, y: 12 },
-        { id: 7, x: 11, y: 12 }, { id: 8, x: 3, y: 8 },
-        { id: 9, x: 7, y: 8 }, { id: 10, x: 12, y: 8 },
-        { id: 11, x: 5, y: 5 }, { id: 12, x: 9, y: 6 },
-        { id: 13, x: 13, y: 5.5 }, { id: 14, x: 11.5, y: 4.5 },
-        { id: 15, x: 15, y: 4 }, { id: 16, x: 13, y: 2 },
-        { id: 17, x: 16, y: 1 }
-    ]
+function createNodes(nodes) {
+    return invertYScale(nodes) 
+    nodes = [{id: 1.0, x: 1.0, y: 14.0}, {id: 2.0, x: 3.0, y: 14.0}, {id: 3.0, x: 5.0, y: 14.0}, {id: 4.0, x: 9.0, y: 14.0}, {id: 5.0, x: 12.0, y: 14.0}, {id: 6.0, x: 2.0, y: 12.0}, {id: 7.0, x: 7.0, y: 12.0}, {id: 8.0, x: 11.0, y: 12.0}, {id: 9.0, x: 3.0, y: 8.0}, {id: 10.0, x: 7.0, y: 8.0}, {id: 11.0, x: 12.0, y: 8.0}, {id: 12.0, x: 5.0, y: 5.0}, {id: 13.0, x: 9.0, y: 6.0}, {id: 14.0, x: 13.0, y: 5.5}, {id: 15.0, x: 11.5, y: 4.5}, {id: 16.0, x: 15.0, y: 4.0}, {id: 17.0, x: 13.0, y: 2.0}, {id: 18.0, x: 16.0, y: 1.0}]    
     return invertYScale(nodes)
 }
 
@@ -74,9 +113,10 @@ function invertYScale(nodes) {
     }));
 }
 
-function createUnits(deploymentLevel) {
+function createUnits(deploymentLevel, units) {
+    return units
     const dragonRiderHealth = 12 - 2 * Math.max((deploymentLevel - 2), 0);
-    let units =  [
+    units =  [
         { id: 1, team: 2, name: "Goblin Archer", type: "A", attack: 2, defense: 0, health: 4, node: 1, deployment: 1 },
         { id: 2, team: 2, name: "Goblin Warrior", type: "M", attack: 2, defense: 1, health: 4, node: 2, deployment: 1 },
         { id: 3, team: 2, name: "Goblin Archer", type: "A", attack: 2, defense: 0, health: 4, node: 3, deployment: 1 },
@@ -99,58 +139,17 @@ function createUnits(deploymentLevel) {
     return units
 }
 
-function createMeleeNetwork() {
-    return [
-        ...createPairs(1, [5, 2]),
-        ...createPairs(2, [1, 5, 6, 3]),
-        ...createPairs(3, [2, 6, 7, 4]),
-        ...createPairs(4, [3, 7]),
-        ...createPairs(5, [1, 2, 8]),
-        ...createPairs(6, [2, 3, 9]),
-        ...createPairs(7, [3, 4, 10]),
-        ...createPairs(8, [5, 11, 9]),
-        ...createPairs(9, [6, 8, 11, 12]),
-        ...createPairs(10, [7, 12, 13]),
-        ...createPairs(11, [8, 9, 12]),
-        ...createPairs(12, [11, 9, 10, 13, 14]),
-        ...createPairs(13, [10, 12, 14, 15]),
-        ...createPairs(14, [12, 13, 16]),
-        ...createPairs(15, [14, 13, 16, 17]),
-        ...createPairs(16, [14, 13, 15, 17]),
-        ...createPairs(17, [15, 16])
-    ]
+function createMeleeNetwork(meleeNetwork) {
+    return meleeNetwork
 }
 
-function createArcherNetwork() {
-    return [
-        [5, 6],
-        [6, 5], [6, 7],
-        [7, 6],
-        [8, 9],
-        [9, 8], [9, 10],
-        [10, 9],
-        ...createPairs(10, [14]),
-        ...createPairs(12, [13]),
-        ...createPairs(11, [14]),
-        ...createPairs(14, [10, 15]),
-        ...createPairs(13, [11, 12]),
-        ...createPairs(15, [12, 10]),
-        ...createPairs(16, [12, 10, 13])
-    ]
+function createArcherNetwork(archerNetwork) {
+    return archerNetwork
+
 }
 
-function createFlierNetwork() {
-    return [
-        ...createPairs(1, [3, 4, 11, 12, 13, 14, 17]),
-        ...createPairs(2, [4, 11, 12, 13, 14, 17]),
-        ...createPairs(3, [1, 11, 12, 13, 14, 17]),
-        ...createPairs(4, [1, 2, 11, 12, 13, 14, 17]),
-        ...createPairs(11, [1, 2, 3, 4, 13, 14, 17]),
-        ...createPairs(12, [1, 2, 3, 4, 17]),
-        ...createPairs(13, [1, 2, 3, 4, 11, 17]),
-        ...createPairs(14, [1, 2, 3, 4, 11, 17]),
-        ...createPairs(17, [1, 2, 3, 4, 11, 12, 13, 14])
-    ]
+function createFlierNetwork(flierNetwork) {
+    return flierNetwork
 }
 
 function createPairs(element, list) {
@@ -179,6 +178,15 @@ function vhToPixels(value) {
     const pixels = (window.innerHeight * numericValue) / 100;
     return pixels;
 }
+
+
+function setCSSVariables(nodeSizePercentage) {
+    document.documentElement.style.setProperty('--node-size', `${nodeSizePercentage}vh`);
+    document.documentElement.style.setProperty('--unit-size', `${nodeSizePercentage}vh`);
+    document.documentElement.style.setProperty('--node-size-highlight', `${nodeSizePercentage*1.2}vh`);
+    document.documentElement.style.setProperty('--unit-size-highlight', `${nodeSizePercentage*1.2}vh`);
+}
+
 
 // DRAW functions
 function drawAll(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize){
