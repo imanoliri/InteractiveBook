@@ -843,42 +843,23 @@ document.getElementById("instructionsButton").addEventListener("click", function
     const modal = document.getElementById("instructionsModal");
     const instructionsText = document.getElementById("instructionsText");
 
-    instructionsText.innerHTML = `
-        Welcome to Battle! This is a tactics battlefield game where two or more teams clash in a turn-based battle until one side has no units left. Each team is controlled by one human player, in a shared PC or tablet, just like a tabletop game. The players can decide on a different victory condition and some maps propose ideas. Master your strategy, plan your moves, and outwit your opponent to emerge victorious!<br><br>
-
-        <strong>Objective</strong><br>
-        The aim of the game is to eliminate all enemy units and be the last team standing. Each unit has attributes that define its strength and behavior on the battlefield, including attack, defense, health, and type. Utilize each unit’s abilities wisely to gain the upper hand.<br><br>
-
-
-        <strong>Game Mechanics</strong><ul>
-        <li><strong>Define rules:</strong> Players should set some game rules beforehand: who starts playing first, how many units per turn can each team move, can the units move and shoot, can you use two actions in a single unit to move it two times, special victory conditions, etc
-        <li><strong>Select difficulty/deployment level:</strong>  Each level has usually various levels of difficulty. 1 will be easier for the green, 3 will be easier for the orange. This controls how many units are deployed for each team ("deployment level" in the table)
-        <li><strong>Taking Turns:</strong> Players alternate turns, moving the allow number of units as specified in the first point "Define rules" by drag and dropping them. Notice the drawn networks and the type of unit to know where to move, but if you hover your mouse, the nodes where your unit can move or attack will be highlighted as a hint.
-        <li><strong>Dragging and Dropping Units:</strong><ul>
-          <li>Drag a unit to a valid new node to reposition it.
-          <li>If the target node is empty, your unit moves to occupy it.
-          <li>If a friendly unit occupies the target node, they swap places.
-          <li>If the target node has an enemy, combat occurs according to the type of the attacking unit.<br><br>
-          </ul>
-        </ul>
-
-        <strong>Unit Attributes:</strong><ul>
-           <li><strong>Attack:</strong> How much damage (in health points) the unit inflicts when attacking.
-           <li><strong>Defense:</strong> How many damage points the unit can substract from incoming attacks.
-           <li><strong>Health:</strong> The unit's life points. If this reaches 0, the unit is defeated.
-           <li><strong>Type:</strong> Units can be of type "M" (Melee), "A" (Archer), or "F" (Flier), which determine their movement and attack capabilities.<br><br>
-        </ul>
-        <strong>Types of Units:</strong><ul>
-           <li><strong>Melee Units (M) (red ring and network):</strong> Move and attack using the Melee Network (solid red lines). If you drag a melee unit to an enemy, a fight to the death begins, with attacks alternating until one unit is defeated. The attacker strikes first, dealing damage as (attacker's attack - defender's defense), with a minimum of 1 damage. If the attacker wins, it takes the place of the defeated defender.
-           <li><strong>Archer Units (A) (green ring and network):</strong> Move using the Melee Network and attacks using both the Melee the Archer Network (dashed green lines). When dragged to an enemy, an archer performs a single shot, dealing damage once with the previous formula without receiving damage in return.
-           <li><strong>Flier Units (F) (blue ring and network):</strong> Move and attack like melee units but can use both the Melee and the Flier Network (fine curved blue lines). Fliers can move more freely across the battlefield.<br><br>
-        </ul>
-
-
-        <strong>Strategies</strong><br>
-        Use melee units to engage directly and be aggresive, archers for ranged attacks to whittle the enemy down without taking damage, and fliers for superior mobility. Plan carefully and outmaneuver your opponent to win!
-    `;
-    modal.style.display = "flex";
+    // Fetch the HTML file and insert its content into the modal
+    fetch('battle_instructions.html')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(html => {
+            instructionsText.innerHTML = html; // Set the modal content
+            modal.style.display = "flex";     // Show the modal
+        })
+        .catch(error => {
+            console.error('Error loading', error);
+            mapInfoText.innerHTML = `<p>Failed to load.</p>`;
+            modal.style.display = "flex";
+        });
 });
 
 document.getElementById("closeInstructionsModal").addEventListener("click", function() {
@@ -890,16 +871,23 @@ document.getElementById("mapInfoButton").addEventListener("click", function() {
     const modal = document.getElementById("mapInfoModal");
     const mapInfoText = document.getElementById("mapInfoText");
 
-    mapInfoText.innerHTML = `
-        Welcome to Durin's Chasm! Deep of the mountain, the dwarves mine in search of the gold, gems and stone. Unfortunately, they discover a nest of goblins and retreat to the fort at Durin's Chasm to defend from the invasion.<br><br>
-        
-        The goblins will try to cross the chasm using the three bridges in beige. The mountain dwarves and an ally dragon rider (green team) must work together to repell the attack of the goblin invaders (orange).<br><br>
-
-        Optional victory condition: don't let a goblin unit stay more than two consecutive turns on any of the towers.<br><br>
-
-        Hardcore victory condition: don't let a goblin unit step at the other side of the bridges.
-    `;
-    modal.style.display = "flex";
+    // Fetch the HTML file and insert its content into the modal
+    fetch('battle_1_map_info.html')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(html => {
+            mapInfoText.innerHTML = html; // Set the modal content
+            modal.style.display = "flex";     // Show the modal
+        })
+        .catch(error => {
+            console.error('Error loading', error);
+            mapInfoText.innerHTML = `<p>Failed to load.</p>`;
+            modal.style.display = "flex";
+        });
 });
 
 document.getElementById("closeMapInfoModal").addEventListener("click", function() {
