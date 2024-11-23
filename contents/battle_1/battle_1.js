@@ -270,7 +270,7 @@ return networkDrawingConfig
 }
 
 function drawMobileElements(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize){
-
+    units = units.filter(u => u.health > 0);
     drawUnits(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNetwork);
     drawUnitsTable(units);
     updateHealthBar(units);
@@ -556,7 +556,7 @@ function handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork
     });
 }
 
-function handleNodeLeaveHighlight(event) {
+function handleNodeLeaveHighlight() {
     // Remove highlight from all nodes
     document.querySelectorAll('.highlight').forEach(node => {
         node.classList.remove('highlight');
@@ -584,6 +584,7 @@ function handleDragOver(event) {
 
 function handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize) {
     event.preventDefault();
+    units = units.filter(u => u.health > 0);
     const targetNodeId = event.target.dataset.nodeId; // Get the ID of the node being dropped on (it can come from the node itself or from a unit that belongs to it)
 
     if (draggedUnitId && targetNodeId) {
@@ -643,17 +644,16 @@ function networkContainsConnection(network, x, y) {
 
 // CLICK AND CLICK callbacks
 let selectedUnitId = null; // Variable to store the ID of the selected unit
+let clickedUnit = null;
 
 // Function to handle click on a unit
 function handleUnitClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize) {
-    console.log(selectedUnitId)
+    units.filter(u => u.health > 0)
     // If a unit is already selected and the user clicks on another unit of the same team, swap positions
     if (selectedUnitId) {
-        console.log(selectedUnitId)
         const clickedUnitId = event.target.dataset.unitId;
-        const clickedUnit = units.find(unit => unit.id == clickedUnitId);
+        clickedUnit = units.find(unit => unit.id == clickedUnitId);
         const selectedUnit = units.find(unit => unit.id == selectedUnitId);
-        console.log(clickedUnitId)
 
         if (clickedUnit && selectedUnit) {
             if (selectedUnit.team === clickedUnit.team) {
@@ -684,6 +684,7 @@ function handleUnitClick(event, nodes, units, meleeNetwork, archerNetwork, flier
 
 // Function to handle click on a node
 function handleNodeClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize) {
+    units = units.filter(u => u.health > 0);
     if (selectedUnitId) {
         const targetNodeId = parseInt(event.target.dataset.nodeId);
         const selectedUnit = units.find(unit => unit.id == selectedUnitId);
