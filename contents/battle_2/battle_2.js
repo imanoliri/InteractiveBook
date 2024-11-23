@@ -49,29 +49,20 @@ let meleeNetwork
 let archerNetwork
 let flierNetwork
 
+let slider
+let nodeSize
+let networkDrawingConfig
+
+
+
+
 document.addEventListener('DOMContentLoaded', () => {
     fetchBattleData().then(createBattle);
 });
     
 function createBattle() {
 
-    // Get HTML elements
-    const battlefield = document.getElementById("battlefield");
-    const slider = document.getElementById("difficultySlider");
-    const sliderValue = document.getElementById("sliderValue");
-    const setDifficultyButton = document.getElementById("setDifficultyButton");
-    const logTextbox = document.getElementById("logTextbox");
-    logTextbox.value = ""
-
-    // Add their listeners
-    sliderValue.textContent =  parseInt(slider.value, 10);
-    slider.addEventListener("input", function() {
-        sliderValue.textContent = slider.value;
-    });
-    setDifficultyButton.addEventListener("click", function() {
-        location.reload();
-    });
-    
+    slider = defineHtmlElementsCallbacks()
 
     // Nodes & units
     deploymentLevel = parseInt(slider.value, 10);
@@ -87,11 +78,54 @@ function createBattle() {
     
     // Set CSS variables
     const numberNodes = nodes.length;
-    const nodeSizePercentage = 1.8 * 100/Math.sqrt(numberNodes**2);
-    let nodeSize = vhToPixels(`${nodeSizePercentage}vh`);
+    const nodeSizePercentage = 100/Math.sqrt(numberNodes**2);
+    nodeSize = vhToPixels(`${nodeSizePercentage}vh`);
     setCSSVariables(nodeSizePercentage)
 
+    // Define Network Drawing Configs
+    networkDrawingConfig = defineNetworkDrawingConfig(meleeNetwork, archerNetwork, flierNetwork)
+
     drawAll(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize)
+}
+
+
+function defineHtmlElementsCallbacks() {
+    // Get HTML elements
+    const slider = document.getElementById("difficultySlider");
+    const sliderValue = document.getElementById("sliderValue");
+    const setDifficultyButton = document.getElementById("setDifficultyButton");
+    const logTextbox = document.getElementById("logTextbox");
+    logTextbox.value = ""
+    const checkboxMeleeNetwork = document.getElementById('meleeNetwork');
+    const checkboxArcherNetwork = document.getElementById('archerNetwork');
+    const checkboxFlierNetwork = document.getElementById('flierNetwork');
+	
+    // Add their listeners
+    sliderValue.textContent =  parseInt(slider.value, 10);
+    slider.addEventListener("input", function() {
+        sliderValue.textContent = slider.value;
+    });
+    setDifficultyButton.addEventListener("click", function() {
+        location.reload();
+    });
+    checkboxMeleeNetwork.addEventListener('change', toggleNetwork);
+    checkboxArcherNetwork.addEventListener('change', toggleNetwork);
+    checkboxFlierNetwork.addEventListener('change', toggleNetwork);
+
+    return slider
+}
+
+function toggleNetwork(e) {
+    checkbox = e.target
+    if (checkbox.checked) {
+        createConnections(
+            networkDrawingConfig[checkbox.id]
+        );
+
+    } else {
+        document.querySelectorAll(`.${checkbox.id}-border-line`).forEach(line => line.remove());
+        document.querySelectorAll(`.${checkbox.id}-line`).forEach(line => line.remove());
+    }
 }
 
 
@@ -164,11 +198,17 @@ function setCSSVariables(nodeSizePercentage) {
 
 // DRAW functions
 function drawAll(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize){
-    
     drawNodes(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNetwork)
     drawMobileElements(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize)
 
 
+    // Draw lines
+    createConnections(networkDrawingConfig["meleeNetwork"]);
+    createConnections(networkDrawingConfig["archerNetwork"]);
+    createConnections(networkDrawingConfig["flierNetwork"]);
+}
+
+function defineNetworkDrawingConfig(meleeNetwork, archerNetwork, flierNetwork) {
     // Create SVG element for lines
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("width", "100%");
@@ -178,17 +218,55 @@ function drawAll(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSi
     svg.style.left = "0";
     battlefield.appendChild(svg);
 
-
     // Set the focal point to the center of the page
     let maxNodesX = Math.max(...nodes.map(node => node.x)) * nodeSize;
     let maxNodesY = Math.max(...nodes.map(node => node.y)) * nodeSize;
     const focalPointX = maxNodesX / 2;
     const focalPointY = maxNodesY / 2;
 
-    createConnections(svg, nodes, nodeSize, meleeNetwork, "red", nodeSize/10, "", 0, false);
-    createConnections(svg, nodes, nodeSize, archerNetwork, "green", nodeSize/10, "10,10", 0, false);
-    createConnections(svg, nodes, nodeSize, flierNetwork, "blue", nodeSize/300, "", 0, true, focalPointX, focalPointY, 150);
 
+    networkDrawingConfig = {
+        meleeNetwork: {
+            svg: svg,
+            networkType: "meleeNetwork",
+            nodes: nodes,
+            nodeSize: nodeSize,
+            network: meleeNetwork,
+            color: "red",
+            width: nodeSize/10,
+            dashArray: "",
+            lateralOffset: 0,
+            curvedLine: false
+        },
+        archerNetwork: {
+            svg: svg,
+            networkType: "archerNetwork",
+            nodes: nodes,
+            nodeSize: nodeSize,
+            network: archerNetwork,
+            color: "green",
+            width: nodeSize/10,
+            dashArray: "10,10",
+            lateralOffset: 0,
+            curvedLine: false
+        },
+        flierNetwork: {
+            svg: svg,
+            networkType: "flierNetwork",
+            nodes: nodes,
+            nodeSize: nodeSize,
+            network: flierNetwork,
+            color: "blue",
+            width: nodeSize/300,
+            dashArray: "",
+            lateralOffset: 0,
+            curvedLine: true,
+            focalPointX: focalPointX,
+            focalPointY: focalPointY,
+            curvatureStrength: 150
+        }
+    };
+return networkDrawingConfig
 }
 
 function drawMobileElements(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize){
@@ -291,12 +369,12 @@ function drawUnitsTable(units) {
     });
 }
 
-function createConnections(svg, nodes, nodeSize, network, color, width, dashArray, lateralOffset, curvedLine, focalPointX, focalPointY, curvatureStrength) {
+function createConnections({svg, networkType, nodes, nodeSize, network, color, width, dashArray, lateralOffset, curvedLine, focalPointX, focalPointY, curvatureStrength}) {
     network.forEach(pair => {
         const node1 = nodes.find(node => node.id === pair[0]);
         const node2 = nodes.find(node => node.id === pair[1]);
         if (node1 && node2) {
-            drawLine(svg, 
+            drawLine(svg, networkType,
                 node1.x * nodeSize + nodeSize / 2, node1.y * nodeSize + nodeSize / 2,
                 node2.x * nodeSize + nodeSize / 2, node2.y * nodeSize + nodeSize / 2,
                 color, width, dashArray, lateralOffset, curvedLine, focalPointX, focalPointY, curvatureStrength
@@ -305,10 +383,10 @@ function createConnections(svg, nodes, nodeSize, network, color, width, dashArra
     });
 }
 
-function drawLine(svg, x1, y1, x2, y2, color, width, dashArray, lateralOffset = 0, curvedLine = false, curvatureFocalPointX, curvatureFocalPointY, curvatureStrength = 100) {
+function drawLine(svg, networkType, x1, y1, x2, y2, color, width, dashArray, lateralOffset = 0, curvedLine = false, curvatureFocalPointX, curvatureFocalPointY, curvatureStrength) {
     if (curvedLine) {
         // If curvedLine is true, use the drawCurvedLine function
-        drawCurvedLine(svg, x1, y1, x2, y2, color, width, dashArray, curvatureFocalPointX, curvatureFocalPointY, curvatureStrength);
+        drawCurvedLine(svg, networkType, x1, y1, x2, y2, color, width, dashArray, curvatureFocalPointX, curvatureFocalPointY, curvatureStrength);
     } else {
         // Adjust the coordinates by the lateral offset for a straight line
         const adjustedX1 = x1 + lateralOffset;
@@ -318,6 +396,7 @@ function drawLine(svg, x1, y1, x2, y2, color, width, dashArray, lateralOffset = 
 
         // Draw a thicker black line as the border
         const borderLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        borderLine.setAttribute("class", `${networkType}-border-line`);
         borderLine.setAttribute("x1", adjustedX1);
         borderLine.setAttribute("y1", adjustedY1);
         borderLine.setAttribute("x2", adjustedX2);
@@ -330,6 +409,7 @@ function drawLine(svg, x1, y1, x2, y2, color, width, dashArray, lateralOffset = 
 
         // Draw the colored line on top
         const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("class", `${networkType}-line`);
         line.setAttribute("x1", adjustedX1);
         line.setAttribute("y1", adjustedY1);
         line.setAttribute("x2", adjustedX2);
@@ -342,7 +422,7 @@ function drawLine(svg, x1, y1, x2, y2, color, width, dashArray, lateralOffset = 
     }
 }
 
-function drawCurvedLine(svg, x1, y1, x2, y2, color, width, dashArray, focalPointX, focalPointY, curvatureStrength = 100) {
+function drawCurvedLine(svg, networkType, x1, y1, x2, y2, color, width, dashArray, focalPointX, focalPointY, curvatureStrength = 100) {
     // Calculate the midpoint of the line
     const midX = (x1 + x2) / 2;
     const midY = (y1 + y2) / 2;
@@ -365,6 +445,7 @@ function drawCurvedLine(svg, x1, y1, x2, y2, color, width, dashArray, focalPoint
     // Create an SVG path element for the curved line
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     const d = `M ${x1} ${y1} Q ${controlX} ${controlY} ${x2} ${y2}`;
+    path.setAttribute("class", `${networkType}-border-line`);
     path.setAttribute("d", d);
     path.setAttribute("stroke", color);
     path.setAttribute("stroke-width", `${width}`);
@@ -373,6 +454,7 @@ function drawCurvedLine(svg, x1, y1, x2, y2, color, width, dashArray, focalPoint
 
     // Draw a thicker black path as the border
     const borderPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    borderPath.setAttribute("class", `${networkType}-line`);
     borderPath.setAttribute("d", d);
     borderPath.setAttribute("stroke", "black");
     borderPath.setAttribute("stroke-width", `${width/2}`);
@@ -533,7 +615,7 @@ function handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwo
                 handleMoveDrag(draggedUnit, draggedUnitNodeIdInt, targetNodeIdInt, meleeNetwork, archerNetwork, flierNetwork)
             }
 
-            // Redraw the units to update their positions         
+            // Redraw the units to update their positions
             drawMobileElements(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize);
         }
     }
@@ -673,7 +755,7 @@ function handleCombat(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwo
     } else if (u.type === 'F') {
         writeToLog(`\nflying attack unit:${u.id} -> unit:${v.id}`)
         units = handleFlierDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork)
-    } else{
+    } else {
         writeToLog(`\ncannot attack unit:${u.id} -> unit:${v.id}`)
     }
 
