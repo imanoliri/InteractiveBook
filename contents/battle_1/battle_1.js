@@ -90,10 +90,6 @@ function defineHtmlElementsCallbacks() {
     const checkboxArcherNetwork = document.getElementById('archerNetwork');
     const checkboxFlierNetwork = document.getElementById('flierNetwork');
     const checkboxSiegeNetwork = document.getElementById('siegeNetwork');
-    checkboxMeleeNetwork.checked = true;
-    checkboxArcherNetwork.checked = true;
-    checkboxFlierNetwork.checked = true;
-    checkboxSiegeNetwork.checked = true;
 	
     // Add their listeners
     sliderValue.textContent =  parseInt(slider.value, 10);
@@ -200,13 +196,7 @@ function setCSSVariables(nodeSizePercentage) {
 function drawAll(){
     drawNodes()
     drawMobileElements()
-
-
-    // Draw lines
-    createConnections(networkDrawingConfig["meleeNetwork"]);
-    createConnections(networkDrawingConfig["archerNetwork"]);
-    createConnections(networkDrawingConfig["flierNetwork"]);
-    createConnections(networkDrawingConfig["siegeNetwork"])
+    drawNetworkConnections()
 }
 
 function defineNetworkDrawingConfig(meleeNetwork, archerNetwork, flierNetwork, siegeNetwork) {
@@ -382,6 +372,13 @@ function drawUnitsTable(units) {
 
         tableBody.appendChild(row); // Append the row to the table body
     });
+}
+
+function drawNetworkConnections() {
+    if (checkboxMeleeNetwork.checked) {createConnections(networkDrawingConfig["meleeNetwork"]);}
+    if (checkboxArcherNetwork.checked) {createConnections(networkDrawingConfig["archerNetwork"]);}
+    if (checkboxFlierNetwork.checked) {createConnections(networkDrawingConfig["flierNetwork"]);}
+    if (checkboxSiegeNetwork.checked) {createConnections(networkDrawingConfig["siegeNetwork"]);}
 }
 
 function createConnections({svg, networkType, nodes, nodeSize, network, color, width, dashArray, lateralOffset, curvedLine, focalPointX, focalPointY, curvatureStrength}) {
