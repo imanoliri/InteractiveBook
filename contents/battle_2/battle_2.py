@@ -79,7 +79,8 @@ def nodes_valid_interaction(node_1, node_2, df_interactions, network) -> bool:
         return validation_functions[network](node_1, node_2)
 
     # If no manual interactions found for this pair, just use network's validation function
-    validity = any(validation_functions[n](node_1, node_2) for n in networks)
+    validity = None
+    validity_default = any(validation_functions[n](node_1, node_2) for n in networks)
     for i, interaction in df_interactions.iterrows():
         if not nodes_in_interaction(node_1, node_2, interaction):
             continue
@@ -89,10 +90,14 @@ def nodes_valid_interaction(node_1, node_2, df_interactions, network) -> bool:
             return False
         if valid_flags.max() == +2:  # Force true! Overcomes any further interaction rules!
             return True
-        if valid_flags.min() == -1:  # False! Overcomes any other rules in the selected interaction!
+        if valid_flags.min() == -1:  # Force false!
             validity = False
-        if valid_flags.max() == +1:  # Force true! Overcomes other rules in the selected interaction!
+        if valid_flags.max() == +1:  # Force true!
             validity = True
+        if valid_flags.max() == 0 and valid_flags.min() == 0:  # Apply normal interaction rules
+            validity = validity_default
+    if validity is None:
+        validity = validity_default
     return validity
 
 
