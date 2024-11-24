@@ -13,7 +13,7 @@ def main():
     df_interactions = pd.read_excel(excel_file, "interactions")
     df_units = pd.read_excel(excel_file, "units")
 
-    networks = dict.fromkeys(["melee", "archer", "flier"])
+    networks = dict.fromkeys(validation_functions.keys())
 
     with open(f"{battle_dir}/nodes.json", "w") as fp:
         json.dump(nodes_to_json(df_nodes), fp)
@@ -29,7 +29,8 @@ def main():
 
         network_interactions = interactions_from_nodes_and_interactions(df_nodes, dfn, network)
 
-        if network == "archer":  # Remove archer interactions if there is an equivalent melee one to avoid redundancy
+        if network == "archer" or network == "siege":
+            # Remove archer/siege interactions if there is an equivalent melee one to avoid redundancy
             melee_network = networks["melee"]
             network_interactions = [i for i in network_interactions if i not in melee_network]
 
@@ -129,6 +130,10 @@ def valid_flier_interaction(node_1, node_2, flier_distance_threshold: float = 10
     return distance_3d(node_1, node_2) < flier_distance_threshold
 
 
+def valid_siege_interaction(node_1, node_2, siege_distance_threshold: float = 11, gain_per_height: float = 0.5) -> bool:
+    return distance(node_1, node_2) < siege_distance_threshold * (1 + gain_per_height * max([0, (node_1.z - node_2.z)]))
+
+
 def distance(node_1, node_2) -> float:
     return euclidean_distance(node_1.x, node_1.y, node_2.x, node_2.y)
 
@@ -149,6 +154,7 @@ validation_functions = {
     "melee": valid_melee_interaction,
     "archer": valid_archer_interaction,
     "flier": valid_flier_interaction,
+    "siege": valid_siege_interaction,
 }
 
 

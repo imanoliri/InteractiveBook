@@ -107,6 +107,9 @@ button {
 .type-F {
     border-color: blue;
 }
+.type-S {
+    border-color: white;
+}
 
 .unit-tooltip {
     display: none;

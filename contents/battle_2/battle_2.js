@@ -2,25 +2,11 @@ async function fetchBattleData() {
     try {
         
         const response_nodes = await fetch('nodes.json');
-        if (!response_nodes.ok) {
-            throw new Error(`HTTP error! status: ${response_nodes.status}`);
-        }
         const response_units = await fetch('units.json');
-        if (!response_units.ok) {
-            throw new Error(`HTTP error! status: ${response_units.status}`);
-        }
         const response_meleeNetwork = await fetch('melee_interactions.json');
-        if (!response_meleeNetwork.ok) {
-            throw new Error(`HTTP error! status: ${response_meleeNetwork.status}`);
-        }
         const response_archerNetwork = await fetch('archer_interactions.json');
-        if (!response_archerNetwork.ok) {
-            throw new Error(`HTTP error! status: ${response_archerNetwork.status}`);
-        }
         const response_flierNetwork = await fetch('flier_interactions.json');
-        if (!response_flierNetwork.ok) {
-            throw new Error(`HTTP error! status: ${response_flierNetwork.status}`);
-        }
+        const response_siegeNetwork = await fetch('siege_interactions.json');
 
 
 
@@ -35,6 +21,8 @@ async function fetchBattleData() {
         console.log("archerNetwork fetched:", archerNetwork);
         flierNetwork = await response_flierNetwork.json();
         console.log("flierNetwork fetched:", flierNetwork);
+        siegeNetwork = await response_siegeNetwork.json();
+        console.log("siegeNetwork fetched:", siegeNetwork);
 
     } catch (error) {
         console.error('Error fetching JSON:', error);
@@ -48,6 +36,7 @@ let units
 let meleeNetwork
 let archerNetwork
 let flierNetwork
+let siegeNetwork
 
 let slider
 let nodeSize
@@ -74,6 +63,7 @@ function createBattle() {
     meleeNetwork = createMeleeNetwork(meleeNetwork);
     archerNetwork = createArcherNetwork(archerNetwork);
     flierNetwork = createFlierNetwork(flierNetwork);
+    siegeNetwork = createSiegeNetwork(siegeNetwork);
 
     
     // Set CSS variables
@@ -83,9 +73,9 @@ function createBattle() {
     setCSSVariables(nodeSizePercentage)
 
     // Define Network Drawing Configs
-    networkDrawingConfig = defineNetworkDrawingConfig(meleeNetwork, archerNetwork, flierNetwork)
+    networkDrawingConfig = defineNetworkDrawingConfig(meleeNetwork, archerNetwork, flierNetwork, siegeNetwork)
 
-    drawAll(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize)
+    drawAll()
 }
 
 
@@ -99,6 +89,11 @@ function defineHtmlElementsCallbacks() {
     const checkboxMeleeNetwork = document.getElementById('meleeNetwork');
     const checkboxArcherNetwork = document.getElementById('archerNetwork');
     const checkboxFlierNetwork = document.getElementById('flierNetwork');
+    const checkboxSiegeNetwork = document.getElementById('siegeNetwork');
+    checkboxMeleeNetwork.checked = true;
+    checkboxArcherNetwork.checked = true;
+    checkboxFlierNetwork.checked = true;
+    checkboxSiegeNetwork.checked = true;
 	
     // Add their listeners
     sliderValue.textContent =  parseInt(slider.value, 10);
@@ -111,6 +106,7 @@ function defineHtmlElementsCallbacks() {
     checkboxMeleeNetwork.addEventListener('change', toggleNetwork);
     checkboxArcherNetwork.addEventListener('change', toggleNetwork);
     checkboxFlierNetwork.addEventListener('change', toggleNetwork);
+    checkboxSiegeNetwork.addEventListener('change', toggleNetwork);
 
     return slider
 }
@@ -160,6 +156,10 @@ function createFlierNetwork(flierNetwork) {
     return flierNetwork
 }
 
+function createSiegeNetwork(siegeNetwork){
+    return siegeNetwork
+}
+
 function createPairs(element, list) {
     // Initialize an empty array to store the pairs
     let pairs = [];
@@ -197,18 +197,19 @@ function setCSSVariables(nodeSizePercentage) {
 
 
 // DRAW functions
-function drawAll(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize){
-    drawNodes(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNetwork)
-    drawMobileElements(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize)
+function drawAll(){
+    drawNodes()
+    drawMobileElements()
 
 
     // Draw lines
     createConnections(networkDrawingConfig["meleeNetwork"]);
     createConnections(networkDrawingConfig["archerNetwork"]);
     createConnections(networkDrawingConfig["flierNetwork"]);
+    createConnections(networkDrawingConfig["siegeNetwork"])
 }
 
-function defineNetworkDrawingConfig(meleeNetwork, archerNetwork, flierNetwork) {
+function defineNetworkDrawingConfig(meleeNetwork, archerNetwork, flierNetwork, siegeNetwork) {
     // Create SVG element for lines
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("width", "100%");
@@ -264,20 +265,32 @@ function defineNetworkDrawingConfig(meleeNetwork, archerNetwork, flierNetwork) {
             focalPointX: focalPointX,
             focalPointY: focalPointY,
             curvatureStrength: 150
+        },
+        siegeNetwork: {
+            svg: svg,
+            networkType: "siegeNetwork",
+            nodes: nodes,
+            nodeSize: nodeSize,
+            network: siegeNetwork,
+            color: "white",
+            width: nodeSize/10,
+            dashArray: "10,25",
+            lateralOffset: 0,
+            curvedLine: false
         }
     };
 return networkDrawingConfig
 }
 
-function drawMobileElements(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize){
+function drawMobileElements(){
     units = units.filter(u => u.health > 0);
-    drawUnits(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNetwork);
+    drawUnits(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork);
     drawUnitsTable(units);
     updateHealthBar(units);
     
 }
 
-function drawNodes(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNetwork) {
+function drawNodes() {
     nodes.forEach(node => {
         const div = document.createElement("div");
         div.classList.add("node");
@@ -287,12 +300,12 @@ function drawNodes(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNet
 
         // Drag and drop callbacks
         div.addEventListener("dragover", handleDragOver);
-        div.addEventListener("drop", (event) => {handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize);});
-        div.addEventListener('mouseenter', (event) => {handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork, archerNetwork, flierNetwork);});
+        div.addEventListener("drop", (event) => {handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, nodeSize);});
+        div.addEventListener('mouseenter', (event) => {handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork);});
         div.addEventListener('mouseleave', handleNodeLeaveHighlight);
 
         // Click and click callbacks
-        div.addEventListener('click', (event) => {handleNodeClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize);});
+        div.addEventListener('click', (event) => {handleNodeClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, nodeSize);});
 
         battlefield.appendChild(div);
     });
@@ -328,25 +341,27 @@ function drawUnits(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNet
             <strong>Team:</strong> ${unit.team}<br>
             <strong>Name:</strong> ${unit.name}<br>
             <strong>Type:</strong> ${unit.type}<br>
-            <strong>Attack:</strong> ${unit.attack}<br>
+            <strong>Attack Melee:</strong> ${unit.attack_melee}<br>
+            <strong>Attack Range:</strong> ${unit.attack_range}<br>
             <strong>Defense:</strong> ${unit.defense}<br>
             <strong>Health:</strong> ${unit.health}<br>
             <strong>Node:</strong> ${unit.node}<br>
-            <strong>Deployment:</strong> ${unit.deployment}
+            <strong>Deployment Min:</strong> ${unit.min_deployment}
+            <strong>Deployment Max:</strong> ${unit.max_deployment}
         `;
         circle.appendChild(tooltip);
         battlefield.appendChild(circle); // Append the unit circle to the battlefield
 
         // Drag and drop callbacks
-        circle.addEventListener('mouseenter', (event) => {handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork, archerNetwork, flierNetwork);});
+        circle.addEventListener('mouseenter', (event) => {handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork);});
         circle.addEventListener('mouseleave', handleNodeLeaveHighlight);
         circle.addEventListener("dragstart", handleDragStart);
         circle.addEventListener("dragover", handleDragOver);
-        circle.addEventListener("drop", (event) => {handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize);});
+        circle.addEventListener("drop", (event) => {handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, nodeSize);});
         
 
         // Click and click callback
-        circle.addEventListener("click", (event) => {handleUnitClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize);});
+        circle.addEventListener("click", (event) => {handleUnitClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, nodeSize);});
 
     });
 }
@@ -506,7 +521,7 @@ function updateHealthBar(units) {
 
 
 // HOVER callbacks
-function handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork, archerNetwork, flierNetwork) {
+function handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork) {
     let nodeId;
     let networksToUse = [];
 
@@ -526,6 +541,8 @@ function handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork
             networksToUse = [meleeNetwork, archerNetwork];
         } else if (unitType === 'F') {
             networksToUse = [meleeNetwork, flierNetwork];
+        } else if (unitType === 'S') {
+            networksToUse = [meleeNetwork, siegeNetwork];
         }
     }
 
@@ -582,7 +599,7 @@ function handleDragOver(event) {
     event.preventDefault(); // Allow dropping by preventing the default behavior
 }
 
-function handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize) {
+function handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, nodeSize) {
     event.preventDefault();
     units = units.filter(u => u.health > 0);
     const targetNodeId = event.target.dataset.nodeId; // Get the ID of the node being dropped on (it can come from the node itself or from a unit that belongs to it)
@@ -609,20 +626,20 @@ function handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwo
                     }
                 } else {
                     // If not same team, combat
-                    units = handleCombat(draggedUnit, targetUnit, draggedUnitNodeIdInt, targetNodeIdInt, units, meleeNetwork, archerNetwork, flierNetwork)}
+                    units = handleCombat(draggedUnit, targetUnit, draggedUnitNodeIdInt, targetNodeIdInt, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork)}
                 
             } else {
                 // If no unit is in the target node, simply move the dragged unit to the target node
-                handleMoveDrag(draggedUnit, draggedUnitNodeIdInt, targetNodeIdInt, meleeNetwork, archerNetwork, flierNetwork)
+                handleMoveDrag(draggedUnit, draggedUnitNodeIdInt, targetNodeIdInt, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork)
             }
 
             // Redraw the units to update their positions
-            drawMobileElements(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize);
+            drawMobileElements(nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, nodeSize);
         }
     }
 }
 
-function handleMoveDrag(u, x, y, meleeNetwork, archerNetwork, flierNetwork) {
+function handleMoveDrag(u, x, y, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork) {
     console.log('handleMoveDrag')
     const draggedUnitIdInt = parseInt(u.id);
     if (networkContainsConnection(meleeNetwork, x, y)) {
@@ -647,7 +664,7 @@ let selectedUnitId = null; // Variable to store the ID of the selected unit
 let clickedUnit = null;
 
 // Function to handle click on a unit
-function handleUnitClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize) {
+function handleUnitClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, nodeSize) {
     units.filter(u => u.health > 0)
     // If a unit is already selected and the user clicks on another unit of the same team, swap positions
     if (selectedUnitId) {
@@ -669,7 +686,7 @@ function handleUnitClick(event, nodes, units, meleeNetwork, archerNetwork, flier
                 }
             } else {
                 // Different teams: initiate combat
-                units = handleCombat(selectedUnit, clickedUnit, selectedUnit.node, clickedUnit.node, units, meleeNetwork, archerNetwork, flierNetwork);
+                units = handleCombat(selectedUnit, clickedUnit, selectedUnit.node, clickedUnit.node, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork);
             }
         }
         selectedUnitId = null; // Reset the selected unit after using it
@@ -679,11 +696,11 @@ function handleUnitClick(event, nodes, units, meleeNetwork, archerNetwork, flier
         writeToLog(`\nSelected unit: ${selectedUnitId}`);
     }
 
-    drawMobileElements(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize);
+    drawMobileElements(nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, nodeSize);
 }
 
 // Function to handle click on a node
-function handleNodeClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize) {
+function handleNodeClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, nodeSize) {
     units = units.filter(u => u.health > 0);
     if (selectedUnitId) {
         const targetNodeId = parseInt(event.target.dataset.nodeId);
@@ -708,15 +725,15 @@ function handleNodeClick(event, nodes, units, meleeNetwork, archerNetwork, flier
                     
                 } else {
                     // Enemy unit: initiate combat
-                    units = handleCombat(selectedUnit, targetUnit, selectedUnit.node, targetNodeId, units, meleeNetwork, archerNetwork, flierNetwork);
+                    units = handleCombat(selectedUnit, targetUnit, selectedUnit.node, targetNodeId, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork);
                 }
             } else {
                 // No unit on the target node: move the selected unit
-                handleMoveDrag(selectedUnit, selectedUnit.node, targetNodeId, meleeNetwork, archerNetwork, flierNetwork);
+                handleMoveDrag(selectedUnit, selectedUnit.node, targetNodeId, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork);
             }
 
             selectedUnitId = null; // Reset the selected unit
-            drawMobileElements(nodes, units, meleeNetwork, archerNetwork, flierNetwork, nodeSize);
+            drawMobileElements(nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, nodeSize);
         }
     }
 }
@@ -737,7 +754,7 @@ function addClickEventListeners() {
 
 
 // COMBAT logic
-function handleCombat(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork) {
+function handleCombat(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork) {
     console.log('handleCombat')
     if (u.team === v.team) {
         writeToLog(`\nswap unit:${u.id} <-> unit:${v.id}`)
@@ -749,13 +766,16 @@ function handleCombat(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwo
 
     if (u.type === 'M') {
         writeToLog(`\nmelee attack unit:${u.id} -> unit:${v.id}`)
-        units = handleMeleeDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork)
+        units = handleMeleeDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork)
     } else if (u.type === 'A') {
         writeToLog(`\nshoot unit:${u.id} -> unit:${v.id}`)
-        units = handleArcherDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork)
+        units = handleArcherDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork)
     } else if (u.type === 'F') {
         writeToLog(`\nflying attack unit:${u.id} -> unit:${v.id}`)
-        units = handleFlierDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork)
+        units = handleFlierDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork)
+    } else if (u.type === 'S') {
+        writeToLog(`\nshoot siege unit:${u.id} -> unit:${v.id}`)
+        units = handleSiegeDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork)
     } else {
         writeToLog(`\ncannot attack unit:${u.id} -> unit:${v.id}`)
     }
@@ -764,7 +784,7 @@ function handleCombat(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwo
     return units.filter(u => u.health > 0)
 }
 
-function handleMeleeDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork) {
+function handleMeleeDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork) {
     console.log('handleMeleeDrag')
     if (networkContainsConnection(meleeNetwork, x, y)) {
         return handleMeleeCombat(u, v, x, y, units)
@@ -774,7 +794,7 @@ function handleMeleeDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNe
     } 
 }
 
-function handleArcherDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork) {
+function handleArcherDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork) {
     console.log('handleArcherDrag')
     if (networkContainsConnection(meleeNetwork, x, y)) {
         return handleArcherCombat(u, v, x, y, units)
@@ -786,7 +806,7 @@ function handleArcherDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierN
     }
 }
 
-function handleFlierDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork) {
+function handleFlierDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork) {
     console.log('handleFlierDrag')
     if (networkContainsConnection(meleeNetwork, x, y)) {
         writeToLog('Flier attacks by land.')
@@ -800,10 +820,22 @@ function handleFlierDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNe
     }
 }
 
+function handleSiegeDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork) {
+    console.log('handleSiegeDrag')
+    if (networkContainsConnection(meleeNetwork, x, y)) {
+        return handleSiegeCombat(u, v, x, y, units)
+    } else if (networkContainsConnection(siegeNetwork, x, y)) {
+        return handleSiegeCombat(u, v, x, y, units)
+    } else {
+        writeToLog('cannot attack')
+        return units
+    }
+}
+
 function handleMeleeCombat(attacker, defender, x, y, units){
     while (attacker.health > 0 && defender.health > 0) {
         // Attacker attacks first
-        let damage = Math.max(1, attacker.attack - defender.defense);
+        let damage = Math.max(1, attacker.attack_melee - defender.defense);
         defender.health -= damage;
         if (defender.health <= 0) {
             writeToLog(`Attacker wins with ${attacker.health} health left.`)
@@ -813,7 +845,7 @@ function handleMeleeCombat(attacker, defender, x, y, units){
         }
 
         // Defender attacks back
-        damage = Math.max(1, defender.attack - attacker.defense);
+        damage = Math.max(1, defender.attack_melee - attacker.defense);
         attacker.health -= damage;
         if (attacker.health <= 0) {
             writeToLog(`Defender wins with ${defender.health} health left.`)
@@ -824,7 +856,7 @@ function handleMeleeCombat(attacker, defender, x, y, units){
 }
 
 function handleArcherCombat(attacker, defender, x, y, units){
-    let damage = Math.max(1, attacker.attack - defender.defense);
+    let damage = Math.max(1, attacker.attack_range - defender.defense);
     writeToLog(`Archer deals ${damage} damage.`)
     defender.health -= damage;
     if (defender.health <= 0) {
@@ -837,6 +869,19 @@ function handleArcherCombat(attacker, defender, x, y, units){
     return units
 }
 
+function handleSiegeCombat(attacker, defender, x, y, units){
+    let damage = Math.max(1, attacker.attack_range - defender.defense);
+    writeToLog(`Siege deals ${damage} damage.`)
+    defender.health -= damage;
+    if (defender.health <= 0) {
+        writeToLog('Siege kills target.')
+        // Defender is defeated
+        units = units.filter(u => u.id !== defender.id);
+    } else {
+        writeToLog(`Target has ${defender.health} health left.`)
+    }
+    return units
+}
 
 // Instructions Modal
 document.getElementById("instructionsButton").addEventListener("click", function() {
