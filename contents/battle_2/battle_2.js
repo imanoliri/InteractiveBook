@@ -39,9 +39,13 @@ let flierNetwork
 let siegeNetwork
 
 let slider
-let nodeSize
 let networkDrawingConfig
 
+const nodeSize = 42;
+const nodeXOffset = 5;
+const nodeYOffset= 10;
+const nodeXScale = 1;
+const nodeYScale = 1;
 
 
 
@@ -67,10 +71,8 @@ function createBattle() {
 
     
     // Set CSS variables
-    const numberNodes = nodes.length;
-    const nodeSizePercentage = 1.8*100/Math.sqrt(numberNodes**2);
-    nodeSize = vhToPixels(`${nodeSizePercentage}vh`);
-    setCSSVariables(nodeSizePercentage)
+    
+    setCSSVariables(nodeSize)
 
     // Define Network Drawing Configs
     networkDrawingConfig = defineNetworkDrawingConfig(meleeNetwork, archerNetwork, flierNetwork, siegeNetwork)
@@ -184,11 +186,11 @@ function vhToPixels(value) {
 }
 
 
-function setCSSVariables(nodeSizePercentage) {
-    document.documentElement.style.setProperty('--node-size', `${nodeSizePercentage}vh`);
-    document.documentElement.style.setProperty('--unit-size', `${nodeSizePercentage}vh`);
-    document.documentElement.style.setProperty('--node-size-highlight', `${nodeSizePercentage*1.2}vh`);
-    document.documentElement.style.setProperty('--unit-size-highlight', `${nodeSizePercentage*1.2}vh`);
+function setCSSVariables(nodeSize) {
+    document.documentElement.style.setProperty('--node-size', `${nodeSize}px`);
+    document.documentElement.style.setProperty('--unit-size', `${nodeSize}px`);
+    document.documentElement.style.setProperty('--node-size-highlight', `${nodeSize*1.2}px`);
+    document.documentElement.style.setProperty('--unit-size-highlight', `${nodeSize*1.2}px`);
 }
 
 
@@ -284,8 +286,8 @@ function drawNodes() {
     nodes.forEach(node => {
         const div = document.createElement("div");
         div.classList.add("node");
-        div.style.left = `${node.x * nodeSize}px`;
-        div.style.top = `${node.y * nodeSize}px`;
+        div.style.left = `${nodeXOffset + node.x * nodeSize * nodeXScale}px`;
+        div.style.top = `${nodeYOffset + node.y * nodeSize * nodeYScale}px`;
         div.dataset.nodeId = node.id; // Assign the node ID as a data attribute
 
         // Drag and drop callbacks
@@ -315,8 +317,8 @@ function drawUnits(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNet
         circle.setAttribute("draggable", "true"); // Make the unit circle draggable
 
         // Position the circle at the node's coordinates
-        circle.style.left = `${node.x * nodeSize}px`;
-        circle.style.top = `${node.y * nodeSize}px`;
+        circle.style.left = `${nodeXOffset + node.x * nodeSize * nodeXScale}px`;
+        circle.style.top = `${nodeYOffset + node.y * nodeSize * nodeYScale}px`;
 
         // Set unit ID as a data attribute for reference
         circle.dataset.unitId = unit.id;
