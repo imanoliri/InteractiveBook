@@ -38,7 +38,6 @@ let archerNetwork
 let flierNetwork
 let siegeNetwork
 
-let slider
 let networkDrawingConfig
 
 const nodeSize = 68.3;
@@ -48,6 +47,18 @@ const nodeXScale = 1;
 const nodeYScale = 1;
 
 
+// Get HTML elements
+const slider = document.getElementById("difficultySlider");
+const sliderValue = document.getElementById("sliderValue");
+const setDifficultyButton = document.getElementById("setDifficultyButton");
+const logTextbox = document.getElementById("logTextbox");
+logTextbox.value = ""
+const checkboxMeleeNetwork = document.getElementById('meleeNetwork');
+const checkboxArcherNetwork = document.getElementById('archerNetwork');
+const checkboxFlierNetwork = document.getElementById('flierNetwork');
+const checkboxSiegeNetwork = document.getElementById('siegeNetwork');
+
+
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchBattleData().then(createBattle);
@@ -55,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
 function createBattle() {
 
-    slider = defineHtmlElementsCallbacks()
+    defineHtmlElementsCallbacks()
 
     // Nodes & units
     deploymentLevel = parseInt(slider.value, 10);
@@ -82,18 +93,6 @@ function createBattle() {
 
 
 function defineHtmlElementsCallbacks() {
-    // Get HTML elements
-    const slider = document.getElementById("difficultySlider");
-    const sliderValue = document.getElementById("sliderValue");
-    const setDifficultyButton = document.getElementById("setDifficultyButton");
-    const logTextbox = document.getElementById("logTextbox");
-    logTextbox.value = ""
-    const checkboxMeleeNetwork = document.getElementById('meleeNetwork');
-    const checkboxArcherNetwork = document.getElementById('archerNetwork');
-    const checkboxFlierNetwork = document.getElementById('flierNetwork');
-    const checkboxSiegeNetwork = document.getElementById('siegeNetwork');
-	
-    // Add their listeners
     sliderValue.textContent =  parseInt(slider.value, 10);
     slider.addEventListener("input", function() {
         sliderValue.textContent = slider.value;
@@ -105,8 +104,6 @@ function defineHtmlElementsCallbacks() {
     checkboxArcherNetwork.addEventListener('change', toggleNetwork);
     checkboxFlierNetwork.addEventListener('change', toggleNetwork);
     checkboxSiegeNetwork.addEventListener('change', toggleNetwork);
-
-    return slider
 }
 
 function toggleNetwork(e) {

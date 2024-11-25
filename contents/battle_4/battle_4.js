@@ -40,9 +40,9 @@ let siegeNetwork
 
 let networkDrawingConfig
 
-const nodeSize = 62;
-const nodeXOffset = 0;
-const nodeYOffset= 0;
+const nodeSize = 69;
+const nodeXOffset = -70;
+const nodeYOffset= -70;
 const nodeXScale = 1;
 const nodeYScale = 1;
 
@@ -122,7 +122,7 @@ function toggleNetwork(e) {
 
 // CREATE functions
 function createNodes(nodes) {
-    return invertYScale(nodes) 
+    return nodes
 }
 
 function invertYScale(nodes) {
@@ -509,6 +509,9 @@ function updateHealthBar(units) {
             teamSection.style.backgroundColor = "green";
         } else if (team == 2) {
             teamSection.style.backgroundColor = "orange";
+        }
+        else if (team == 3) {
+            teamSection.style.backgroundColor = "blueviolet";
         }
 
         healthBar.appendChild(teamSection);
@@ -913,7 +916,7 @@ document.getElementById("mapInfoButton").addEventListener("click", function() {
     const mapInfoText = document.getElementById("mapInfoText");
 
     // Fetch the HTML file and insert its content into the modal
-    fetch('battle_1_map_info.html')
+    fetch('battle_3_map_info.html')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);

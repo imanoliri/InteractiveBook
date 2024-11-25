@@ -5,7 +5,7 @@ from typing import List
 
 
 def main():
-    battle_name = "battle_1"
+    battle_name = "battle_4"
     battle_dir = f"contents/{battle_name}"
     excel_file = f"{battle_dir}/{battle_name}.xlsx"
 
@@ -108,7 +108,7 @@ def nodes_in_interaction(node_1, node_2, interaction) -> bool:
 
 
 def node_in_interaction(node, inter) -> bool:
-    ints = inter.split(",")
+    ints = inter.replace(" ", "").split(",")
     group_columns = [c for c in node.index if c.startswith("group_")]
     if node.id in ints or any(g in ints or "all" in ints for g in node[group_columns] if not pd.isnull(g)):
         return True
@@ -116,7 +116,7 @@ def node_in_interaction(node, inter) -> bool:
 
 
 def valid_melee_interaction(
-    node_1, node_2, melee_height_threshold: float = 2, melee_distance_threshold: float = 4.5
+    node_1, node_2, melee_height_threshold: float = 2, melee_distance_threshold: float = 3.5
 ) -> bool:
     if abs(node_1.z - node_2.z) > melee_height_threshold:
         return False

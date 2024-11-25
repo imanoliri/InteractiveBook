@@ -9,7 +9,7 @@ def main():
     battle_dir = f"contents/{battle_name}"
     excel_file = f"{battle_dir}/{battle_name}.xlsx"
 
-    df_nodes = pd.read_excel(excel_file, "nodes")
+    df_nodes = pd.read_excel(excel_file, "nodes").astype(dict(zip(["x", "y", "z"], [float, float, float])))
     df_interactions = pd.read_excel(excel_file, "interactions")
     df_units = pd.read_excel(excel_file, "units")
 
