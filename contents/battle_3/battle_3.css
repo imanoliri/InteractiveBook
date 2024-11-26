@@ -87,14 +87,6 @@ button {
     height: var(--unit-size-highlight);
 }
 
-.team-1 {
-    background-color: green;
-}
-
-.team-2 {
-    background-color: orange;
-}
-
 /* Border colors based on unit type */
 .type-A {
     border-color: green;

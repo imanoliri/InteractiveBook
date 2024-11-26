@@ -59,6 +59,15 @@ const checkboxFlierNetwork = document.getElementById('flierNetwork');
 const checkboxSiegeNetwork = document.getElementById('siegeNetwork');
 
 
+const teamColors = {
+    1: "green",
+    2: "orange",
+    3: "blueviolet",
+    4: "lightseagreen",
+    5: "lightgreen",
+    6: "maroon"
+};
+
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchBattleData().then(createBattle);
@@ -312,6 +321,10 @@ function drawUnits(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNet
         circle.classList.add("unit-circle", `team-${unit.team}`, `type-${unit.type}`);
         circle.textContent = unit.id;
         circle.setAttribute("draggable", "true"); // Make the unit circle draggable
+        const teamNumber = parseInt(unit.team);
+        if (teamColors[teamNumber]) {
+            circle.style.backgroundColor = teamColors[teamNumber];
+        }
 
         // Position the circle at the node's coordinates
         circle.style.left = `${nodeXOffset + node.x * nodeSize * nodeXScale}px`;
@@ -366,6 +379,14 @@ function drawUnitsTable(units) {
         for (let key in unit) {
             const cell = document.createElement("td");
             cell.textContent = unit[key]; // Set the cell content
+
+            if (key === 'team') { // Set team cell color
+                const teamNumber = parseInt(cell?.textContent.trim());
+                if (teamColors[teamNumber]) {
+                    cell.style.backgroundColor = teamColors[teamNumber];
+                }
+            }
+
             row.appendChild(cell); // Append the cell to the row
         }
 
@@ -504,14 +525,9 @@ function updateHealthBar(units) {
         teamSection.classList.add("team-section");
         teamSection.style.width = `${healthPercentage}%`;
 
-        // Set a color for each team (you can customize these colors)
-        if (team == 1) {
-            teamSection.style.backgroundColor = "green";
-        } else if (team == 2) {
-            teamSection.style.backgroundColor = "orange";
-        }
-        else if (team == 3) {
-            teamSection.style.backgroundColor = "blueviolet";
+        // Set a color for each team
+        if (teamColors[team]) {
+            teamSection.style.backgroundColor = teamColors[team];
         }
 
         healthBar.appendChild(teamSection);
@@ -916,7 +932,7 @@ document.getElementById("mapInfoButton").addEventListener("click", function() {
     const mapInfoText = document.getElementById("mapInfoText");
 
     // Fetch the HTML file and insert its content into the modal
-    fetch('battle_3_map_info.html')
+    fetch('battle_4_map_info.html')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
