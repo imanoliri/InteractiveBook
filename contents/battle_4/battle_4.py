@@ -71,48 +71,72 @@ def interactions_from_nodes_and_interactions(df_nodes, df_interactions, network)
 
 
 def nodes_valid_interaction(node_1, node_2, df_interactions, network) -> bool:
-    networks = network
-    if isinstance(network, str):
-        networks = [network]
+    # Normalize `network` into a list
+    networks = [network] if isinstance(network, str) else network
 
-    if df_interactions.empty:  # If not manual interactions, just use network's validation function
-        return validation_functions[network](node_1, node_2)
+    # If there are no manual interactions, use the network's default validation function
+    if df_interactions.empty:
+        return any(validation_functions[n](node_1, node_2) for n in networks)
 
-    # If no manual interactions found for this pair, just use network's validation function
-    validity = None
+    # Pre-compute default validity once
     validity_default = any(validation_functions[n](node_1, node_2) for n in networks)
-    for i, interaction in df_interactions.iterrows():
-        if not nodes_in_interaction(node_1, node_2, interaction):
+
+    # Extract interaction data upfront to reduce overhead during iteration
+    from_sets = df_interactions["from"].str.replace(" ", "").str.split(",").map(set).tolist()
+    to_sets = df_interactions["to"].str.replace(" ", "").str.split(",").map(set).tolist()
+    valid_flags_list = df_interactions[networks].to_numpy()
+
+    # Evaluate validity
+    validity = None
+    for from_set, to_set, valid_flags in zip(from_sets, to_sets, valid_flags_list):
+        # Skip rows where the nodes are not in the interaction
+        if not (node_in_interaction(node_1, from_set) and node_in_interaction(node_2, to_set)):
             continue
 
-        valid_flags = interaction[networks]
-        if valid_flags.min() == -2:  # Force false! Overcomes any further interaction rules!
+        # Process validity flags
+        min_flag = valid_flags.min()
+        max_flag = valid_flags.max()
+
+        # Apply force rules
+        if min_flag == -2:  # Force false
             return False
-        if valid_flags.max() == +2:  # Force true! Overcomes any further interaction rules!
+        if max_flag == 2:  # Force true
             return True
-        if valid_flags.min() == -1:  # Force false!
+
+        # Update validity based on rules
+        if min_flag == -1:
             validity = False
-        if valid_flags.max() == +1:  # Force true!
+        elif max_flag == 1:
             validity = True
-        if valid_flags.max() == 0 and valid_flags.min() == 0:  # Apply normal interaction rules
+        elif min_flag == 0 and max_flag == 0:
             validity = validity_default
-    if validity is None:
-        validity = validity_default
-    return validity
+
+    # Return final validity
+    return validity if validity is not None else validity_default
 
 
 def nodes_in_interaction(node_1, node_2, interaction) -> bool:
-    if node_in_interaction(node_1, interaction["from"]) and node_in_interaction(node_2, interaction["to"]):
+    # Pre-process interaction strings into sets for faster lookup
+    from_set = set(interaction["from"].replace(" ", "").split(","))
+    to_set = set(interaction["to"].replace(" ", "").split(","))
+
+    # Check interactions for both nodes
+    return node_in_interaction(node_1, from_set) and node_in_interaction(node_2, to_set)
+
+def node_in_interaction(node, inter_set) -> bool:
+    # Check if the node ID is in the interaction set
+    if node.id in inter_set:
         return True
+
+    # Retrieve group columns and check for intersection with the interaction set
+    group_columns = (g for g in node.index if g.startswith("group_"))
+    for group in group_columns:
+        value = node[group]
+        if pd.notnull(value) and (value in inter_set or "all" in inter_set):
+            return True
     return False
 
 
-def node_in_interaction(node, inter) -> bool:
-    ints = inter.replace(" ", "").split(",")
-    group_columns = [c for c in node.index if c.startswith("group_")]
-    if node.id in ints or any(g in ints or "all" in ints for g in node[group_columns] if not pd.isnull(g)):
-        return True
-    return False
 
 
 def valid_melee_interaction(
