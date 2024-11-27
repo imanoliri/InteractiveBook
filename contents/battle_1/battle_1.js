@@ -1,6 +1,7 @@
 async function fetchBattleData() {
     try {
         
+        const response_battle_metadata = await fetch('battle_metadata.json');
         const response_nodes = await fetch('nodes.json');
         const response_units = await fetch('units.json');
         const response_meleeNetwork = await fetch('melee_interactions.json');
@@ -9,7 +10,8 @@ async function fetchBattleData() {
         const response_siegeNetwork = await fetch('siege_interactions.json');
 
 
-
+        battle_metadata = await response_battle_metadata.json();
+        console.log("Battle metadata fetched:", nodes);
         nodes = await response_nodes.json();
         console.log("Nodes fetched:", nodes);
         units = await response_units.json();
@@ -40,11 +42,16 @@ let siegeNetwork
 
 let networkDrawingConfig
 
-const nodeSize = 62;
-const nodeXOffset = 0;
-const nodeYOffset= 0;
-const nodeXScale = 1;
-const nodeYScale = 1;
+let battle_metadata
+
+let battleName
+let nodeSize
+let nodeXOffset
+let nodeYOffset
+let nodeXScale
+let nodeYScale
+let battleMapFile
+let battleMapInfoHTML
 
 
 // Get HTML elements
@@ -77,6 +84,8 @@ function createBattle() {
 
     defineHtmlElementsCallbacks()
 
+    getMetadata()
+
     // Nodes & units
     deploymentLevel = parseInt(slider.value, 10);
     nodes = createNodes(nodes);
@@ -98,6 +107,22 @@ function createBattle() {
     networkDrawingConfig = defineNetworkDrawingConfig(meleeNetwork, archerNetwork, flierNetwork, siegeNetwork)
 
     drawAll()
+}
+
+function getMetadata(){
+    battleName = battle_metadata["battle_name"]
+    nodeSize = battle_metadata["nodeSize"];
+    nodeXOffset = battle_metadata["nodeXOffset"];
+    nodeYOffset = battle_metadata["nodeYOffset"];
+    nodeXScale = battle_metadata["nodeXScale"];
+    nodeYScale = battle_metadata["nodeYScale"];
+    battleMapFile = battle_metadata["battle_map_file"];
+    battleMapInfoHTML = battle_metadata["battle_map_info_html"];
+
+    // Update HTML elements
+    document.title.textContent = battleName;
+    document.querySelector("h1").textContent = battleName;
+    document.documentElement.style.setProperty('--battle-map-file', `url(${battleMapFile})`);
 }
 
 
@@ -932,8 +957,9 @@ document.getElementById("mapInfoButton").addEventListener("click", function() {
     const mapInfoText = document.getElementById("mapInfoText");
 
     // Fetch the HTML file and insert its content into the modal
-    fetch('battle_1_map_info.html')
+    fetch(battleMapInfoHTML)
         .then(response => {
+            console.log(battleMapInfoHTML)
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }

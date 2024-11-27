@@ -42,7 +42,7 @@ button {
     position: relative;
     width: 100vh;
     height: 100vh;
-    background: url('battle_4__broken_shard_passage.png') no-repeat center center;
+    background: var(--battle-map-file) no-repeat center center;
     background-size: cover;
     border: 1px solid #ccc;
 }

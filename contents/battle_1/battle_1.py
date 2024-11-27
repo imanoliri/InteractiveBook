@@ -139,7 +139,7 @@ def node_in_interaction(node, inter_set) -> bool:
 
 
 def valid_melee_interaction(
-    node_1, node_2, melee_height_threshold: float = 2, melee_distance_threshold: float = 3.5
+    node_1, node_2, melee_height_threshold: float = 2, melee_distance_threshold: float = 4.5
 ) -> bool:
     if abs(node_1.z - node_2.z) > melee_height_threshold:
         return False
