@@ -19,6 +19,9 @@ def main():
     battle_name = os.path.basename(os.path.dirname(os.path.realpath(__file__)))
     battle_dir = f"contents/{battle_name}"
     excel_file = f"{battle_dir}/{battle_name}.xlsx"
+    auto_data_dir = f"{battle_dir}/auto_data"
+
+    os.makedirs(auto_data_dir, exist_ok=True)
 
     df_nodes = pd.read_excel(excel_file, "nodes").astype(dict(zip(["x", "y", "z"], [float, float, float])))
     df_interactions = pd.read_excel(excel_file, "interactions")
@@ -27,10 +30,10 @@ def main():
 
     write_parameters(df_parameters)
 
-    with open(f"{battle_dir}/nodes.json", "w") as fp:
+    with open(f"{auto_data_dir}/nodes.json", "w") as fp:
         json.dump(nodes_to_json(df_nodes), fp)
 
-    with open(f"{battle_dir}/units.json", "w") as fp:
+    with open(f"{auto_data_dir}/units.json", "w") as fp:
         json.dump(units_to_json(df_units), fp)
 
     networks = dict.fromkeys(validation_functions.keys())
@@ -48,7 +51,7 @@ def main():
             network_interactions = [i for i in network_interactions if i not in melee_network]
 
         networks[network] = network_interactions
-        with open(f"{battle_dir}/{network}_interactions.json", "w") as fp:
+        with open(f"{auto_data_dir}/{network}_interactions.json", "w") as fp:
             json.dump(network_interactions, fp)
 
 

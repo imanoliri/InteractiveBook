@@ -2,12 +2,12 @@ async function fetchBattleData() {
     try {
         
         const response_battle_metadata = await fetch('battle_metadata.json');
-        const response_nodes = await fetch('nodes.json');
-        const response_units = await fetch('units.json');
-        const response_meleeNetwork = await fetch('melee_interactions.json');
-        const response_archerNetwork = await fetch('archer_interactions.json');
-        const response_flierNetwork = await fetch('flier_interactions.json');
-        const response_siegeNetwork = await fetch('siege_interactions.json');
+        const response_nodes = await fetch('auto_data/nodes.json');
+        const response_units = await fetch('auto_data/units.json');
+        const response_meleeNetwork = await fetch('auto_data/melee_interactions.json');
+        const response_archerNetwork = await fetch('auto_data/archer_interactions.json');
+        const response_flierNetwork = await fetch('auto_data/flier_interactions.json');
+        const response_siegeNetwork = await fetch('auto_data/siege_interactions.json');
 
 
         battle_metadata = await response_battle_metadata.json();
