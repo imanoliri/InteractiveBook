@@ -2,18 +2,30 @@ import pandas as pd
 import math
 import json
 from typing import List
+import os
+
+
+MELEE_DISTANCE = 3.5
+MELEE_HEIGHT_DIFFERENCE_THRESHOLD = 2.0
+ARCHER_DISTANCE = 4.5
+ARCHER_DISTANCE_GAIN_PER_HEIGHT = 0.5
+SIEGE_DISTANCE = 11.0
+SIEGE_DISTANCE_GAIN_PER_HEIGHT = 0.5
+FLIER_DISTANCE = 10.0
+FLIER_DISTANCE_GAIN_PER_HEIGHT = 0.5
 
 
 def main():
-    battle_name = "battle_3"
+    battle_name = os.path.basename(os.path.dirname(os.path.realpath(__file__)))
     battle_dir = f"contents/{battle_name}"
     excel_file = f"{battle_dir}/{battle_name}.xlsx"
 
     df_nodes = pd.read_excel(excel_file, "nodes").astype(dict(zip(["x", "y", "z"], [float, float, float])))
     df_interactions = pd.read_excel(excel_file, "interactions")
     df_units = pd.read_excel(excel_file, "units")
+    df_parameters = pd.read_excel(excel_file, "parameters", index_col=0)
 
-    networks = dict.fromkeys(validation_functions.keys())
+    write_parameters(df_parameters)
 
     with open(f"{battle_dir}/nodes.json", "w") as fp:
         json.dump(nodes_to_json(df_nodes), fp)
@@ -21,6 +33,7 @@ def main():
     with open(f"{battle_dir}/units.json", "w") as fp:
         json.dump(units_to_json(df_units), fp)
 
+    networks = dict.fromkeys(validation_functions.keys())
     for network in networks:
 
         dfn = pd.DataFrame()
@@ -37,6 +50,35 @@ def main():
         networks[network] = network_interactions
         with open(f"{battle_dir}/{network}_interactions.json", "w") as fp:
             json.dump(network_interactions, fp)
+
+
+def write_parameters(df_parameters: pd.DataFrame):
+    parameters_names = [
+        "melee_distance",
+        "melee_height_difference_threshold",
+        "archer_distance",
+        "archer_distance_height_gain",
+        "siege_distance",
+        "siege_distance_height_gain",
+        "flier_distance",
+        "flier_distance_height_gain",
+    ]
+    parameters = [
+        "MELEE_DISTANCE",
+        "MELEE_HEIGHT_DIFFERENCE_THRESHOLD",
+        "ARCHER_DISTANCE",
+        "ARCHER_DISTANCE_GAIN_PER_HEIGHT",
+        "SIEGE_DISTANCE",
+        "SIEGE_DISTANCE_GAIN_PER_HEIGHT",
+        "FLIER_DISTANCE",
+        "FLIER_DISTANCE_GAIN_PER_HEIGHT",
+    ]
+
+    for param_name, param in zip(parameters_names, parameters):
+        param_value = df_parameters.loc[param_name].iloc[0]
+        if pd.isnull(param_value):
+            continue
+        globals()[param] = param_value
 
 
 def nodes_to_json(df_nodes) -> List[dict]:
@@ -138,28 +180,28 @@ def node_in_interaction(node, inter_set) -> bool:
     return False
 
 
-def valid_melee_interaction(
-    node_1, node_2, melee_height_threshold: float = 2, melee_distance_threshold: float = 3.5
-) -> bool:
-    if abs(node_1.z - node_2.z) > melee_height_threshold:
+def valid_melee_interaction(node_1, node_2) -> bool:
+    if abs(node_1.z - node_2.z) > MELEE_HEIGHT_DIFFERENCE_THRESHOLD:
         return False
-    return distance(node_1, node_2) < melee_distance_threshold
+    return distance(node_1, node_2) < MELEE_DISTANCE
 
 
-def valid_archer_interaction(
-    node_1, node_2, archer_distance_threshold: float = 4.5, gain_per_height: float = 0.5
-) -> bool:
-    return distance(node_1, node_2) < archer_distance_threshold * (
-        1 + gain_per_height * max([0, (node_1.z - node_2.z)])
+def valid_archer_interaction(node_1, node_2) -> bool:
+    return distance(node_1, node_2) < ARCHER_DISTANCE * (
+        1 + ARCHER_DISTANCE_GAIN_PER_HEIGHT * max([0, (node_1.z - node_2.z)])
     )
 
 
-def valid_flier_interaction(node_1, node_2, flier_distance_threshold: float = 10.0) -> bool:
-    return distance_3d(node_1, node_2) < flier_distance_threshold
+def valid_siege_interaction(node_1, node_2) -> bool:
+    return distance(node_1, node_2) < SIEGE_DISTANCE * (
+        1 + SIEGE_DISTANCE_GAIN_PER_HEIGHT * max([0, (node_1.z - node_2.z)])
+    )
 
 
-def valid_siege_interaction(node_1, node_2, siege_distance_threshold: float = 11, gain_per_height: float = 0.5) -> bool:
-    return distance(node_1, node_2) < siege_distance_threshold * (1 + gain_per_height * max([0, (node_1.z - node_2.z)]))
+def valid_flier_interaction(node_1, node_2) -> bool:
+    return distance_3d(node_1, node_2) < FLIER_DISTANCE * (
+        1 + FLIER_DISTANCE_GAIN_PER_HEIGHT * max([0, (node_1.z - node_2.z)])
+    )
 
 
 def distance(node_1, node_2) -> float:
@@ -181,8 +223,8 @@ def euclidean_distance_3d(x1, y1, z1, x2, y2, z2) -> float:
 validation_functions = {
     "melee": valid_melee_interaction,
     "archer": valid_archer_interaction,
-    "flier": valid_flier_interaction,
     "siege": valid_siege_interaction,
+    "flier": valid_flier_interaction,
 }
 
 
