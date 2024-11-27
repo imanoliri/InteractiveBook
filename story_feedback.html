@@ -135,7 +135,7 @@
                 tabContent.dataset.index = index;
                 tabContent.innerHTML = `
                     <div class="slider-container">
-                        <label for="slider-${index}">Rate this chapter (0-10):</label>
+                        <label class="slider-label" for="slider-${index}">Rate this chapter (0-10)</label>
                         <input id="slider-${index}" type="range" min="0" max="10" value="5" oninput="updateSliderValue('value-${index}', this.value)">
                         <span id="value-${index}">5</span>
                     </div>

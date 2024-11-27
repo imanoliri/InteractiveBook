@@ -111,6 +111,7 @@ def extract_paragraph_texts(html_content):
     return [p.get_text() for p in BeautifulSoup(html_content, "html.parser").find_all("p") if p.get_text() != ""]
 
 
+# Parse the HTML into tabs
 def parse_html_book(html_content):
 
     soup = BeautifulSoup(html_content, "html.parser")
@@ -167,11 +168,6 @@ def get_chapters_to_json(chapters, tab_names):
     return dict(zip(tab_names[1:], chapters[1:]))
 
 
-def add_feedback_box_to_each_chapter(chapters):
-    feedback_box_html = """<table id="feedbackTable" border="1"><tr><th>Chapter</th><th>Overall</th><th>World-Building</th><th>Plot</th><th>Pacing</th><th>Dialogue</th><th>Character Development</th><th>Conflict/Tension</th><th>Themes</th><th>Emotional Impact</th></tr><tr><td class='chapter-title'>Rating</td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td></tr><tr><td class='chapter-title'>Comments</td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td><td contenteditable='true'></td></tr></table><button class="feedbackButton" onclick="sendChapterFeedback()">Send Feedback</button>"""
-    return [c + feedback_box_html for c in chapters]
-
-
 def add_content_tab(chapters, tab_names, content_dir):
     chapters.append(generate_contents_page(get_content_links(content_dir)))
     tab_names.append("Contents")
@@ -224,36 +220,6 @@ def add_story_feedback_tab(chapters, tab_names, feedback_html_link):
     return chapters, tab_names
 
 
-def generate_static_html(chapters, tab_names, title):
-    html_template = """
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>{{ title }}</title>
-    <link rel="stylesheet" href="interactive_book.css">
-</head>
-<body>
-    <h1>{{ title }}</h1>
-    <div class="tab-buttons">
-        {% for i in range(chapters|length) %}
-        <button class="tab-button" onclick="showTab({{ i }})">{{ tab_names[i] }}</button>
-        {% endfor %}
-    </div>
-    <div class="tab-content">
-        {% for chapter in chapters %}
-        <div class="tab">{{ chapter|safe }}</div>
-        {% endfor %}
-    </div>
-    <script src="interactive_book.js"></script>
-</body>
-</html>
-    """
-
-    template = Template(html_template)
-    return template.render(chapters=chapters, tab_names=tab_names, title=title.replace("_", " "))
-
-
 def save_to_json(data, filepath):
     with open(filepath, "w", encoding="utf-8") as file:
         json.dump(data, file, indent=4)
@@ -276,9 +242,7 @@ def main():
     contents_dir = "contents"
     images_dir = "images"
     feedback_html_path = "story_feedback.html"
-    title = html_file_path.split("/")[-1].split(".")[0]
     output_file_path = "index.html"
-    add_feedback_to_each_chapter = False
 
     # Read html
     html_book = read_html_book(html_file_path)
@@ -290,18 +254,12 @@ def main():
 
     # Generate html interactive book
     chapters, tab_names = parse_html_book(html_book)
-    # Save all tabs in story_by_chapters as json, which will be loaded by index.html
     save_to_json(get_chapters_to_json(chapters, tab_names), "story_by_chapters.json")
-    if add_feedback_to_each_chapter:
-        chapters = [chapters[0], *add_feedback_box_to_each_chapter(chapters[1:])]
     chapters, tab_names = add_content_tab(chapters, tab_names, contents_dir)
-
     chapters, tab_names = add_story_feedback_tab(chapters, tab_names, feedback_html_path)
 
-    interactive_book = generate_static_html(chapters, tab_names, title)
-
     # Save book locally
-    save_html(interactive_book, output_file_path)
+    save_to_json(dict(zip(tab_names, chapters)), "interactive_book_tabs.json")
 
 
 if __name__ == "__main__":
