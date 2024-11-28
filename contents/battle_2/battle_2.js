@@ -120,7 +120,7 @@ function getMetadata(){
     battleMapInfoHTML = battle_metadata["battle_map_info_html"];
 
     // Update HTML elements
-    document.title.textContent = battleName;
+    document.title = battleName;
     document.querySelector("h1").textContent = battleName;
     document.documentElement.style.setProperty('--battle-map-file', `url(${battleMapFile})`);
 }

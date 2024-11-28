@@ -16,6 +16,8 @@ Python script that takes an HTML book, divide it into chapters, and generate a s
 - Manual:
     - Battle games.
 
+It also has a "Story Feedback" tab that allows the reader to give feedback for the whole story as well as each chapter.
+
 ## Ideas
 - Automatic from story:
     - Crosswords from word salad.

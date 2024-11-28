@@ -225,6 +225,11 @@ def save_to_json(data, filepath):
         json.dump(data, file, indent=4)
 
 
+def load_from_json(filepath):
+    with open(filepath) as f:
+        return json.load(f)
+
+
 def save_html(data, filepath):
     with open(filepath, "w", encoding="utf-8") as file:
         file.write(data)
@@ -238,11 +243,11 @@ def save_html_to_content(data, contents_dir, name):
 
 def main():
 
-    html_file_path = "The_Valley_of_Dragons_1_-_Attack_of_the_Dark_God.html"
+    story_metadata = load_from_json("story_metadata.json")
+    html_file_path = story_metadata["html_file_path"]
     contents_dir = "contents"
     images_dir = "images"
     feedback_html_path = "story_feedback.html"
-    output_file_path = "index.html"
 
     # Read html
     html_book = read_html_book(html_file_path)

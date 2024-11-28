@@ -2,8 +2,14 @@
 async function loadStory() {
     try {
         // Fetch the story_by_chapters.json file
-        const response = await fetch('interactive_book_tabs.json');
-        const storyData = await response.json();
+        const responseStoryData = await fetch('interactive_book_tabs.json');
+        const storyData = await responseStoryData.json();
+        const response_story_metadata = await fetch('story_metadata.json');
+        const story_metadata = await response_story_metadata.json();
+        console.log(story_metadata)
+
+        document.title = story_metadata['story_name'];
+        document.querySelector("h1").textContent = story_metadata['story_name'];
 
         // Get references to tabs container and content container
         const tabButtons = document.getElementById('tabButtons');
