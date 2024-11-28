@@ -111,9 +111,9 @@
             fetchStoryMetaData().then(createFeedbackPage);
         });
         
-        
+        let chapterTitles
         function createFeedbackPage() {
-            const chapterTitles = [
+            chapterTitles = [
                 'Whole Story',
                 ...Object.keys(story_by_chapters)
             ];
