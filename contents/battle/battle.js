@@ -72,6 +72,7 @@ let battleMapInfoHTML
 
 
 // Get HTML elements
+const battlefield = document.getElementById('battlefield')
 const dropdown = document.getElementById('battleDropdown');
 const slider = document.getElementById("difficultySlider");
 const sliderValue = document.getElementById("sliderValue");
@@ -118,7 +119,7 @@ function createBattle() {
 
     
     // Set CSS variables
-    setCSSVariables(nodeSize)
+    setCSSVariables()
 
     // Define Network Drawing Configs
     networkConfigs = definenetworkConfigs(meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork)
@@ -128,9 +129,11 @@ function createBattle() {
 
 function getMetadata(){
     battleName = battle_metadata["battle_name"]
-    nodeSize = battle_metadata["nodeSize"];
-    nodeXOffset = battle_metadata["nodeXOffset"];
-    nodeYOffset = battle_metadata["nodeYOffset"];
+    console.log(battle_metadata["nodeSize"])
+    nodeSize = configNodeSizeToPx(battle_metadata["nodeSize"]);
+    console.log(nodeSize)
+    nodeXOffset = configNodeSizeToPx(battle_metadata["nodeXOffset"]);
+    nodeYOffset = configNodeSizeToPx(battle_metadata["nodeYOffset"]);
     nodeXScale = battle_metadata["nodeXScale"];
     nodeYScale = battle_metadata["nodeYScale"];
     battleMapFile = `${selectedBattle}/${battle_metadata["battle_map_file"]}`;
@@ -246,17 +249,12 @@ function writeToLog(message) {
     logTextbox.scrollTop = logTextbox.scrollHeight;
 }
 
-function vhToPixels(value) {
-    // Extract the numerical part from the value (e.g., "30vh" -> 30)
-    const numericValue = parseFloat(value);
-
-    // Calculate the pixel equivalent using the window's inner height
-    const pixels = (window.innerHeight * numericValue) / 100;
-    return pixels;
+function configNodeSizeToPx(vh) {
+    return (vh / 100 / 1000) * window.innerHeight;
 }
 
 
-function setCSSVariables(nodeSize) {
+function setCSSVariables() {
     document.documentElement.style.setProperty('--node-size', `${nodeSize}px`);
     document.documentElement.style.setProperty('--unit-size', `${nodeSize}px`);
     document.documentElement.style.setProperty('--node-size-highlight', `${nodeSize*1.2}px`);
@@ -292,45 +290,33 @@ function definenetworkConfigs(meleeNetwork, archerNetwork, flierNetwork, siegeNe
         meleeNetwork: {
             checkbox: checkboxMeleeNetwork,
             svgConfig: {
-                    svg: svg,
                     networkType: "meleeNetwork",
-                    nodes: nodes,
-                    nodeSize: nodeSize,
                     network: meleeNetwork,
                     color: "red",
                     width: nodeSize/10,
                     dashArray: "",
-                    lateralOffset: 0,
                     curvedLine: false
                 }
         },
         archerNetwork: {
             checkbox: checkboxArcherNetwork,
             svgConfig: {
-                    svg: svg,
                     networkType: "archerNetwork",
-                    nodes: nodes,
-                    nodeSize: nodeSize,
                     network: archerNetwork,
                     color: "green",
                     width: nodeSize/10,
                     dashArray: "10,10",
-                    lateralOffset: 0,
                     curvedLine: false
                 }
         },
         flierNetwork: {
             checkbox: checkboxFlierNetwork,
             svgConfig: {
-                svg: svg,
                 networkType: "flierNetwork",
-                nodes: nodes,
-                nodeSize: nodeSize,
                 network: flierNetwork,
                 color: "blue",
                 width: nodeSize/300,
                 dashArray: "",
-                lateralOffset: 0,
                 curvedLine: true,
                 focalPointX: focalPointX,
                 focalPointY: focalPointY,
@@ -340,15 +326,11 @@ function definenetworkConfigs(meleeNetwork, archerNetwork, flierNetwork, siegeNe
         cavalryNetwork: {
             checkbox: checkboxCavalryNetwork,
             svgConfig: {
-                svg: svg,
                 networkType: "cavalryNetwork",
-                nodes: nodes,
-                nodeSize: nodeSize,
                 network: cavalryNetwork,
                 color: "yellow",
                 width: nodeSize/30,
                 dashArray: "",
-                lateralOffset: 0,
                 curvedLine: true,
                 focalPointX: focalPointX,
                 focalPointY: focalPointY,
@@ -358,15 +340,11 @@ function definenetworkConfigs(meleeNetwork, archerNetwork, flierNetwork, siegeNe
         siegeNetwork: {
             checkbox: checkboxSiegeNetwork,
             svgConfig: {
-                svg: svg,
                 networkType: "siegeNetwork",
-                nodes: nodes,
-                nodeSize: nodeSize,
                 network: siegeNetwork,
                 color: "white",
                 width: nodeSize/10,
                 dashArray: "10,25",
-                lateralOffset: 0,
                 curvedLine: false
             }
         }
@@ -390,6 +368,8 @@ function drawNodes() {
         div.classList.add("node");
         div.style.left = `${nodeXOffset + node.x * nodeSize * nodeXScale}px`;
         div.style.top = `${nodeYOffset + node.y * nodeSize * nodeYScale}px`;
+        console.log(div.style.left)
+        console.log(div.style.top)
         div.dataset.nodeId = node.id; // Assign the node ID as a data attribute
 
         // Drag and drop callbacks
@@ -425,6 +405,8 @@ function drawUnits(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNet
         // Position the circle at the node's coordinates
         circle.style.left = `${nodeXOffset + node.x * nodeSize * nodeXScale}px`;
         circle.style.top = `${nodeYOffset + node.y * nodeSize * nodeYScale}px`;
+        console.log(circle.style.left)
+        console.log(circle.style.top)
 
         // Set unit ID as a data attribute for reference
         circle.dataset.unitId = unit.id;
@@ -444,8 +426,6 @@ function drawUnits(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNet
             <strong>Defense:</strong> ${unit.defense}<br>
             <strong>Health:</strong> ${unit.health}<br>
             <strong>Node:</strong> ${unit.node}<br>
-            <strong>Deployment Min:</strong> ${unit.min_deployment}
-            <strong>Deployment Max:</strong> ${unit.max_deployment}
         `;
         circle.appendChild(tooltip);
         battlefield.appendChild(circle); // Append the unit circle to the battlefield
@@ -512,38 +492,35 @@ function updateDrawNetwork(network, networkConfig) {
 
 }
 
-function createConnections({svg, networkType, nodes, nodeSize, network, color, width, dashArray, lateralOffset, curvedLine, focalPointX, focalPointY, curvatureStrength}) {
+function createConnections({networkType, network, color, width, dashArray, curvedLine, focalPointX, focalPointY, curvatureStrength}) {
     network.forEach(pair => {
         const node1 = nodes.find(node => node.id === pair[0]);
         const node2 = nodes.find(node => node.id === pair[1]);
         if (node1 && node2) {
-            drawLine(svg, networkType,
-                node1.x * nodeSize + nodeSize / 2, node1.y * nodeSize + nodeSize / 2,
-                node2.x * nodeSize + nodeSize / 2, node2.y * nodeSize + nodeSize / 2,
-                color, width, dashArray, lateralOffset, curvedLine, focalPointX, focalPointY, curvatureStrength
+            drawLine(networkType,
+                nodeXOffset + node1.x * nodeSize + nodeSize / 2, nodeYOffset + node1.y * nodeSize + nodeSize / 2,
+                nodeXOffset + node2.x * nodeSize + nodeSize / 2, nodeYOffset + node2.y * nodeSize + nodeSize / 2,
+                color, width, dashArray, curvedLine, focalPointX, focalPointY, curvatureStrength
             );
         }
     });
 }
 
-function drawLine(svg, networkType, x1, y1, x2, y2, color, width, dashArray, lateralOffset = 0, curvedLine = false, curvatureFocalPointX, curvatureFocalPointY, curvatureStrength) {
+function drawLine(networkType, x1, y1, x2, y2, color, width, dashArray, curvedLine = false, curvatureFocalPointX, curvatureFocalPointY, curvatureStrength) {
     if (curvedLine) {
         // If curvedLine is true, use the drawCurvedLine function
-        drawCurvedLine(svg, networkType, x1, y1, x2, y2, color, width, dashArray, curvatureFocalPointX, curvatureFocalPointY, curvatureStrength);
+        drawCurvedLine(networkType, x1, y1, x2, y2, color, width, dashArray, curvatureFocalPointX, curvatureFocalPointY, curvatureStrength);
     } else {
-        // Adjust the coordinates by the lateral offset for a straight line
-        const adjustedX1 = x1 + lateralOffset;
-        const adjustedY1 = y1;
-        const adjustedX2 = x2 + lateralOffset;
-        const adjustedY2 = y2;
+
+        console.log(x1, y1, ",", x2, y2)
 
         // Draw a thicker black line as the border
         const borderLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
         borderLine.setAttribute("class", `border-line ${networkType}-border-line`);
-        borderLine.setAttribute("x1", adjustedX1);
-        borderLine.setAttribute("y1", adjustedY1);
-        borderLine.setAttribute("x2", adjustedX2);
-        borderLine.setAttribute("y2", adjustedY2);
+        borderLine.setAttribute("x1", x1);
+        borderLine.setAttribute("y1", y1);
+        borderLine.setAttribute("x2", x2);
+        borderLine.setAttribute("y2", y2);
         borderLine.setAttribute("stroke", "black");
         borderLine.setAttribute("stroke-width", `${width}`);
         borderLine.setAttribute("stroke-linecap", "round");
@@ -553,10 +530,10 @@ function drawLine(svg, networkType, x1, y1, x2, y2, color, width, dashArray, lat
         // Draw the colored line on top
         const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
         line.setAttribute("class", `line ${networkType}-line`);
-        line.setAttribute("x1", adjustedX1);
-        line.setAttribute("y1", adjustedY1);
-        line.setAttribute("x2", adjustedX2);
-        line.setAttribute("y2", adjustedY2);
+        line.setAttribute("x1", x1);
+        line.setAttribute("y1", y1);
+        line.setAttribute("x2", x2);
+        line.setAttribute("y2", y2);
         line.setAttribute("stroke", color);
         line.setAttribute("stroke-width", `${width/2}`);
         line.setAttribute("stroke-linecap", "round");
@@ -565,7 +542,7 @@ function drawLine(svg, networkType, x1, y1, x2, y2, color, width, dashArray, lat
     }
 }
 
-function drawCurvedLine(svg, networkType, x1, y1, x2, y2, color, width, dashArray, focalPointX, focalPointY, curvatureStrength = 100) {
+function drawCurvedLine(networkType, x1, y1, x2, y2, color, width, dashArray, focalPointX, focalPointY, curvatureStrength = 100) {
     // Calculate the midpoint of the line
     const midX = (x1 + x2) / 2;
     const midY = (y1 + y2) / 2;

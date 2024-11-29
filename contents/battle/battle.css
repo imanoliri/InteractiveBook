@@ -35,7 +35,7 @@ button {
 #container {
     display: flex;
     flex-direction: row;
-    height: 100vh;
+    /* height: 100vh; */
 }
 
 #battlefield {
@@ -61,7 +61,7 @@ button {
     z-index: 1;
 }
 .highlight {
-    transform: translate(-10%, -10%);
+    transform: translate(-50%, -50%);
     width: var(--node-size-highlight);
     height: var(--node-size-highlight);
 }
