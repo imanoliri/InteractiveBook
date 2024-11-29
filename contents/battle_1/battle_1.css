@@ -88,19 +88,23 @@ button {
 }
 
 /* Border colors based on unit type */
-.type-A {
-    border-color: green;
-}
-
 .type-M {
     border-color: red;
 }
-
-.type-F {
-    border-color: blue;
+.type-A {
+    border-color: green;
 }
 .type-S {
     border-color: white;
+}
+.type-R {
+    border-color: plum;
+}
+.type-C {
+    border-color: yellow;
+}
+.type-F {
+    border-color: blue;
 }
 
 .unit-tooltip {

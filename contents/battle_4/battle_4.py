@@ -11,6 +11,8 @@ ARCHER_DISTANCE = 4.5
 ARCHER_DISTANCE_GAIN_PER_HEIGHT = 0.5
 SIEGE_DISTANCE = 11.0
 SIEGE_DISTANCE_GAIN_PER_HEIGHT = 0.5
+CAVALRY_DISTANCE = 4.5
+CAVALRY_HEIGHT_DIFFERENCE_THRESHOLD = 2.0
 FLIER_DISTANCE = 10.0
 FLIER_DISTANCE_GAIN_PER_HEIGHT = 0.5
 
@@ -45,8 +47,8 @@ def main():
 
         network_interactions = interactions_from_nodes_and_interactions(df_nodes, dfn, network)
 
-        if network == "archer" or network == "siege":
-            # Remove archer/siege interactions if there is an equivalent melee one to avoid redundancy
+        if network in ["archer", "siege", "cavalry"]:
+            # Remove archer/siege/cavalry interactions if there is an equivalent melee one to avoid redundancy
             melee_network = networks["melee"]
             network_interactions = [i for i in network_interactions if i not in melee_network]
 
@@ -63,6 +65,8 @@ def write_parameters(df_parameters: pd.DataFrame):
         "archer_distance_height_gain",
         "siege_distance",
         "siege_distance_height_gain",
+        "cavalry_distance",
+        "cavalry_height_difference_threshold",
         "flier_distance",
         "flier_distance_height_gain",
     ]
@@ -73,6 +77,8 @@ def write_parameters(df_parameters: pd.DataFrame):
         "ARCHER_DISTANCE_GAIN_PER_HEIGHT",
         "SIEGE_DISTANCE",
         "SIEGE_DISTANCE_GAIN_PER_HEIGHT",
+        "CAVALRY_DISTANCE",
+        "CAVALRY_HEIGHT_DIFFERENCE_THRESHOLD",
         "FLIER_DISTANCE",
         "FLIER_DISTANCE_GAIN_PER_HEIGHT",
     ]
@@ -201,6 +207,12 @@ def valid_siege_interaction(node_1, node_2) -> bool:
     )
 
 
+def valid_cavalry_interaction(node_1, node_2) -> bool:
+    if abs(node_1.z - node_2.z) > CAVALRY_HEIGHT_DIFFERENCE_THRESHOLD:
+        return False
+    return distance(node_1, node_2) < CAVALRY_DISTANCE
+
+
 def valid_flier_interaction(node_1, node_2) -> bool:
     return distance_3d(node_1, node_2) < FLIER_DISTANCE * (
         1 + FLIER_DISTANCE_GAIN_PER_HEIGHT * max([0, (node_1.z - node_2.z)])
@@ -227,6 +239,7 @@ validation_functions = {
     "melee": valid_melee_interaction,
     "archer": valid_archer_interaction,
     "siege": valid_siege_interaction,
+    "cavalry": valid_cavalry_interaction,
     "flier": valid_flier_interaction,
 }
 
