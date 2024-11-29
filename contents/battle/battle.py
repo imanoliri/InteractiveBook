@@ -50,6 +50,10 @@ def generate_battle_autodata(battles_path: str, battle_name: str):
             # Remove archer/siege/cavalry interactions if there is an equivalent melee one to avoid redundancy
             melee_network = networks["melee"]
             network_interactions = [i for i in network_interactions if i not in melee_network]
+        if network == "siege":
+            # Remove siege interactions if there is an equivalent archer one to avoid redundancy
+            melee_network = networks["archer"]
+            network_interactions = [i for i in network_interactions if i not in melee_network]
 
         networks[network] = network_interactions
         with open(f"{auto_data_dir}/{network}_interactions.json", "w") as fp:
@@ -249,8 +253,6 @@ if __name__ == "__main__":
     battle_dirs = [f for f in os.listdir(battles_path) if os.path.isdir(os.path.join(battles_path, f))]
     for battle_dir in battle_dirs:
         battle_name = os.path.basename(battle_dir)
-        if battle_name != "battle_5":
-            continue
         print(f"{battle_name}...")
         generate_battle_autodata(battles_path, battle_name)
         print(f"\t{battle_name}\n")

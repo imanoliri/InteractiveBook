@@ -129,9 +129,7 @@ function createBattle() {
 
 function getMetadata(){
     battleName = battle_metadata["battle_name"]
-    console.log(battle_metadata["nodeSize"])
     nodeSize = configNodeSizeToPx(battle_metadata["nodeSize"]);
-    console.log(nodeSize)
     nodeXOffset = configNodeSizeToPx(battle_metadata["nodeXOffset"]);
     nodeYOffset = configNodeSizeToPx(battle_metadata["nodeYOffset"]);
     nodeXScale = battle_metadata["nodeXScale"];
@@ -368,8 +366,6 @@ function drawNodes() {
         div.classList.add("node");
         div.style.left = `${nodeXOffset + node.x * nodeSize * nodeXScale}px`;
         div.style.top = `${nodeYOffset + node.y * nodeSize * nodeYScale}px`;
-        console.log(div.style.left)
-        console.log(div.style.top)
         div.dataset.nodeId = node.id; // Assign the node ID as a data attribute
 
         // Drag and drop callbacks
@@ -405,8 +401,6 @@ function drawUnits(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNet
         // Position the circle at the node's coordinates
         circle.style.left = `${nodeXOffset + node.x * nodeSize * nodeXScale}px`;
         circle.style.top = `${nodeYOffset + node.y * nodeSize * nodeYScale}px`;
-        console.log(circle.style.left)
-        console.log(circle.style.top)
 
         // Set unit ID as a data attribute for reference
         circle.dataset.unitId = unit.id;
@@ -475,8 +469,6 @@ function drawNetworkConnections() {
 }
 
 function updateDrawNetwork(network, networkConfig) {
-    console.log(network, networkConfig)
-
     document.querySelectorAll(`.${network}-border-line`).forEach(line => line.remove());
     document.querySelectorAll(`.${network}-line`).forEach(line => line.remove());
 
@@ -511,8 +503,6 @@ function drawLine(networkType, x1, y1, x2, y2, color, width, dashArray, curvedLi
         // If curvedLine is true, use the drawCurvedLine function
         drawCurvedLine(networkType, x1, y1, x2, y2, color, width, dashArray, curvatureFocalPointX, curvatureFocalPointY, curvatureStrength);
     } else {
-
-        console.log(x1, y1, ",", x2, y2)
 
         // Draw a thicker black line as the border
         const borderLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -933,6 +923,8 @@ function handleSiegeDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNe
     console.log('handleSiegeDrag')
     if (networkContainsConnection(meleeNetwork, x, y)) {
         return handleSiegeCombat(u, v, x, y, units)
+    } else if (networkContainsConnection(archerNetwork, x, y)) {
+        return handleSiegeCombat(u, v, x, y, units)
     } else if (networkContainsConnection(siegeNetwork, x, y)) {
         return handleSiegeCombat(u, v, x, y, units)
     } else {
@@ -953,7 +945,9 @@ function handleMonsterDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flier
 
 function handleCavalryDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork) {
     console.log('handleCavalryDrag')
-    if (networkContainsConnection(cavalryNetwork, x, y)) {
+    if (networkContainsConnection(meleeNetwork, x, y)) {
+        return handleCavalryCombat(u, v, x, y, units)
+    } else if (networkContainsConnection(cavalryNetwork, x, y)) {
         return handleCavalryCombat(u, v, x, y, units)
     } else {
         writeToLog('cannot attack')
@@ -1068,7 +1062,6 @@ document.getElementById("mapInfoButton").addEventListener("click", function() {
     // Fetch the HTML file and insert its content into the modal
     fetch(battleMapInfoHTML)
         .then(response => {
-            console.log(battleMapInfoHTML)
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }

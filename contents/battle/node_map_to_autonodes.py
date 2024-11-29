@@ -28,8 +28,6 @@ if __name__ == "__main__":
     for battle_dir in battle_dirs:
         try:
             battle_name = os.path.basename(battle_dir)
-            if battle_name != "battle_5":
-                continue
             print(f"{battle_name}...")
             generate_battle_nodes_from_node_map(battles_path, battle_name)
             print(f"\t{battle_name}\n")
