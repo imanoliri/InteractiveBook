@@ -636,6 +636,10 @@ function handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork
             networksToUse = [meleeNetwork, flierNetwork];
         } else if (unitType === 'S') {
             networksToUse = [meleeNetwork, siegeNetwork];
+        } else if (unitType === 'R') {
+            networksToUse = [meleeNetwork];
+        } else if (unitType === 'V') {
+            networksToUse = [meleeNetwork, cavalryNetwork];
         }
     }
 
@@ -872,7 +876,7 @@ function handleCombat(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwo
     } else if (u.type === 'R') {
         writeToLog(`\nmonster attack unit:${u.id} -> unit:${v.id}`)
         units = handleMonsterDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork)
-    } else if (u.type === 'C') {
+    } else if (u.type === 'V') {
         writeToLog(`\ncavalry attack unit:${u.id} -> unit:${v.id}`)
         units = handleCavalryDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork)
     } else {
