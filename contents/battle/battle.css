@@ -107,6 +107,23 @@ button {
     border-color: blue;
 }
 
+.node-tooltip {
+    display: none;
+    position: absolute;
+    background-color: white;
+    color: black;
+    border: 1px solid #ccc;
+    padding: 5px;
+    font-size: 0.8em;
+    white-space: nowrap;
+    z-index: 30;
+    transform: translate(-50%, -110%);
+}
+
+.node:hover .node-tooltip {
+    display: block;
+}
+
 .unit-tooltip {
     display: none;
     position: absolute;
@@ -116,7 +133,7 @@ button {
     padding: 5px;
     font-size: 0.8em;
     white-space: nowrap;
-    z-index: 10;
+    z-index: 30;
     transform: translate(-50%, -110%);
 }
 

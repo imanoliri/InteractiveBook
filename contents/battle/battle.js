@@ -373,9 +373,8 @@ function drawNodes() {
         tooltip.classList.add("node-tooltip");
         tooltip.innerHTML = `
             <strong>Node:</strong> ${node.id}<br>
-            <strong>x:</strong> ${node.x}<br>
-            <strong>y:</strong> ${node.y}<br>
-            <strong>z:</strong> ${node.z}<br>
+            <strong>Coords:</strong> (${node.x},${node.y},${node.z})<br>
+            <strong>Location:</strong> ${node.group_1?? ""} ${node.group_2?? ""} ${node.group_3?? ""}
         `;
         div.appendChild(tooltip);
 
@@ -430,7 +429,9 @@ function drawUnits(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNet
             <strong>Attack Range:</strong> ${unit.attack_range}<br>
             <strong>Defense:</strong> ${unit.defense}<br>
             <strong>Health:</strong> ${unit.health}<br>
-            <strong>Node:</strong> ${unit.node}<br>
+            <strong>Node:</strong> ${node.id}<br>
+            <strong>Coords:</strong> (${node.x}, ${node.y}, ${node.z})<br>
+            <strong>Location:</strong> ${node.group_1?? ""} ${node.group_2?? ""} ${node.group_3?? ""}
         `;
         circle.appendChild(tooltip);
         battlefield.appendChild(circle); // Append the unit circle to the battlefield
