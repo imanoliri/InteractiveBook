@@ -368,6 +368,17 @@ function drawNodes() {
         div.style.top = `${nodeYOffset + node.y * nodeSize * nodeYScale}px`;
         div.dataset.nodeId = node.id; // Assign the node ID as a data attribute
 
+        // Create a tooltip to show unit details on hover
+        const tooltip = document.createElement("div");
+        tooltip.classList.add("node-tooltip");
+        tooltip.innerHTML = `
+            <strong>Node:</strong> ${node.id}<br>
+            <strong>x:</strong> ${node.x}<br>
+            <strong>y:</strong> ${node.y}<br>
+            <strong>z:</strong> ${node.z}<br>
+        `;
+        div.appendChild(tooltip);
+
         // Drag and drop callbacks
         div.addEventListener("dragover", handleDragOver);
         div.addEventListener("drop", (event) => {handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize);});
@@ -742,6 +753,9 @@ function handleMoveDrag(u, x, y, meleeNetwork, archerNetwork, flierNetwork, sieg
     if (networkContainsConnection(meleeNetwork, x, y)) {
         writeToLog(`\nmove unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
         u.node = y;
+    } else if (u.type === 'V' && networkContainsConnection(cavalryNetwork, x, y)){
+        writeToLog(`\nmove unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
+        u.node = y
     } else if (u.type === 'F' && networkContainsConnection(flierNetwork, x, y)){
         writeToLog(`\nfly unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
         u.node = y
@@ -1019,7 +1033,7 @@ function handleMonsterCombat(attacker, defender, x, y, units){
 
 
 function handleCavalryCombat(attacker, defender, x, y, units){
-    defender.health -= attacker.melee_damage;
+    defender.health -= attacker.attack_melee;
     // Defender killed with first attack
     if (defender.health <= 0) {
         writeToLog(`Attacker wins with ${attacker.health} health left.`)
