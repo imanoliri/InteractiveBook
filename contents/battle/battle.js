@@ -58,6 +58,7 @@ let siegeNetwork
 let cavalryNetwork
 
 let svg
+let unitTypes
 let networkConfigs
 
 // battle_metadata
@@ -107,21 +108,13 @@ function createBattle() {
     // Nodes & units
     deploymentLevel = parseInt(slider.value, 10);
     nodes = createNodes(nodes);
-    units = createUnits(units, deploymentLevel);
+    units = deployUnits(units, deploymentLevel);
 
-    
-    // Networks
-    meleeNetwork = createMeleeNetwork(meleeNetwork);
-    archerNetwork = createArcherNetwork(archerNetwork);
-    flierNetwork = createFlierNetwork(flierNetwork);
-    siegeNetwork = createSiegeNetwork(siegeNetwork);
-    cavalryNetwork = createCavalryNetwork(cavalryNetwork);
-
-    
     // Set CSS variables
     setCSSVariables()
 
-    // Define Network Drawing Configs
+    // Define unit types and networks
+    unitTypes = defineUnitTypes();
     networkConfigs = definenetworkConfigs(meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork)
 
     drawAll()
@@ -203,30 +196,9 @@ function createNodes(nodes) {
 }
 
 
-function createUnits(units, deploymentLevel) {
+function deployUnits(units, deploymentLevel) {
     units = units.filter(unit => (unit.min_deployment <= deploymentLevel) & (deploymentLevel <=  unit.max_deployment));
     return units
-}
-
-function createMeleeNetwork(meleeNetwork) {
-    return meleeNetwork
-}
-
-function createArcherNetwork(archerNetwork) {
-    return archerNetwork
-
-}
-
-function createFlierNetwork(flierNetwork) {
-    return flierNetwork
-}
-
-function createSiegeNetwork(siegeNetwork){
-    return siegeNetwork
-}
-
-function createCavalryNetwork(cavalryNetwork){
-    return cavalryNetwork
 }
 
 function createPairs(element, list) {
@@ -260,12 +232,17 @@ function setCSSVariables() {
 }
 
 
-// DRAW functions
-function drawAll(){
-    drawNodes()
-    drawMobileElements()
-    drawNetworkConnections()
+function defineUnitTypes() {
+    return {
+        M: {name: 'melee', color: 'red', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork], combatHandler: handleMeleeCombat},
+        A: {name: 'archer', color: 'green', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork, archerNetwork], combatHandler: handleArcherCombat},
+        S: {name: 'siege', color: 'white', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork, archerNetwork, siegeNetwork], combatHandler: handleSiegeCombat},
+        R: {name: 'monster', color: 'plum', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork], combatHandler: handleMonsterCombat},
+        V: {name: 'cavalry', color: 'yellow', movementNetworks: [meleeNetwork, cavalryNetwork], attackNetworks: [meleeNetwork, cavalryNetwork], combatHandler: handleCavalryCombat},
+        F: {name: 'flier', color: 'blue', movementNetworks: [meleeNetwork, flierNetwork], attackNetworks: [meleeNetwork, flierNetwork], combatHandler: handleMeleeCombat}
+    }
 }
+
 
 function definenetworkConfigs(meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork) {
     // Create SVG element for lines
@@ -348,6 +325,14 @@ function definenetworkConfigs(meleeNetwork, archerNetwork, flierNetwork, siegeNe
         }
     };
 return networkConfigs
+}
+
+
+// DRAW functions
+function drawAll(){
+    drawNodes()
+    drawMobileElements()
+    drawNetworkConnections()
 }
 
 function drawMobileElements(){
@@ -724,51 +709,22 @@ function handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwo
 
             if (targetUnit) {
                 if (draggedUnit.team === targetUnit.team) {
-                    // Swap the nodes
-                    if (networkContainsConnection(meleeNetwork, draggedUnit.node, targetUnit.node) & networkContainsConnection(meleeNetwork, targetUnit.node, draggedUnit.node)){
-                        const tempNode = draggedUnit.node;
-                        draggedUnit.node = targetUnit.node;
-                        targetUnit.node = tempNode;
-                        writeToLog(`\nSwapped unit:${draggedUnit.id} <-> unit:${targetUnit.id}`);
-                    } else {
-                        writeToLog(`\nCannot swap unit:${draggedUnit.id} <-> unit:${targetUnit.id}`);
-                    }
+                    // Swap the units
+                    handleSwap(draggedUnit, targetUnit)
+                    
                 } else {
                     // If not same team, combat
-                    units = handleCombat(draggedUnit, targetUnit, draggedUnitNodeIdInt, targetNodeIdInt, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork)}
+                    units = handleCombat(draggedUnit, targetUnit, draggedUnitNodeIdInt, targetNodeIdInt, units)}
                 
             } else {
                 // If no unit is in the target node, simply move the dragged unit to the target node
-                handleMoveDrag(draggedUnit, draggedUnitNodeIdInt, targetNodeIdInt, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork)
+                handleMove(draggedUnit, draggedUnitNodeIdInt, targetNodeIdInt)
             }
 
             // Redraw the units to update their positions
             drawMobileElements(nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize);
         }
     }
-}
-
-function handleMoveDrag(u, x, y, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork) {
-    console.log('handleMoveDrag')
-    const draggedUnitIdInt = parseInt(u.id);
-    if (networkContainsConnection(meleeNetwork, x, y)) {
-        writeToLog(`\nmove unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
-        u.node = y;
-    } else if (u.type === 'V' && networkContainsConnection(cavalryNetwork, x, y)){
-        writeToLog(`\nmove unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
-        u.node = y
-    } else if (u.type === 'F' && networkContainsConnection(flierNetwork, x, y)){
-        writeToLog(`\nfly unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
-        u.node = y
-    } else {
-        writeToLog(`cannot move unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
-    }
-
-    return networkContainsConnection(meleeNetwork, x, y);
-}
-
-function networkContainsConnection(network, x, y) {
-    return network.some(pair => pair[0] === x && pair[1] === y);
 }
 
 // CLICK AND CLICK callbacks
@@ -786,19 +742,11 @@ function handleUnitClick(event, nodes, units, meleeNetwork, archerNetwork, flier
 
         if (clickedUnit && selectedUnit) {
             if (selectedUnit.team === clickedUnit.team) {
-                // Swap the nodes
-                
-                if (networkContainsConnection(meleeNetwork, selectedUnit.node, clickedUnit.node) & networkContainsConnection(meleeNetwork, clickedUnit.node, selectedUnit.node)){
-                    const tempNode = selectedUnit.node;
-                    selectedUnit.node = clickedUnit.node;
-                    clickedUnit.node = tempNode;
-                    writeToLog(`\nSwapped unit:${selectedUnit.id} <-> unit:${clickedUnit.id}`);
-                } else {
-                    writeToLog(`\Cannot swap unit:${selectedUnit.id} <-> unit:${clickedUnit.id}`);
-                }
+                // Swap the units
+                handleSwap(selectedUnit, clickedUnit)
             } else {
                 // Different teams: initiate combat
-                units = handleCombat(selectedUnit, clickedUnit, selectedUnit.node, clickedUnit.node, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork);
+                units = handleCombat(selectedUnit, clickedUnit, selectedUnit.node, clickedUnit.node, units);
             }
         }
         selectedUnitId = null; // Reset the selected unit after using it
@@ -825,23 +773,15 @@ function handleNodeClick(event, nodes, units, meleeNetwork, archerNetwork, flier
             if (targetUnit) {
                 // If there's a unit on the target node, handle combat or swapping
                 if (selectedUnit.team === targetUnit.team) {
-                    if (networkContainsConnection(meleeNetwork, selectedUnit.node, clickedUnit.node) & networkContainsConnection(meleeNetwork, clickedUnit.node, selectedUnit.node)){
-                        // Friendly unit: swap nodes
-                        const tempNode = selectedUnit.node;
-                        selectedUnit.node = targetNodeId;
-                        targetUnit.node = tempNode;
-                        writeToLog(`\nSwapped unit:${selectedUnit.id} <-> unit:${targetUnit.id}`);
-                    } else {
-                        writeToLog(`\Cannot swap unit:${selectedUnit.id} <-> unit:${clickedUnit.id}`);
-                    }
-                    
+                    // Swap the units
+                    handleSwap(selectedUnit, targetUnit)
                 } else {
                     // Enemy unit: initiate combat
-                    units = handleCombat(selectedUnit, targetUnit, selectedUnit.node, targetNodeId, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork);
+                    units = handleCombat(selectedUnit, targetUnit, selectedUnit.node, targetNodeId);
                 }
             } else {
                 // No unit on the target node: move the selected unit
-                handleMoveDrag(selectedUnit, selectedUnit.node, targetNodeId, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork);
+                handleMove(selectedUnit, selectedUnit.node, targetNodeId);
             }
 
             selectedUnitId = null; // Reset the selected unit
@@ -864,114 +804,65 @@ function addClickEventListeners() {
 }
 
 
+// MOVEMENT logic
+function handleMove(u, x, y) {
+    console.log('handleMove')
+    const draggedUnitIdInt = parseInt(u.id);
+    if (unitCanMove(u, x, y)) {
+        writeToLog(`\nmove unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
+        u.node = y;
+    } else {
+        writeToLog(`cannot move unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
+    }
+}
 
-// COMBAT logic
-function handleCombat(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork) {
-    console.log('handleCombat')
-    if (u.team === v.team) {
-        writeToLog(`\nswap unit:${u.id} <-> unit:${v.id}`)
+
+function handleSwap(u, v)  {
+    if (unitCanMove(u, u.node, v.node) & unitCanMove(v, v.node, u.node)){
         const tempNode = u.node;
         u.node = v.node;
         v.node = tempNode;
-        return units;
-    }
-
-    if (u.type === 'M') {
-        writeToLog(`\nmelee attack unit:${u.id} -> unit:${v.id}`)
-        units = handleMeleeDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork)
-    } else if (u.type === 'A') {
-        writeToLog(`\nshoot unit:${u.id} -> unit:${v.id}`)
-        units = handleArcherDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork)
-    } else if (u.type === 'F') {
-        writeToLog(`\nflying attack unit:${u.id} -> unit:${v.id}`)
-        units = handleFlierDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork)
-    } else if (u.type === 'S') {
-        writeToLog(`\nshoot siege unit:${u.id} -> unit:${v.id}`)
-        units = handleSiegeDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork)
-    } else if (u.type === 'R') {
-        writeToLog(`\nmonster attack unit:${u.id} -> unit:${v.id}`)
-        units = handleMonsterDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork)
-    } else if (u.type === 'V') {
-        writeToLog(`\ncavalry attack unit:${u.id} -> unit:${v.id}`)
-        units = handleCavalryDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork)
+        writeToLog(`\nSwapped unit:${u.id} <-> unit:${v.id}`);
     } else {
-        writeToLog(`\ncannot attack unit:${u.id} -> unit:${v.id}`)
+        writeToLog(`\nCannot swap unit:${u.id} <-> unit:${v.id}`);
     }
-
-    console.log('filter health units')
-    return units.filter(u => u.health > 0)
+}
+function unitCanMove(u, x, y) {
+    console.log(unitTypes)
+    console.log(u.type)
+    for (const movementNetwork of unitTypes[u.type]["movementNetworks"]){
+        if (networkContainsConnection(movementNetwork, x, y)) {
+            return true
+        }
+    }
+    return false
 }
 
-function handleMeleeDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork) {
-    console.log('handleMeleeDrag')
-    if (networkContainsConnection(meleeNetwork, x, y)) {
-        return handleMeleeCombat(u, v, x, y, units)
+function networkContainsConnection(network, x, y) {
+    return network.some(pair => pair[0] === x && pair[1] === y);
+}
+
+
+
+// COMBAT logic
+function handleCombat(u, v, x, y, units) {
+    console.log('handleCombat')
+    if (unitCanAttack(u, x, y)) {
+        units = unitTypes[u.type]["combatHandler"](u, v, x, y, units)
+        return units.filter(u => u.health > 0)
     } else {
         writeToLog('cannot attack')
         return units
     } 
 }
 
-function handleArcherDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork) {
-    console.log('handleArcherDrag')
-    if (networkContainsConnection(meleeNetwork, x, y)) {
-        return handleArcherCombat(u, v, x, y, units)
-    } else if (networkContainsConnection(archerNetwork, x, y)) {
-        return handleArcherCombat(u, v, x, y, units)
-    } else {
-        writeToLog('cannot attack')
-        return units
+function unitCanAttack(u, x, y) {
+    for (const attackNetwork of unitTypes[u.type]["attackNetworks"]){
+        if (networkContainsConnection(attackNetwork, x, y)) {
+            return true
+        }
     }
-}
-
-function handleFlierDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork) {
-    console.log('handleFlierDrag')
-    if (networkContainsConnection(meleeNetwork, x, y)) {
-        writeToLog('Flier attacks by land.')
-        return handleMeleeCombat(u, v, x, y, units)
-    } else if (networkContainsConnection(flierNetwork, x, y)){
-        writeToLog('Flier attacks by air.')
-        return handleMeleeCombat(u, v, x, y, units)
-    } else {
-        writeToLog('cannot attack')
-        return units
-    }
-}
-
-function handleSiegeDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork) {
-    console.log('handleSiegeDrag')
-    if (networkContainsConnection(meleeNetwork, x, y)) {
-        return handleSiegeCombat(u, v, x, y, units)
-    } else if (networkContainsConnection(archerNetwork, x, y)) {
-        return handleSiegeCombat(u, v, x, y, units)
-    } else if (networkContainsConnection(siegeNetwork, x, y)) {
-        return handleSiegeCombat(u, v, x, y, units)
-    } else {
-        writeToLog('cannot attack')
-        return units
-    }
-}
-
-function handleMonsterDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork) {
-    console.log('handleMonsterDrag')
-    if (networkContainsConnection(meleeNetwork, x, y)) {
-        return handleMonsterCombat(u, v, x, y, units)
-    } else {
-        writeToLog('cannot attack')
-        return units
-    } 
-}
-
-function handleCavalryDrag(u, v, x, y, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork) {
-    console.log('handleCavalryDrag')
-    if (networkContainsConnection(meleeNetwork, x, y)) {
-        return handleCavalryCombat(u, v, x, y, units)
-    } else if (networkContainsConnection(cavalryNetwork, x, y)) {
-        return handleCavalryCombat(u, v, x, y, units)
-    } else {
-        writeToLog('cannot attack')
-        return units
-    } 
+    return false
 }
 
 function handleMeleeCombat(attacker, defender, x, y, units){
