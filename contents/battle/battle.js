@@ -1,4 +1,5 @@
 import { defineUnitTypes, handleMove, handleSwap, handleCombat } from './units.js';
+import { definenetworkConfigs, drawNetworkConnections, updateDrawNetwork } from './networks.js';
 
 async function fetchBattlesToChoose() {
     try {
@@ -116,7 +117,7 @@ function createBattle() {
 
     // Define unit types and networks
     unitTypes = defineUnitTypes(meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork);
-    networkConfigs = definenetworkConfigs(meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork)
+    networkConfigs = definenetworkConfigs(svg, nodes, nodeSize, nodeXOffset, nodeYOffset, checkboxMeleeNetwork, checkboxArcherNetwork, checkboxFlierNetwork, checkboxCavalryNetwork, checkboxSiegeNetwork, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork)
 
     drawAll()
 }
@@ -186,7 +187,7 @@ async function handleBattleChange(event) {
 }
 
 function toggleNetwork(e) {
-    network = e.target.id
+    const network = e.target.id
     updateDrawNetwork(network, networkConfigs[network])
 }
 
@@ -200,18 +201,6 @@ function createNodes(nodes) {
 function deployUnits(units, deploymentLevel) {
     units = units.filter(unit => (unit.min_deployment <= deploymentLevel) & (deploymentLevel <= unit.max_deployment));
     return units
-}
-
-function createPairs(element, list) {
-    // Initialize an empty array to store the pairs
-    let pairs = [];
-
-    // Loop through each item in the list and create a pair
-    list.forEach(item => {
-        pairs.push([element, item]);
-    });
-
-    return pairs; // Return the array of pairs
 }
 
 // HELPER functions
@@ -233,95 +222,12 @@ function setCSSVariables() {
 }
 
 
-function definenetworkConfigs(meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork) {
-    // Create SVG element for lines
-    svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("width", "100%");
-    svg.setAttribute("height", "100%");
-    svg.style.position = "absolute";
-    svg.style.top = "0";
-    svg.style.left = "0";
-    battlefield.appendChild(svg);
-
-    // Set the focal point to the center of the page
-    let maxNodesX = Math.max(...nodes.map(node => node.x)) * nodeSize;
-    let maxNodesY = Math.max(...nodes.map(node => node.y)) * nodeSize;
-    const focalPointX = maxNodesX / 2;
-    const focalPointY = maxNodesY / 2;
-
-
-    networkConfigs = {
-        meleeNetwork: {
-            checkbox: checkboxMeleeNetwork,
-            svgConfig: {
-                networkType: "meleeNetwork",
-                network: meleeNetwork,
-                color: "red",
-                width: nodeSize / 10,
-                dashArray: "",
-                curvedLine: false
-            }
-        },
-        archerNetwork: {
-            checkbox: checkboxArcherNetwork,
-            svgConfig: {
-                networkType: "archerNetwork",
-                network: archerNetwork,
-                color: "green",
-                width: nodeSize / 10,
-                dashArray: "10,10",
-                curvedLine: false
-            }
-        },
-        flierNetwork: {
-            checkbox: checkboxFlierNetwork,
-            svgConfig: {
-                networkType: "flierNetwork",
-                network: flierNetwork,
-                color: "blue",
-                width: nodeSize / 300,
-                dashArray: "",
-                curvedLine: true,
-                focalPointX: focalPointX,
-                focalPointY: focalPointY,
-                curvatureStrength: 150
-            }
-        },
-        cavalryNetwork: {
-            checkbox: checkboxCavalryNetwork,
-            svgConfig: {
-                networkType: "cavalryNetwork",
-                network: cavalryNetwork,
-                color: "yellow",
-                width: nodeSize / 30,
-                dashArray: "",
-                curvedLine: true,
-                focalPointX: focalPointX,
-                focalPointY: focalPointY,
-                curvatureStrength: 150
-            }
-        },
-        siegeNetwork: {
-            checkbox: checkboxSiegeNetwork,
-            svgConfig: {
-                networkType: "siegeNetwork",
-                network: siegeNetwork,
-                color: "white",
-                width: nodeSize / 10,
-                dashArray: "10,25",
-                curvedLine: false
-            }
-        }
-    };
-    return networkConfigs
-}
-
 
 // DRAW functions
 function drawAll() {
     drawNodes()
     drawMobileElements()
-    drawNetworkConnections()
+    drawNetworkConnections(networkConfigs)
 }
 
 function drawMobileElements() {
@@ -449,119 +355,6 @@ function drawUnitsTable(units) {
         tableBody.appendChild(row); // Append the row to the table body
     });
 }
-
-function drawNetworkConnections() {
-    Object.entries(networkConfigs).forEach(([key, value]) => updateDrawNetwork(key, value));
-}
-
-function updateDrawNetwork(network, networkConfig) {
-    document.querySelectorAll(`.${network}-border-line`).forEach(line => line.remove());
-    document.querySelectorAll(`.${network}-line`).forEach(line => line.remove());
-
-    if (networkConfig['checkbox'].checked) {
-        createConnections(
-            networkConfig['svgConfig']
-        );
-
-    } else {
-        document.querySelectorAll(`.${network}-border-line`).forEach(line => line.remove());
-        document.querySelectorAll(`.${network}-line`).forEach(line => line.remove());
-    }
-
-}
-
-function createConnections({ networkType, network, color, width, dashArray, curvedLine, focalPointX, focalPointY, curvatureStrength }) {
-    network.forEach(pair => {
-        const node1 = nodes.find(node => node.id === pair[0]);
-        const node2 = nodes.find(node => node.id === pair[1]);
-        if (node1 && node2) {
-            drawLine(networkType,
-                nodeXOffset + node1.x * nodeSize + nodeSize / 2, nodeYOffset + node1.y * nodeSize + nodeSize / 2,
-                nodeXOffset + node2.x * nodeSize + nodeSize / 2, nodeYOffset + node2.y * nodeSize + nodeSize / 2,
-                color, width, dashArray, curvedLine, focalPointX, focalPointY, curvatureStrength
-            );
-        }
-    });
-}
-
-function drawLine(networkType, x1, y1, x2, y2, color, width, dashArray, curvedLine = false, curvatureFocalPointX, curvatureFocalPointY, curvatureStrength) {
-    if (curvedLine) {
-        // If curvedLine is true, use the drawCurvedLine function
-        drawCurvedLine(networkType, x1, y1, x2, y2, color, width, dashArray, curvatureFocalPointX, curvatureFocalPointY, curvatureStrength);
-    } else {
-
-        // Draw a thicker black line as the border
-        const borderLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        borderLine.setAttribute("class", `border-line ${networkType}-border-line`);
-        borderLine.setAttribute("x1", x1);
-        borderLine.setAttribute("y1", y1);
-        borderLine.setAttribute("x2", x2);
-        borderLine.setAttribute("y2", y2);
-        borderLine.setAttribute("stroke", "black");
-        borderLine.setAttribute("stroke-width", `${width}`);
-        borderLine.setAttribute("stroke-linecap", "round");
-        borderLine.setAttribute("stroke-dasharray", dashArray);
-        svg.appendChild(borderLine);
-
-        // Draw the colored line on top
-        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        line.setAttribute("class", `line ${networkType}-line`);
-        line.setAttribute("x1", x1);
-        line.setAttribute("y1", y1);
-        line.setAttribute("x2", x2);
-        line.setAttribute("y2", y2);
-        line.setAttribute("stroke", color);
-        line.setAttribute("stroke-width", `${width / 2}`);
-        line.setAttribute("stroke-linecap", "round");
-        line.setAttribute("stroke-dasharray", dashArray);
-        svg.appendChild(line);
-    }
-}
-
-function drawCurvedLine(networkType, x1, y1, x2, y2, color, width, dashArray, focalPointX, focalPointY, curvatureStrength = 100) {
-    // Calculate the midpoint of the line
-    const midX = (x1 + x2) / 2;
-    const midY = (y1 + y2) / 2;
-
-    // Calculate the direction vector from the focal point to the midpoint
-    let directionX = midX - focalPointX;
-    let directionY = midY - focalPointY;
-
-    // Normalize the direction vector to get a unit vector
-    const length = Math.sqrt(directionX * directionX + directionY * directionY);
-    if (length !== 0) { // Avoid division by zero
-        directionX /= length;
-        directionY /= length;
-    }
-
-    // Adjust the control point to bend the line away from the focal point
-    const controlX = midX + curvatureStrength * directionX;
-    const controlY = midY + curvatureStrength * directionY;
-
-    // Create an SVG path element for the curved line
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    const d = `M ${x1} ${y1} Q ${controlX} ${controlY} ${x2} ${y2}`;
-    path.setAttribute("class", `border-line ${networkType}-border-line`);
-    path.setAttribute("d", d);
-    path.setAttribute("stroke", color);
-    path.setAttribute("stroke-width", `${width}`);
-    path.setAttribute("fill", "none");
-    path.setAttribute("stroke-dasharray", dashArray);
-
-    // Draw a thicker black path as the border
-    const borderPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    borderPath.setAttribute("class", `line ${networkType}-line`);
-    borderPath.setAttribute("d", d);
-    borderPath.setAttribute("stroke", "black");
-    borderPath.setAttribute("stroke-width", `${width / 2}`);
-    borderPath.setAttribute("fill", "none");
-    borderPath.setAttribute("stroke-dasharray", dashArray);
-    svg.appendChild(borderPath);
-
-    // Append the colored curved line
-    svg.appendChild(path);
-}
-
 
 // BATTLE STATUS callbacks
 function updateHealthBar(units) {
