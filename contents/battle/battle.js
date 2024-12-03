@@ -1,6 +1,7 @@
+import { defineUnitTypes, handleMove, handleSwap, handleCombat } from './units.js';
+
 async function fetchBattlesToChoose() {
     try {
-
         const response_battles = await fetch('battles.json');
         battles = await response_battles.json();
         console.log("Battles fetched:", battles)
@@ -114,7 +115,7 @@ function createBattle() {
     setCSSVariables()
 
     // Define unit types and networks
-    unitTypes = defineUnitTypes();
+    unitTypes = defineUnitTypes(meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork);
     networkConfigs = definenetworkConfigs(meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork)
 
     drawAll()
@@ -229,18 +230,6 @@ function setCSSVariables() {
     document.documentElement.style.setProperty('--unit-size', `${nodeSize}px`);
     document.documentElement.style.setProperty('--node-size-highlight', `${nodeSize * 1.2}px`);
     document.documentElement.style.setProperty('--unit-size-highlight', `${nodeSize * 1.2}px`);
-}
-
-
-function defineUnitTypes() {
-    return {
-        M: { name: 'melee', color: 'red', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork], combatHandler: handleMeleeCombat },
-        A: { name: 'archer', color: 'green', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork, archerNetwork], combatHandler: handleArcherCombat },
-        S: { name: 'siege', color: 'white', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork, archerNetwork, siegeNetwork], combatHandler: handleSiegeCombat },
-        R: { name: 'monster', color: 'plum', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork], combatHandler: handleMonsterCombat },
-        V: { name: 'cavalry', color: 'yellow', movementNetworks: [meleeNetwork, cavalryNetwork], attackNetworks: [meleeNetwork, cavalryNetwork], combatHandler: handleCavalryCombat },
-        F: { name: 'flier', color: 'blue', movementNetworks: [meleeNetwork, flierNetwork], attackNetworks: [meleeNetwork, flierNetwork], combatHandler: handleMeleeCombat }
-    }
 }
 
 
@@ -700,7 +689,6 @@ function handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwo
 
 // CLICK AND CLICK callbacks
 let selectedUnitId = null; // Variable to store the ID of the selected unit
-let clickedUnit = null;
 
 // Function to handle click on a unit
 function handleClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize) {
@@ -719,179 +707,32 @@ function handleClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetw
 function handleUnitAction(actionUnitId, targetNodeId, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize) {
 
     units = units.filter(u => u.health > 0);
-    console.log(actionUnitId)
-    console.log(units)
     const actionUnit = units.find(unit => unit.id === actionUnitId);
-    console.log(actionUnit)
 
     // get target unit from target Node
-    console.log(targetNodeId)
     const targetUnit = units.find(unit => unit.node === targetNodeId);
-    console.log(targetUnit)
 
     // If there's a target unit, handle combat or swapping
     if (targetUnit) {
         if (actionUnit.team === targetUnit.team) {
             // Swap the units
-            handleSwap(actionUnit, targetUnit)
+            handleSwap(actionUnit, targetUnit, unitTypes)
         } else {
             // Enemy unit: initiate combat
-            units = handleCombat(actionUnit, targetUnit, actionUnit.node, targetUnit.node, units);
+            units = handleCombat(actionUnit, targetUnit, actionUnit.node, targetUnit.node, units, unitTypes);
         }
     } else if (targetNodeId) {
         // If there is a target node, and no target unit on it, move unit
-        handleMove(actionUnit, actionUnit.node, targetNodeId);
+        handleMove(actionUnit, actionUnit.node, targetNodeId, unitTypes);
     }
 
     drawMobileElements(nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize);
 
 }
 
-// Add click event listeners to units and nodes
-function addClickEventListeners() {
-    const unitCircles = document.querySelectorAll(".unit-circle");
-    unitCircles.forEach(circle => {
-        circle.addEventListener("click", handleClick);
-    });
-
-    const nodeElements = document.querySelectorAll(".node");
-    nodeElements.forEach(node => {
-        node.addEventListener("click", handleClick);
-    });
-}
-
-
-// MOVEMENT logic
-function handleMove(u, x, y) {
-    console.log('handleMove')
-    const draggedUnitIdInt = parseInt(u.id);
-    if (unitCanMove(u, x, y)) {
-        writeToLog(`\nmove unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
-        u.node = y;
-    } else {
-        writeToLog(`cannot move unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
-    }
-}
-
-
-function handleSwap(u, v) {
-    if (unitCanMove(u, u.node, v.node) & unitCanMove(v, v.node, u.node)) {
-        const tempNode = u.node;
-        u.node = v.node;
-        v.node = tempNode;
-        writeToLog(`\nSwapped unit:${u.id} <-> unit:${v.id}`);
-    } else {
-        writeToLog(`\nCannot swap unit:${u.id} <-> unit:${v.id}`);
-    }
-}
-function unitCanMove(u, x, y) {
-    console.log(unitTypes)
-    console.log(u.type)
-    for (const movementNetwork of unitTypes[u.type]["movementNetworks"]) {
-        if (networkContainsConnection(movementNetwork, x, y)) {
-            return true
-        }
-    }
-    return false
-}
-
-function networkContainsConnection(network, x, y) {
-    return network.some(pair => pair[0] === x && pair[1] === y);
-}
 
 
 
-// COMBAT logic
-function handleCombat(u, v, x, y, units) {
-    console.log('handleCombat')
-    if (unitCanAttack(u, x, y)) {
-        units = unitTypes[u.type]["combatHandler"](u, v, x, y, units)
-        return units.filter(u => u.health > 0)
-    } else {
-        writeToLog('cannot attack')
-        return units
-    }
-}
-
-function unitCanAttack(u, x, y) {
-    for (const attackNetwork of unitTypes[u.type]["attackNetworks"]) {
-        if (networkContainsConnection(attackNetwork, x, y)) {
-            return true
-        }
-    }
-    return false
-}
-
-function handleMeleeCombat(attacker, defender, x, y, units) {
-    while (attacker.health > 0 && defender.health > 0) {
-        // Attacker attacks first
-        let damage = Math.max(1, attacker.attack_melee - defender.defense);
-        defender.health -= damage;
-        if (defender.health <= 0) {
-            writeToLog(`Attacker wins with ${attacker.health} health left.`)
-            // Defender is defeated: move attacker to node, remove defender, stop combat
-            attacker.node = defender.node
-            return units.filter(u => u.id !== defender.id);
-        }
-
-        // Defender attacks back
-        damage = Math.max(1, defender.attack_melee - attacker.defense);
-        attacker.health -= damage;
-        if (attacker.health <= 0) {
-            writeToLog(`Defender wins with ${defender.health} health left.`)
-            // Attacker is defeated: remove attacker, stop combat
-            return units.filter(u => u.id !== attacker.id);
-        }
-    }
-}
-
-function handleArcherCombat(attacker, defender, x, y, units) {
-    let damage = Math.max(1, attacker.attack_range - defender.defense);
-    writeToLog(`Archer deals ${damage} damage.`)
-    defender.health -= damage;
-    if (defender.health <= 0) {
-        writeToLog('Archer kills target.')
-        // Defender is defeated
-        units = units.filter(u => u.id !== defender.id);
-    } else {
-        writeToLog(`Target has ${defender.health} health left.`)
-    }
-    return units
-}
-
-function handleSiegeCombat(attacker, defender, x, y, units) {
-    let damage = Math.max(1, attacker.attack_range - defender.defense);
-    writeToLog(`Siege deals ${damage} damage.`)
-    defender.health -= damage;
-    if (defender.health <= 0) {
-        writeToLog('Siege kills target.')
-        // Defender is defeated
-        units = units.filter(u => u.id !== defender.id);
-    } else {
-        writeToLog(`Target has ${defender.health} health left.`)
-    }
-    return units
-}
-
-function handleMonsterCombat(attacker, defender, x, y, units) {
-    attacker.health += 1;
-    defender.health -= 1;
-    writeToLog(`Monster eats 1 health from defender.`)
-    return handleMeleeCombat(attacker, defender, x, y, units)
-}
-
-
-function handleCavalryCombat(attacker, defender, x, y, units) {
-    defender.health -= attacker.attack_melee;
-    // Defender killed with first attack
-    if (defender.health <= 0) {
-        writeToLog(`Attacker wins with ${attacker.health} health left.`)
-        // Defender is defeated: move attacker to node, remove defender, stop combat
-        attacker.node = defender.node
-        return units.filter(u => u.id !== defender.id);
-    }
-    return handleMeleeCombat(attacker, defender, x, y, units)
-}
 
 // Instructions Modal
 document.getElementById("instructionsButton").addEventListener("click", function () {
