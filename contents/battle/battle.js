@@ -370,7 +370,7 @@ function drawNodes() {
         div.addEventListener('mouseleave', handleNodeLeaveHighlight);
 
         // Click and click callbacks
-        div.addEventListener('click', (event) => {handleNodeClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize);});
+        div.addEventListener('click', (event) => {handleClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize);});
 
         battlefield.appendChild(div);
     });
@@ -430,7 +430,7 @@ function drawUnits(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNet
         
 
         // Click and click callback
-        circle.addEventListener("click", (event) => {handleUnitClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize);});
+        circle.addEventListener("click", (event) => {handleClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize);});
 
     });
 }
@@ -679,7 +679,7 @@ function handleNodeLeaveHighlight() {
 let draggedUnitId = null; // Variable to store the ID of the dragged unit --> THIS IS SHARED BETWEEN handleDragStart() and handleDrop()
 
 function handleDragStart(event) {
-    draggedUnitId = event.target.dataset.unitId; // Store the ID of the dragged unit
+    draggedUnitId = parseInt(event.target.dataset.unitId); // Store the ID of the dragged unit
     event.dataTransfer.effectAllowed = "move";
 
     // Hide the hover text (tooltip)
@@ -695,36 +695,7 @@ function handleDragOver(event) {
 
 function handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize) {
     event.preventDefault();
-    units = units.filter(u => u.health > 0);
-    const targetNodeId = event.target.dataset.nodeId; // Get the ID of the node being dropped on (it can come from the node itself or from a unit that belongs to it)
-
-    if (draggedUnitId && targetNodeId) {
-        const draggedUnit = units.find(unit => unit.id == draggedUnitId);
-        const draggedUnitNodeIdInt = parseInt(draggedUnit.node);
-        const targetNodeIdInt = parseInt(targetNodeId);
-
-        if (draggedUnit) {
-            // Check if there is a unit already assigned to the target node
-            const targetUnit = units.find(unit => unit.node === targetNodeIdInt); 
-
-            if (targetUnit) {
-                if (draggedUnit.team === targetUnit.team) {
-                    // Swap the units
-                    handleSwap(draggedUnit, targetUnit)
-                    
-                } else {
-                    // If not same team, combat
-                    units = handleCombat(draggedUnit, targetUnit, draggedUnitNodeIdInt, targetNodeIdInt, units)}
-                
-            } else {
-                // If no unit is in the target node, simply move the dragged unit to the target node
-                handleMove(draggedUnit, draggedUnitNodeIdInt, targetNodeIdInt)
-            }
-
-            // Redraw the units to update their positions
-            drawMobileElements(nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize);
-        }
-    }
+    handleUnitAction(draggedUnitId, parseInt(event.target.dataset.nodeId), meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize)
 }
 
 // CLICK AND CLICK callbacks
@@ -732,74 +703,60 @@ let selectedUnitId = null; // Variable to store the ID of the selected unit
 let clickedUnit = null;
 
 // Function to handle click on a unit
-function handleUnitClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize) {
-    units.filter(u => u.health > 0)
-    // If a unit is already selected and the user clicks on another unit of the same team, swap positions
+function handleClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize) {
+    // If a unit is already selected, the clicked unit is the target unit
     if (selectedUnitId) {
-        const clickedUnitId = event.target.dataset.unitId;
-        clickedUnit = units.find(unit => unit.id == clickedUnitId);
-        const selectedUnit = units.find(unit => unit.id == selectedUnitId);
-
-        if (clickedUnit && selectedUnit) {
-            if (selectedUnit.team === clickedUnit.team) {
-                // Swap the units
-                handleSwap(selectedUnit, clickedUnit)
-            } else {
-                // Different teams: initiate combat
-                units = handleCombat(selectedUnit, clickedUnit, selectedUnit.node, clickedUnit.node, units);
-            }
-        }
+        handleUnitAction(selectedUnitId, parseInt(event.target.dataset.nodeId), meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize)
         selectedUnitId = null; // Reset the selected unit after using it
     } else {
-        // If no unit is selected, select this unit
-        selectedUnitId = event.target.dataset.unitId;
+        // If no unit is selected, select the clicked unit
+        selectedUnitId = parseInt(event.target.dataset.unitId);
         writeToLog(`\nSelected unit: ${selectedUnitId}`);
+    }
+}
+
+
+function handleUnitAction(actionUnitId, targetNodeId, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize) {
+    
+    units = units.filter(u => u.health > 0);
+    console.log(actionUnitId)
+    console.log(units)
+    const actionUnit = units.find(unit => unit.id === actionUnitId);
+    console.log(actionUnit)
+
+    // get target unit from target Node
+    console.log(targetNodeId)
+    const targetUnit = units.find(unit => unit.node === targetNodeId);
+    console.log(targetUnit)
+
+    // If there's a target unit, handle combat or swapping
+    if (targetUnit) {
+        if (actionUnit.team === targetUnit.team) {
+            // Swap the units
+            handleSwap(actionUnit, targetUnit)
+        } else {
+            // Enemy unit: initiate combat
+            units = handleCombat(actionUnit, targetUnit, actionUnit.node, targetUnit.node, units);
+        }
+    } else if (targetNodeId) {
+        // If there is a target node, and no target unit on it, move unit
+        handleMove(actionUnit, actionUnit.node, targetNodeId);
     }
 
     drawMobileElements(nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize);
-}
 
-// Function to handle click on a node
-function handleNodeClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize) {
-    units = units.filter(u => u.health > 0);
-    if (selectedUnitId) {
-        const targetNodeId = parseInt(event.target.dataset.nodeId);
-        const selectedUnit = units.find(unit => unit.id == selectedUnitId);
-
-        if (selectedUnit) {
-            // Check if there's another unit on the target node
-            const targetUnit = units.find(unit => unit.node === targetNodeId);
-
-            if (targetUnit) {
-                // If there's a unit on the target node, handle combat or swapping
-                if (selectedUnit.team === targetUnit.team) {
-                    // Swap the units
-                    handleSwap(selectedUnit, targetUnit)
-                } else {
-                    // Enemy unit: initiate combat
-                    units = handleCombat(selectedUnit, targetUnit, selectedUnit.node, targetNodeId);
-                }
-            } else {
-                // No unit on the target node: move the selected unit
-                handleMove(selectedUnit, selectedUnit.node, targetNodeId);
-            }
-
-            selectedUnitId = null; // Reset the selected unit
-            drawMobileElements(nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize);
-        }
-    }
 }
 
 // Add click event listeners to units and nodes
 function addClickEventListeners() {
     const unitCircles = document.querySelectorAll(".unit-circle");
     unitCircles.forEach(circle => {
-        circle.addEventListener("click", handleUnitClick);
+        circle.addEventListener("click", handleClick);
     });
 
     const nodeElements = document.querySelectorAll(".node");
     nodeElements.forEach(node => {
-        node.addEventListener("click", handleNodeClick);
+        node.addEventListener("click", handleClick);
     });
 }
 
