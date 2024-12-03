@@ -407,19 +407,7 @@ function handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork
         nodeId = parseInt(event.target.dataset.nodeId); // Get the ID of its node
 
         // Determine which networks to use based on unit type
-        if (unitType === 'M') {
-            networksToUse = [meleeNetwork];
-        } else if (unitType === 'A') {
-            networksToUse = [meleeNetwork, archerNetwork];
-        } else if (unitType === 'F') {
-            networksToUse = [meleeNetwork, flierNetwork];
-        } else if (unitType === 'S') {
-            networksToUse = [meleeNetwork, siegeNetwork];
-        } else if (unitType === 'R') {
-            networksToUse = [meleeNetwork];
-        } else if (unitType === 'V') {
-            networksToUse = [meleeNetwork, cavalryNetwork];
-        }
+        networksToUse = unitTypes[unitType]["attackNetworks"]
     }
 
     // Find and highlight all reachable nodes for each network
