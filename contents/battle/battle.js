@@ -1,6 +1,6 @@
 async function fetchBattlesToChoose() {
     try {
-        
+
         const response_battles = await fetch('battles.json');
         battles = await response_battles.json();
         console.log("Battles fetched:", battles)
@@ -11,7 +11,7 @@ async function fetchBattlesToChoose() {
 
 async function fetchBattleData() {
     try {
-        
+
         const response_nodes = await fetch(`${selectedBattleDir}/auto_data/nodes.json`);
         const response_units = await fetch(`${selectedBattleDir}/auto_data/units.json`);
         const response_meleeNetwork = await fetch(`${selectedBattleDir}/auto_data/melee_interactions.json`);
@@ -19,8 +19,8 @@ async function fetchBattleData() {
         const response_flierNetwork = await fetch(`${selectedBattleDir}/auto_data/flier_interactions.json`);
         const response_siegeNetwork = await fetch(`${selectedBattleDir}/auto_data/siege_interactions.json`);
         const response_cavalryNetwork = await fetch(`${selectedBattleDir}/auto_data/cavalry_interactions.json`);
-        
-        
+
+
         nodes = await response_nodes.json();
         console.log("Nodes fetched:", nodes);
         units = await response_units.json();
@@ -100,7 +100,7 @@ const teamColors = {
 document.addEventListener('DOMContentLoaded', () => {
     fetchBattlesToChoose().then(defineHtmlElementsCallbacks);
 });
-    
+
 function createBattle() {
 
     getMetadata()
@@ -120,7 +120,7 @@ function createBattle() {
     drawAll()
 }
 
-function getMetadata(){
+function getMetadata() {
     battleName = battle_metadata["battle_name"]
     nodeSize = configNodeSizeToPx(battle_metadata["nodeSize"]);
     nodeXOffset = configNodeSizeToPx(battle_metadata["nodeXOffset"]);
@@ -149,13 +149,13 @@ function defineHtmlElementsCallbacks() {
         dropdown.appendChild(option);
     });
 
-    
-    
-    sliderValue.textContent =  parseInt(slider.value, 10);
-    slider.addEventListener("input", function() {
+
+
+    sliderValue.textContent = parseInt(slider.value, 10);
+    slider.addEventListener("input", function () {
         sliderValue.textContent = slider.value;
     });
-    setDifficultyButton.addEventListener("click", () => {fetchBattleData().then(createBattle);});
+    setDifficultyButton.addEventListener("click", () => { fetchBattleData().then(createBattle); });
     checkboxMeleeNetwork.addEventListener('change', toggleNetwork);
     checkboxArcherNetwork.addEventListener('change', toggleNetwork);
     checkboxFlierNetwork.addEventListener('change', toggleNetwork);
@@ -197,7 +197,7 @@ function createNodes(nodes) {
 
 
 function deployUnits(units, deploymentLevel) {
-    units = units.filter(unit => (unit.min_deployment <= deploymentLevel) & (deploymentLevel <=  unit.max_deployment));
+    units = units.filter(unit => (unit.min_deployment <= deploymentLevel) & (deploymentLevel <= unit.max_deployment));
     return units
 }
 
@@ -227,19 +227,19 @@ function configNodeSizeToPx(vh) {
 function setCSSVariables() {
     document.documentElement.style.setProperty('--node-size', `${nodeSize}px`);
     document.documentElement.style.setProperty('--unit-size', `${nodeSize}px`);
-    document.documentElement.style.setProperty('--node-size-highlight', `${nodeSize*1.2}px`);
-    document.documentElement.style.setProperty('--unit-size-highlight', `${nodeSize*1.2}px`);
+    document.documentElement.style.setProperty('--node-size-highlight', `${nodeSize * 1.2}px`);
+    document.documentElement.style.setProperty('--unit-size-highlight', `${nodeSize * 1.2}px`);
 }
 
 
 function defineUnitTypes() {
     return {
-        M: {name: 'melee', color: 'red', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork], combatHandler: handleMeleeCombat},
-        A: {name: 'archer', color: 'green', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork, archerNetwork], combatHandler: handleArcherCombat},
-        S: {name: 'siege', color: 'white', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork, archerNetwork, siegeNetwork], combatHandler: handleSiegeCombat},
-        R: {name: 'monster', color: 'plum', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork], combatHandler: handleMonsterCombat},
-        V: {name: 'cavalry', color: 'yellow', movementNetworks: [meleeNetwork, cavalryNetwork], attackNetworks: [meleeNetwork, cavalryNetwork], combatHandler: handleCavalryCombat},
-        F: {name: 'flier', color: 'blue', movementNetworks: [meleeNetwork, flierNetwork], attackNetworks: [meleeNetwork, flierNetwork], combatHandler: handleMeleeCombat}
+        M: { name: 'melee', color: 'red', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork], combatHandler: handleMeleeCombat },
+        A: { name: 'archer', color: 'green', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork, archerNetwork], combatHandler: handleArcherCombat },
+        S: { name: 'siege', color: 'white', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork, archerNetwork, siegeNetwork], combatHandler: handleSiegeCombat },
+        R: { name: 'monster', color: 'plum', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork], combatHandler: handleMonsterCombat },
+        V: { name: 'cavalry', color: 'yellow', movementNetworks: [meleeNetwork, cavalryNetwork], attackNetworks: [meleeNetwork, cavalryNetwork], combatHandler: handleCavalryCombat },
+        F: { name: 'flier', color: 'blue', movementNetworks: [meleeNetwork, flierNetwork], attackNetworks: [meleeNetwork, flierNetwork], combatHandler: handleMeleeCombat }
     }
 }
 
@@ -265,24 +265,24 @@ function definenetworkConfigs(meleeNetwork, archerNetwork, flierNetwork, siegeNe
         meleeNetwork: {
             checkbox: checkboxMeleeNetwork,
             svgConfig: {
-                    networkType: "meleeNetwork",
-                    network: meleeNetwork,
-                    color: "red",
-                    width: nodeSize/10,
-                    dashArray: "",
-                    curvedLine: false
-                }
+                networkType: "meleeNetwork",
+                network: meleeNetwork,
+                color: "red",
+                width: nodeSize / 10,
+                dashArray: "",
+                curvedLine: false
+            }
         },
         archerNetwork: {
             checkbox: checkboxArcherNetwork,
             svgConfig: {
-                    networkType: "archerNetwork",
-                    network: archerNetwork,
-                    color: "green",
-                    width: nodeSize/10,
-                    dashArray: "10,10",
-                    curvedLine: false
-                }
+                networkType: "archerNetwork",
+                network: archerNetwork,
+                color: "green",
+                width: nodeSize / 10,
+                dashArray: "10,10",
+                curvedLine: false
+            }
         },
         flierNetwork: {
             checkbox: checkboxFlierNetwork,
@@ -290,7 +290,7 @@ function definenetworkConfigs(meleeNetwork, archerNetwork, flierNetwork, siegeNe
                 networkType: "flierNetwork",
                 network: flierNetwork,
                 color: "blue",
-                width: nodeSize/300,
+                width: nodeSize / 300,
                 dashArray: "",
                 curvedLine: true,
                 focalPointX: focalPointX,
@@ -304,7 +304,7 @@ function definenetworkConfigs(meleeNetwork, archerNetwork, flierNetwork, siegeNe
                 networkType: "cavalryNetwork",
                 network: cavalryNetwork,
                 color: "yellow",
-                width: nodeSize/30,
+                width: nodeSize / 30,
                 dashArray: "",
                 curvedLine: true,
                 focalPointX: focalPointX,
@@ -318,29 +318,29 @@ function definenetworkConfigs(meleeNetwork, archerNetwork, flierNetwork, siegeNe
                 networkType: "siegeNetwork",
                 network: siegeNetwork,
                 color: "white",
-                width: nodeSize/10,
+                width: nodeSize / 10,
                 dashArray: "10,25",
                 curvedLine: false
             }
         }
     };
-return networkConfigs
+    return networkConfigs
 }
 
 
 // DRAW functions
-function drawAll(){
+function drawAll() {
     drawNodes()
     drawMobileElements()
     drawNetworkConnections()
 }
 
-function drawMobileElements(){
+function drawMobileElements() {
     units = units.filter(u => u.health > 0);
     drawUnits(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork);
     drawUnitsTable(units);
     updateHealthBar(units);
-    
+
 }
 
 function drawNodes() {
@@ -359,18 +359,18 @@ function drawNodes() {
         tooltip.innerHTML = `
             <strong>Node:</strong> ${node.id}<br>
             <strong>Coords:</strong> (${node.x},${node.y},${node.z})<br>
-            <strong>Location:</strong> ${node.group_1?? ""} ${node.group_2?? ""} ${node.group_3?? ""}
+            <strong>Location:</strong> ${node.group_1 ?? ""} ${node.group_2 ?? ""} ${node.group_3 ?? ""}
         `;
         div.appendChild(tooltip);
 
         // Drag and drop callbacks
         div.addEventListener("dragover", handleDragOver);
-        div.addEventListener("drop", (event) => {handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize);});
-        div.addEventListener('mouseenter', (event) => {handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork);});
+        div.addEventListener("drop", (event) => { handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize); });
+        div.addEventListener('mouseenter', (event) => { handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork); });
         div.addEventListener('mouseleave', handleNodeLeaveHighlight);
 
         // Click and click callbacks
-        div.addEventListener('click', (event) => {handleClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize);});
+        div.addEventListener('click', (event) => { handleClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize); });
 
         battlefield.appendChild(div);
     });
@@ -416,21 +416,21 @@ function drawUnits(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNet
             <strong>Health:</strong> ${unit.health}<br>
             <strong>Node:</strong> ${node.id}<br>
             <strong>Coords:</strong> (${node.x}, ${node.y}, ${node.z})<br>
-            <strong>Location:</strong> ${node.group_1?? ""} ${node.group_2?? ""} ${node.group_3?? ""}
+            <strong>Location:</strong> ${node.group_1 ?? ""} ${node.group_2 ?? ""} ${node.group_3 ?? ""}
         `;
         circle.appendChild(tooltip);
         battlefield.appendChild(circle); // Append the unit circle to the battlefield
 
         // Drag and drop callbacks
-        circle.addEventListener('mouseenter', (event) => {handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork);});
+        circle.addEventListener('mouseenter', (event) => { handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork); });
         circle.addEventListener('mouseleave', handleNodeLeaveHighlight);
         circle.addEventListener("dragstart", handleDragStart);
         circle.addEventListener("dragover", handleDragOver);
-        circle.addEventListener("drop", (event) => {handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize);});
-        
+        circle.addEventListener("drop", (event) => { handleDrop(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize); });
+
 
         // Click and click callback
-        circle.addEventListener("click", (event) => {handleClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize);});
+        circle.addEventListener("click", (event) => { handleClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize); });
 
     });
 }
@@ -481,7 +481,7 @@ function updateDrawNetwork(network, networkConfig) {
 
 }
 
-function createConnections({networkType, network, color, width, dashArray, curvedLine, focalPointX, focalPointY, curvatureStrength}) {
+function createConnections({ networkType, network, color, width, dashArray, curvedLine, focalPointX, focalPointY, curvatureStrength }) {
     network.forEach(pair => {
         const node1 = nodes.find(node => node.id === pair[0]);
         const node2 = nodes.find(node => node.id === pair[1]);
@@ -522,7 +522,7 @@ function drawLine(networkType, x1, y1, x2, y2, color, width, dashArray, curvedLi
         line.setAttribute("x2", x2);
         line.setAttribute("y2", y2);
         line.setAttribute("stroke", color);
-        line.setAttribute("stroke-width", `${width/2}`);
+        line.setAttribute("stroke-width", `${width / 2}`);
         line.setAttribute("stroke-linecap", "round");
         line.setAttribute("stroke-dasharray", dashArray);
         svg.appendChild(line);
@@ -564,7 +564,7 @@ function drawCurvedLine(networkType, x1, y1, x2, y2, color, width, dashArray, fo
     borderPath.setAttribute("class", `line ${networkType}-line`);
     borderPath.setAttribute("d", d);
     borderPath.setAttribute("stroke", "black");
-    borderPath.setAttribute("stroke-width", `${width/2}`);
+    borderPath.setAttribute("stroke-width", `${width / 2}`);
     borderPath.setAttribute("fill", "none");
     borderPath.setAttribute("stroke-dasharray", dashArray);
     svg.appendChild(borderPath);
@@ -686,7 +686,7 @@ function handleDragStart(event) {
     const tooltip = event.target.querySelector('.unit-tooltip');
     if (tooltip) {
         tooltip.style.display = 'none'; // Hide the tooltip
-}
+    }
 }
 
 function handleDragOver(event) {
@@ -717,7 +717,7 @@ function handleClick(event, nodes, units, meleeNetwork, archerNetwork, flierNetw
 
 
 function handleUnitAction(actionUnitId, targetNodeId, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork, nodeSize) {
-    
+
     units = units.filter(u => u.health > 0);
     console.log(actionUnitId)
     console.log(units)
@@ -774,8 +774,8 @@ function handleMove(u, x, y) {
 }
 
 
-function handleSwap(u, v)  {
-    if (unitCanMove(u, u.node, v.node) & unitCanMove(v, v.node, u.node)){
+function handleSwap(u, v) {
+    if (unitCanMove(u, u.node, v.node) & unitCanMove(v, v.node, u.node)) {
         const tempNode = u.node;
         u.node = v.node;
         v.node = tempNode;
@@ -787,7 +787,7 @@ function handleSwap(u, v)  {
 function unitCanMove(u, x, y) {
     console.log(unitTypes)
     console.log(u.type)
-    for (const movementNetwork of unitTypes[u.type]["movementNetworks"]){
+    for (const movementNetwork of unitTypes[u.type]["movementNetworks"]) {
         if (networkContainsConnection(movementNetwork, x, y)) {
             return true
         }
@@ -810,11 +810,11 @@ function handleCombat(u, v, x, y, units) {
     } else {
         writeToLog('cannot attack')
         return units
-    } 
+    }
 }
 
 function unitCanAttack(u, x, y) {
-    for (const attackNetwork of unitTypes[u.type]["attackNetworks"]){
+    for (const attackNetwork of unitTypes[u.type]["attackNetworks"]) {
         if (networkContainsConnection(attackNetwork, x, y)) {
             return true
         }
@@ -822,7 +822,7 @@ function unitCanAttack(u, x, y) {
     return false
 }
 
-function handleMeleeCombat(attacker, defender, x, y, units){
+function handleMeleeCombat(attacker, defender, x, y, units) {
     while (attacker.health > 0 && defender.health > 0) {
         // Attacker attacks first
         let damage = Math.max(1, attacker.attack_melee - defender.defense);
@@ -845,7 +845,7 @@ function handleMeleeCombat(attacker, defender, x, y, units){
     }
 }
 
-function handleArcherCombat(attacker, defender, x, y, units){
+function handleArcherCombat(attacker, defender, x, y, units) {
     let damage = Math.max(1, attacker.attack_range - defender.defense);
     writeToLog(`Archer deals ${damage} damage.`)
     defender.health -= damage;
@@ -859,7 +859,7 @@ function handleArcherCombat(attacker, defender, x, y, units){
     return units
 }
 
-function handleSiegeCombat(attacker, defender, x, y, units){
+function handleSiegeCombat(attacker, defender, x, y, units) {
     let damage = Math.max(1, attacker.attack_range - defender.defense);
     writeToLog(`Siege deals ${damage} damage.`)
     defender.health -= damage;
@@ -873,7 +873,7 @@ function handleSiegeCombat(attacker, defender, x, y, units){
     return units
 }
 
-function handleMonsterCombat(attacker, defender, x, y, units){
+function handleMonsterCombat(attacker, defender, x, y, units) {
     attacker.health += 1;
     defender.health -= 1;
     writeToLog(`Monster eats 1 health from defender.`)
@@ -881,7 +881,7 @@ function handleMonsterCombat(attacker, defender, x, y, units){
 }
 
 
-function handleCavalryCombat(attacker, defender, x, y, units){
+function handleCavalryCombat(attacker, defender, x, y, units) {
     defender.health -= attacker.attack_melee;
     // Defender killed with first attack
     if (defender.health <= 0) {
@@ -894,7 +894,7 @@ function handleCavalryCombat(attacker, defender, x, y, units){
 }
 
 // Instructions Modal
-document.getElementById("instructionsButton").addEventListener("click", function() {
+document.getElementById("instructionsButton").addEventListener("click", function () {
     const modal = document.getElementById("instructionsModal");
     const instructionsText = document.getElementById("instructionsText");
 
@@ -917,12 +917,12 @@ document.getElementById("instructionsButton").addEventListener("click", function
         });
 });
 
-document.getElementById("closeInstructionsModal").addEventListener("click", function() {
+document.getElementById("closeInstructionsModal").addEventListener("click", function () {
     document.getElementById("instructionsModal").style.display = "none";
 });
 
 // Map Info Modal
-document.getElementById("mapInfoButton").addEventListener("click", function() {
+document.getElementById("mapInfoButton").addEventListener("click", function () {
     const modal = document.getElementById("mapInfoModal");
     const mapInfoText = document.getElementById("mapInfoText");
 
@@ -945,7 +945,7 @@ document.getElementById("mapInfoButton").addEventListener("click", function() {
         });
 });
 
-document.getElementById("closeMapInfoModal").addEventListener("click", function() {
+document.getElementById("closeMapInfoModal").addEventListener("click", function () {
     document.getElementById("mapInfoModal").style.display = "none";
 });
 
