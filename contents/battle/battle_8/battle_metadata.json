@@ -1,0 +1,10 @@
+{
+    "battle_name": "Battle of the frozen Tundra",
+    "battle_map_file": "battle_8__frozen_tundra.png",
+    "battle_map_info_html": "battle_8_map_info.html",
+    "nodeSize": 6600,
+    "nodeXOffset": -6600,
+    "nodeYOffset": -6600,
+    "nodeXScale": 1,
+    "nodeYScale": 1
+}
