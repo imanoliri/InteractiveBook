@@ -180,7 +180,7 @@ def nodes_in_interaction(node_1, node_2, interaction) -> bool:
 
 def node_in_interaction(node, inter_set) -> bool:
     # Check if the node ID is in the interaction set
-    if node.id in inter_set:
+    if str(node.id) in inter_set:
         return True
 
     # Retrieve group columns and check for intersection with the interaction set
@@ -253,7 +253,7 @@ if __name__ == "__main__":
     battle_dirs = [f for f in os.listdir(battles_path) if os.path.isdir(os.path.join(battles_path, f))]
     for battle_dir in battle_dirs:
         battle_name = os.path.basename(battle_dir)
-        if battle_name != "battle_7":
+        if battle_name != "battle_1":
             continue
         print(f"{battle_name}...")
         generate_battle_autodata(battles_path, battle_name)

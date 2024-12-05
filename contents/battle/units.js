@@ -2,13 +2,13 @@
 
 export function defineUnitTypes(meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork) {
     return {
-        M: { name: 'melee', color: 'red', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork], combatHandler: handleMeleeCombat },
-        A: { name: 'archer', color: 'green', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork, archerNetwork], combatHandler: handleArcherCombat },
-        S: { name: 'siege', color: 'white', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork, archerNetwork, siegeNetwork], combatHandler: handleSiegeCombat },
-        R: { name: 'monster', color: 'plum', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork], combatHandler: handleMonsterCombat },
-        V: { name: 'cavalry', color: 'yellow', movementNetworks: [meleeNetwork, cavalryNetwork], attackNetworks: [meleeNetwork, cavalryNetwork], combatHandler: handleCavalryCombat },
-        F: { name: 'flier', color: 'blue', movementNetworks: [meleeNetwork, flierNetwork], attackNetworks: [meleeNetwork, flierNetwork], combatHandler: handleMeleeCombat },
-        P: { name: 'passive', color: 'peru', movementNetworks: [meleeNetwork], attackNetworks: null, combatHandler: null }
+        M: { name: 'melee', color: 'red', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork], combatHandler: handleMeleeCombat, verb: 'attacks' },
+        A: { name: 'archer', color: 'green', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork, archerNetwork], combatHandler: handleArcherCombat, verb: 'shoots' },
+        S: { name: 'siege', color: 'white', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork, archerNetwork, siegeNetwork], combatHandler: handleSiegeCombat, verb: 'shoots' },
+        R: { name: 'monster', color: 'plum', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork], combatHandler: handleMonsterCombat, verb: 'attacks' },
+        V: { name: 'cavalry', color: 'yellow', movementNetworks: [meleeNetwork, cavalryNetwork], attackNetworks: [meleeNetwork, cavalryNetwork], combatHandler: handleCavalryCombat, verb: 'charges' },
+        F: { name: 'flier', color: 'blue', movementNetworks: [meleeNetwork, flierNetwork], attackNetworks: [meleeNetwork, flierNetwork], combatHandler: handleMeleeCombat, verb: 'attacks' },
+        P: { name: 'passive', color: 'peru', movementNetworks: [meleeNetwork], attackNetworks: null, combatHandler: null, verb: '' }
     }
 }
 
@@ -21,12 +21,11 @@ function writeToLog(message) {
 // MOVEMENT logic
 export function handleMove(u, x, y, unitTypes) {
     console.log('handleMove')
-    const draggedUnitIdInt = parseInt(u.id);
     if (unitCanMove(u, x, y, unitTypes)) {
-        writeToLog(`\nmove unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
+        writeToLog(`${u.name} ${u.id} moves\n\t${x} -> ${y}`)
         u.node = y;
     } else {
-        writeToLog(`cannot move unit ${draggedUnitIdInt} from node:${x} -> node:${y}`)
+        writeToLog(`${u.name} ${u.id} cannot move\n\t${x} -> ${y}`)
     }
 }
 
@@ -36,9 +35,9 @@ export function handleSwap(u, v, unitTypes) {
         const tempNode = u.node;
         u.node = v.node;
         v.node = tempNode;
-        writeToLog(`\nSwapped unit:${u.id} <-> unit:${v.id}`);
+        writeToLog(`Swapped units:\n\t${u.id} <-> ${v.id}`);
     } else {
-        writeToLog(`\nCannot swap unit:${u.id} <-> unit:${v.id}`);
+        writeToLog(`Cannot swap units:\n\t${u.id} <-> ${v.id}`);
     }
 }
 function unitCanMove(u, x, y, unitTypes) {
@@ -59,6 +58,8 @@ function networkContainsConnection(network, x, y) {
 // COMBAT logic
 export function handleCombat(u, v, x, y, units, unitTypes) {
     console.log('handleCombat')
+    writeToLog(`${u.name} ${u.id} ${unitTypes[u.type]["verb"]} ${v.name} ${v.id}`)
+
     if (unitCanAttack(u, x, y, unitTypes)) {
         unitTypes[u.type]["combatHandler"](u, v)
         return units.filter(u => u.health > 0)
@@ -91,65 +92,68 @@ function handleMeleeCombat(attacker, defender) {
     if (defender.type === 'P') {
         minDamagePerAttack = 0
     }
+    writeToLog(`\t${attacker.health} vs ${defender.health}`)
     while (performedAttacks < maxAttacks && attacker.health > 0 && defender.health > 0) {
         // Attacker attacks first
         let damage = Math.max(1, attacker.attack_melee - defender.defense);
         defender.health = Math.max(0, defender.health - damage);
         if (defender.health <= 0) {
-            writeToLog(`Attacker wins with ${attacker.health} health left.`)
+            writeToLog(`\t${attacker.health} vs ${defender.health} --> Attacker wins`)
             // Defender is defeated: move attacker to node, stop combat
             attacker.node = defender.node
-            break
+            return
         }
 
         // Defender attacks back
         damage = Math.max(minDamagePerAttack, defender.attack_melee - attacker.defense);
         attacker.health = Math.max(0, attacker.health - damage);
         if (attacker.health <= 0) {
-            writeToLog(`Defender wins with ${defender.health} health left.`)
+            writeToLog(`\t${attacker.health} vs ${defender.health} --> Defender wins`)
             // Attacker is defeated: stop combat
-            break
+            return
         }
+        writeToLog(`\t${attacker.health} vs ${defender.health}`)
         performedAttacks += 1
     }
-    writeToLog(`Units fought ${performedAttacks} rounds.\nAttacker has ${attacker.health} health left and Defender ${defender.health}.`)
 }
 
 function handleArcherCombat(attacker, defender) {
+    writeToLog(`\t${attacker.health} vs ${defender.health}`)
     let damage = Math.max(1, attacker.attack_range - defender.defense);
-    writeToLog(`Archer deals ${damage} damage.`)
-    defender.health -= damage;
+    defender.health = Math.max(0, defender.health - damage);
     if (defender.health <= 0) {
-        writeToLog('Archer kills target.')
+        writeToLog(`\t${attacker.health} vs ${defender.health} --> Archer kills target`)
     } else {
-        writeToLog(`Target has ${defender.health} health left.`)
+        writeToLog(`\t${attacker.health} vs ${defender.health}`)
     }
 }
 
 function handleSiegeCombat(attacker, defender) {
+    writeToLog(`\t${attacker.health} vs ${defender.health}`)
     let damage = Math.max(1, attacker.attack_range - defender.defense);
-    writeToLog(`Siege deals ${damage} damage.`)
-    defender.health -= damage;
+    defender.health = Math.max(0, defender.health - damage);
     if (defender.health <= 0) {
-        writeToLog('Siege kills target.')
+        writeToLog(`\t${attacker.health} vs ${defender.health} --> Siege kills target`)
     } else {
-        writeToLog(`Target has ${defender.health} health left.`)
+        writeToLog(`\t${attacker.health} vs ${defender.health}`)
     }
 }
 
 function handleMonsterCombat(attacker, defender) {
+    writeToLog(`\t${attacker.health} vs ${defender.health}`)
     attacker.health += 1;
     defender.health -= 1;
-    writeToLog(`Monster eats 1 health from defender.`)
+    writeToLog(`\tMonster eats 1 health from defender.`)
     handleMeleeCombat(attacker, defender)
 }
 
 
 function handleCavalryCombat(attacker, defender) {
-    defender.health -= attacker.attack_melee;
+    writeToLog(`\t${attacker.health} vs ${defender.health}`)
+    defender.health = Math.max(0, defender.health - attacker.attack_melee);
     // Defender killed with first attack
     if (defender.health <= 0) {
-        writeToLog(`Attacker wins with ${attacker.health} health left.`)
+        writeToLog(`\t${attacker.health} vs ${defender.health} --> Cavalry kills target during charge`)
         // Defender is defeated: move attacker to node, stop combat
         attacker.node = defender.node
         return
