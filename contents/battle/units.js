@@ -7,7 +7,8 @@ export function defineUnitTypes(meleeNetwork, archerNetwork, flierNetwork, siege
         S: { name: 'siege', color: 'white', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork, archerNetwork, siegeNetwork], combatHandler: handleSiegeCombat },
         R: { name: 'monster', color: 'plum', movementNetworks: [meleeNetwork], attackNetworks: [meleeNetwork], combatHandler: handleMonsterCombat },
         V: { name: 'cavalry', color: 'yellow', movementNetworks: [meleeNetwork, cavalryNetwork], attackNetworks: [meleeNetwork, cavalryNetwork], combatHandler: handleCavalryCombat },
-        F: { name: 'flier', color: 'blue', movementNetworks: [meleeNetwork, flierNetwork], attackNetworks: [meleeNetwork, flierNetwork], combatHandler: handleMeleeCombat }
+        F: { name: 'flier', color: 'blue', movementNetworks: [meleeNetwork, flierNetwork], attackNetworks: [meleeNetwork, flierNetwork], combatHandler: handleMeleeCombat },
+        P: { name: 'passive', color: 'peru', movementNetworks: [meleeNetwork], attackNetworks: null, combatHandler: null }
     }
 }
 
@@ -68,7 +69,13 @@ export function handleCombat(u, v, x, y, units, unitTypes) {
 }
 
 function unitCanAttack(u, x, y, unitTypes) {
+    if (unitTypes[u.type]["combatHandler"] === null) {
+        return false
+    }
     for (const attackNetwork of unitTypes[u.type]["attackNetworks"]) {
+        if (attackNetwork === null) {
+            return false
+        }
         if (networkContainsConnection(attackNetwork, x, y)) {
             return true
         }
@@ -77,10 +84,17 @@ function unitCanAttack(u, x, y, unitTypes) {
 }
 
 function handleMeleeCombat(attacker, defender) {
-    while (attacker.health > 0 && defender.health > 0) {
+
+    const maxAttacks = 3
+    let performedAttacks = 0
+    let minDamagePerAttack = 1
+    if (defender.type === 'P') {
+        minDamagePerAttack = 0
+    }
+    while (performedAttacks < maxAttacks && attacker.health > 0 && defender.health > 0) {
         // Attacker attacks first
         let damage = Math.max(1, attacker.attack_melee - defender.defense);
-        defender.health -= damage;
+        defender.health = Math.max(0, defender.health - damage);
         if (defender.health <= 0) {
             writeToLog(`Attacker wins with ${attacker.health} health left.`)
             // Defender is defeated: move attacker to node, stop combat
@@ -89,14 +103,16 @@ function handleMeleeCombat(attacker, defender) {
         }
 
         // Defender attacks back
-        damage = Math.max(1, defender.attack_melee - attacker.defense);
-        attacker.health -= damage;
+        damage = Math.max(minDamagePerAttack, defender.attack_melee - attacker.defense);
+        attacker.health = Math.max(0, attacker.health - damage);
         if (attacker.health <= 0) {
             writeToLog(`Defender wins with ${defender.health} health left.`)
             // Attacker is defeated: stop combat
             break
         }
+        performedAttacks += 1
     }
+    writeToLog(`Units fought ${performedAttacks} rounds.\nAttacker has ${attacker.health} health left and Defender ${defender.health}.`)
 }
 
 function handleArcherCombat(attacker, defender) {

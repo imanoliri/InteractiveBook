@@ -407,13 +407,15 @@ function handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork
         nodeId = parseInt(event.target.dataset.nodeId); // Get the ID of its node
 
         // Determine which networks to use based on unit type
-        networksToUse = unitTypes[unitType]["attackNetworks"]
+        const moveNetworks = unitTypes[unitType]["movementNetworks"]
+        const attackNetworks = unitTypes[unitType]["attackNetworks"]
+        networksToUse = [...moveNetworks === null ? [] : moveNetworks, ...attackNetworks === null ? [] : attackNetworks]
     }
 
     // Find and highlight all reachable nodes for each network
     networksToUse.forEach(network => {
         const accessibleNodes = network
-            .filter(pair => pair[0] === nodeId || pair[1] === nodeId)
+            .filter(pair => pair[0] === nodeId)
             .map(pair => (pair[0] === nodeId ? pair[1] : pair[0]));
 
         accessibleNodes.forEach(id => {
