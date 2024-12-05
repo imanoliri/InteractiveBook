@@ -280,7 +280,8 @@ function drawUnits(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNet
 
         // Create the circular div for the unit
         const circle = document.createElement("div");
-        circle.classList.add("unit-circle", `team-${unit.team}`, `type-${unit.type}`);
+        circle.classList.add("unit-circle");
+        circle.style.borderColor = unitTypes[unit.type]['color'];
         circle.textContent = unit.id;
         circle.setAttribute("draggable", "true"); // Make the unit circle draggable
         const teamNumber = parseInt(unit.team);

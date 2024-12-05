@@ -86,30 +86,6 @@ button {
     width: var(--unit-size-highlight);
     height: var(--unit-size-highlight);
 }
-
-/* Border colors based on unit type */
-.type-M {
-    border-color: red;
-}
-.type-A {
-    border-color: green;
-}
-.type-S {
-    border-color: white;
-}
-.type-R {
-    border-color: plum;
-}
-.type-V {
-    border-color: yellow;
-}
-.type-F {
-    border-color: blue;
-}
-.type-P {
-    border-color: peru;
-}
-
 .node-tooltip {
     display: none;
     position: absolute;
