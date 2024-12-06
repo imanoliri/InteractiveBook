@@ -136,9 +136,9 @@ button {
 
 #unitTableContainer {
     flex: 1; /* The table takes up 1 part of the space */
-    padding: 20px;
+    padding: 1vh;
     overflow-y: auto; /* Scroll if the content overflows */
-    max-height: 100vh; /* Ensure the table doesn't overflow the viewport */
+    max-height: 98vh; /* Ensure the table doesn't overflow the viewport */
     background-color: #f9f9f9;
 }
 
@@ -158,12 +158,10 @@ th {
 }
 
 /* Styles for the non-editable, scrollable textbox */
-#logContainer {
-    margin-top: 20px;
-}
+/*#logContainer {margin-top: 1vh;}*/
 
 #logTextbox {
-    width: 100%;
+    width: 99%;
     height: 30vh;
     resize: none; /* Prevent resizing */
     overflow-y: scroll; /* Enable vertical scrolling */
