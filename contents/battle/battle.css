@@ -144,6 +144,7 @@ button {
 
 table {
     width: 100%;
+    font-size: 0.9em;
     border-collapse: collapse;
 }
 
