@@ -96,7 +96,7 @@ button {
     font-size: 0.8em;
     white-space: nowrap;
     z-index: 30;
-    transform: translate(-50%, -110%);
+    transform: translate(-50%, -50%);
 }
 
 .node:hover .node-tooltip {
@@ -113,7 +113,7 @@ button {
     font-size: 0.8em;
     white-space: nowrap;
     z-index: 30;
-    transform: translate(-50%, -110%);
+    transform: translate(-55%, -55%);
 }
 
 .unit-circle:hover .unit-tooltip {
