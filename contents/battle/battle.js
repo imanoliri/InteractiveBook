@@ -318,7 +318,7 @@ function drawUnits(nodes, units, nodeSize, meleeNetwork, archerNetwork, flierNet
         battlefield.appendChild(circle); // Append the unit circle to the battlefield
 
         // Drag and drop callbacks
-        circle.addEventListener('mouseenter', (event) => { handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork); });
+        circle.addEventListener('mouseenter', (event) => { handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork); });
         circle.addEventListener('mouseleave', handleNodeLeaveHighlight);
         circle.addEventListener("dragstart", handleDragStart);
         circle.addEventListener("dragover", handleDragOver);
@@ -394,7 +394,7 @@ function updateHealthBar(units) {
 
 
 // HOVER callbacks
-function handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork, archerNetwork, flierNetwork, siegeNetwork, cavalryNetwork) {
+function handleNodeHoverHighlightAccessibleUnitsNodes(event, units, meleeNetwork) {
     let nodeId;
     let networksToUse = [];
 
