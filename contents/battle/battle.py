@@ -251,7 +251,7 @@ if __name__ == "__main__":
 
     battles_path = "contents/battle"
     battle_dirs = [f for f in os.listdir(battles_path) if os.path.isdir(os.path.join(battles_path, f))]
-    for battle_dir in battle_dirs:
+    for battle_dir in battle_dirs[::-1]:
         battle_name = os.path.basename(battle_dir)
         print(f"{battle_name}...")
         generate_battle_autodata(battles_path, battle_name)

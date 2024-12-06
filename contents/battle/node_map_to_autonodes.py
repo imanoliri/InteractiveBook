@@ -25,7 +25,7 @@ def nodes_from_node_map(dfm: pd.DataFrame) -> pd.DataFrame:
 if __name__ == "__main__":
     battles_path = "contents/battle"
     battle_dirs = [f for f in os.listdir(battles_path) if os.path.isdir(os.path.join(battles_path, f))]
-    for battle_dir in battle_dirs:
+    for battle_dir in battle_dirs[::-1]:
         try:
             battle_name = os.path.basename(battle_dir)
             print(f"{battle_name}...")
