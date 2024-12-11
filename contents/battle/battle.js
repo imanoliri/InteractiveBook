@@ -1,6 +1,7 @@
 import { drawAll } from './draw.js';
 import { defineUnitTypes } from './units.js';
-import { definenetworkConfigs, updateDrawNetwork } from './networks.js';
+import { definenetworkConfigs, toggleNetwork } from './networks.js';
+import { add_instructions_modal, add_map_info_modal } from './info_modals.js';
 
 async function fetchBattlesToChoose() {
     try {
@@ -91,12 +92,67 @@ const checkboxCavalryNetwork = document.getElementById('cavalryNetwork');
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    fetchBattlesToChoose().then(defineHtmlElementsCallbacks);
+    fetchBattlesToChoose().then(defineHtmlElementsAndCallbacks);
 });
 
-function createBattle() {
 
-    getMetadata()
+
+function defineHtmlElementsAndCallbacks() {
+    dropdown.addEventListener('change', handleBattleChange);
+    dropdown.addEventListener('change', () => {
+        fetchBattleData().then(createBattle);
+    });
+    battles.forEach(battle => {
+        const option = document.createElement('option');
+        option.value = battle;
+        option.textContent = battle;
+        dropdown.appendChild(option);
+    });
+
+
+
+    sliderValue.textContent = parseInt(slider.value, 10);
+    slider.addEventListener("input", function () {
+        sliderValue.textContent = slider.value;
+    });
+    setDifficultyButton.addEventListener("click", () => { fetchBattleData().then(createBattle); });
+    checkboxMeleeNetwork.addEventListener('change', toggleNetwork);
+    checkboxArcherNetwork.addEventListener('change', toggleNetwork);
+    checkboxFlierNetwork.addEventListener('change', toggleNetwork);
+    checkboxSiegeNetwork.addEventListener('change', toggleNetwork);
+    checkboxCavalryNetwork.addEventListener('change', toggleNetwork);
+
+
+    // Add info modals
+    add_instructions_modal()
+    add_map_info_modal(battleMapInfoHTML)
+}
+
+async function handleBattleChange(event) {
+    selectedBattle = event.target.value;
+    selectedBattleDir = `${selectedBattle}`
+
+    if (!selectedBattle) {
+        detailsDiv.textContent = 'Select a battle to view details.';
+        return;
+    }
+
+    try {
+        const response = await fetch(`${selectedBattleDir}/battle_metadata.json`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch metadata for ${selectedBattle}`);
+        }
+        battle_metadata = await response.json();
+        // Get metadata for this battle and update map info modal
+        getMetadata()
+        add_map_info_modal(battleMapInfoHTML)
+        console.log("Battle metadata fetched:", battle_metadata);
+    } catch (error) {
+        console.error(`Error loading metadata for ${selectedBattle}:`, error);
+    }
+}
+
+function createBattle() {
 
     // Nodes & units
     deploymentLevel = parseInt(slider.value, 10);
@@ -121,67 +177,15 @@ function getMetadata() {
     nodeXScale = battle_metadata["nodeXScale"];
     nodeYScale = battle_metadata["nodeYScale"];
     battleMapFile = `${selectedBattle}/${battle_metadata["battle_map_file"]}`;
+    console.log(battle_metadata)
     battleMapInfoHTML = `${selectedBattle}/${battle_metadata["battle_map_info_html"]}`;
+    console.log(battleMapInfoHTML)
 
     // Update HTML elements
     document.title = battleName;
     document.querySelector("h1").textContent = battleName;
     document.documentElement.style.setProperty('--battle-map-file', `url(${battleMapFile})`);
 }
-
-
-function defineHtmlElementsCallbacks() {
-    dropdown.addEventListener('change', handleBattleChange);
-    dropdown.addEventListener('change', () => {
-        fetchBattleData().then(createBattle);
-    });
-    battles.forEach(battle => {
-        const option = document.createElement('option');
-        option.value = battle;
-        option.textContent = battle;
-        dropdown.appendChild(option);
-    });
-
-
-
-    sliderValue.textContent = parseInt(slider.value, 10);
-    slider.addEventListener("input", function () {
-        sliderValue.textContent = slider.value;
-    });
-    setDifficultyButton.addEventListener("click", () => { fetchBattleData().then(createBattle); });
-    checkboxMeleeNetwork.addEventListener('change', toggleNetwork);
-    checkboxArcherNetwork.addEventListener('change', toggleNetwork);
-    checkboxFlierNetwork.addEventListener('change', toggleNetwork);
-    checkboxSiegeNetwork.addEventListener('change', toggleNetwork);
-    checkboxCavalryNetwork.addEventListener('change', toggleNetwork);
-}
-
-async function handleBattleChange(event) {
-    selectedBattle = event.target.value;
-    selectedBattleDir = `${selectedBattle}`
-
-    if (!selectedBattle) {
-        detailsDiv.textContent = 'Select a battle to view details.';
-        return;
-    }
-
-    try {
-        const response = await fetch(`${selectedBattleDir}/battle_metadata.json`);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch metadata for ${selectedBattle}`);
-        }
-        battle_metadata = await response.json();
-        console.log("Battle metadata fetched:", battle_metadata);
-    } catch (error) {
-        console.error(`Error loading metadata for ${selectedBattle}:`, error);
-    }
-}
-
-function toggleNetwork(e) {
-    const network = e.target.id
-    updateDrawNetwork(network, networkConfigs[network])
-}
-
 
 // CREATE functions
 function createNodes(nodes) {
@@ -206,64 +210,3 @@ function setCSSVariables() {
     document.documentElement.style.setProperty('--node-size-highlight', `${nodeSize * 1.2}px`);
     document.documentElement.style.setProperty('--unit-size-highlight', `${nodeSize * 1.2}px`);
 }
-
-
-
-
-// Instructions Modal
-document.getElementById("instructionsButton").addEventListener("click", function () {
-    const modal = document.getElementById("instructionsModal");
-    const instructionsText = document.getElementById("instructionsText");
-
-    // Fetch the HTML file and insert its content into the modal
-    fetch('battle_instructions.html')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.text();
-        })
-        .then(html => {
-            instructionsText.innerHTML = html; // Set the modal content
-            modal.style.display = "flex";     // Show the modal
-        })
-        .catch(error => {
-            console.error('Error loading', error);
-            mapInfoText.innerHTML = `<p>Failed to load.</p>`;
-            modal.style.display = "flex";
-        });
-});
-
-document.getElementById("closeInstructionsModal").addEventListener("click", function () {
-    document.getElementById("instructionsModal").style.display = "none";
-});
-
-// Map Info Modal
-document.getElementById("mapInfoButton").addEventListener("click", function () {
-    const modal = document.getElementById("mapInfoModal");
-    const mapInfoText = document.getElementById("mapInfoText");
-
-    // Fetch the HTML file and insert its content into the modal
-    fetch(battleMapInfoHTML)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.text();
-        })
-        .then(html => {
-            mapInfoText.innerHTML = html; // Set the modal content
-            modal.style.display = "flex";     // Show the modal
-        })
-        .catch(error => {
-            console.error('Error loading', error);
-            mapInfoText.innerHTML = `<p>Failed to load.</p>`;
-            modal.style.display = "flex";
-        });
-});
-
-document.getElementById("closeMapInfoModal").addEventListener("click", function () {
-    document.getElementById("mapInfoModal").style.display = "none";
-});
-
-

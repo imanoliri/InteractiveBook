@@ -97,7 +97,13 @@ export function drawNetworkConnections(networkConfigs) {
     Object.entries(networkConfigs).forEach(([key, value]) => updateDrawNetwork(key, value));
 }
 
-export function updateDrawNetwork(network, networkConfig) {
+export function toggleNetwork(e) {
+    const network = e.target.id
+    updateDrawNetwork(network, networkConfigs[network])
+}
+
+
+function updateDrawNetwork(network, networkConfig) {
     document.querySelectorAll(`.${network}-border-line`).forEach(line => line.remove());
     document.querySelectorAll(`.${network}-line`).forEach(line => line.remove());
 
