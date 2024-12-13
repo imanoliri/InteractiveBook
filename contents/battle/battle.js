@@ -167,11 +167,11 @@ function defineHtmlElementsAndCallbacks(battleStrs) {
         sliderValue.textContent = slider.value;
     });
     setDifficultyButton.addEventListener("click", () => { fetchBattleData().then(createBattle); });
-    checkboxMeleeNetwork.addEventListener('change', toggleNetwork);
-    checkboxArcherNetwork.addEventListener('change', toggleNetwork);
-    checkboxFlierNetwork.addEventListener('change', toggleNetwork);
-    checkboxSiegeNetwork.addEventListener('change', toggleNetwork);
-    checkboxCavalryNetwork.addEventListener('change', toggleNetwork);
+    checkboxMeleeNetwork.addEventListener('change', (e) => { toggleNetwork(e, networkConfigs); });
+    checkboxArcherNetwork.addEventListener('change', (e) => { toggleNetwork(e, networkConfigs); });
+    checkboxFlierNetwork.addEventListener('change', (e) => { toggleNetwork(e, networkConfigs); });
+    checkboxSiegeNetwork.addEventListener('change', (e) => { toggleNetwork(e, networkConfigs); });
+    checkboxCavalryNetwork.addEventListener('change', (e) => { toggleNetwork(e, networkConfigs); });
 
 }
 

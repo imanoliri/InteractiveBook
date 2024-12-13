@@ -82,9 +82,12 @@ export function definenetworkConfigs(svg, nodes, nodeSize, nodeXOffset, nodeYOff
                 networkType: "siegeNetwork",
                 network: siegeNetwork,
                 color: "white",
-                width: nodeSize / 10,
-                dashArray: "10,25",
-                curvedLine: false
+                width: nodeSize / 150,
+                dashArray: "",
+                curvedLine: true,
+                focalPointX: focalPointX,
+                focalPointY: focalPointY,
+                curvatureStrength: 150
             }
         }
     };
@@ -97,7 +100,7 @@ export function drawNetworkConnections(networkConfigs) {
     Object.entries(networkConfigs).forEach(([key, value]) => updateDrawNetwork(key, value));
 }
 
-export function toggleNetwork(e) {
+export function toggleNetwork(e, networkConfigs) {
     const network = e.target.id
     updateDrawNetwork(network, networkConfigs[network])
 }
