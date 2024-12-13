@@ -198,6 +198,8 @@
                     slider = document.querySelector(`#slider-${index}`)
                     return {
                         username: userName,
+                        collectionId: story_metadata["collectionId"],
+                        collectionBookId: story_metadata["collectionId"],
                         storyId: story_metadata["story_id"],
                         storyName: story_metadata["story_name"],
                         date: new Date().toISOString(),
@@ -212,6 +214,8 @@
                 // Feedback of only one chapter
                 slider = document.querySelector(`#slider-${chapterIndex}`)
                 feedbackData = [{
+                    collectionId: collectionId,
+                    collectionBookId: collectionId,
                     username: userName,
                     storyId: story_metadata["story_id"],
                     storyName: story_metadata["story_name"],
