@@ -153,12 +153,11 @@ function handleUnitAction(actionUnitId, targetNodeId, nodes, units, unitTypes, m
         } else {
             // Enemy unit: initiate combat
             units = handleCombat(actionUnit, targetUnit, actionUnit.node, targetUnit.node, units, unitTypes);
-            drawMobileElements(nodes, units, unitTypes, meleeNetwork, nodeSize, nodeXOffset, nodeYOffset, nodeXScale, nodeYScale)
         }
     } else if (targetNodeId) {
         // If there is a target node, and no target unit on it, move unit
         handleMove(actionUnit, actionUnit.node, targetNodeId, unitTypes);
-        drawMobileElements(nodes, units, unitTypes, meleeNetwork, nodeSize, nodeXOffset, nodeYOffset, nodeXScale, nodeYScale)
     }
+    drawMobileElements(nodes, units, unitTypes, meleeNetwork, nodeSize, nodeXOffset, nodeYOffset, nodeXScale, nodeYScale)
 
 }
