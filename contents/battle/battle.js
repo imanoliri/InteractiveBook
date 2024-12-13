@@ -2,15 +2,65 @@ import { drawAll } from './draw.js';
 import { defineUnitTypes } from './units.js';
 import { definenetworkConfigs, toggleNetwork } from './networks.js';
 
-async function fetchBattlesToChoose() {
+async function fetchBattleMetadatas(baseDir = './') {
     try {
-        const response_battles = await fetch('battles.json');
-        battles = await response_battles.json();
-        console.log("Battles fetched:", battles)
+        const response = await fetch(`${baseDir}`);
+        if (!response.ok) throw new Error(`Failed to fetch directory listing: ${response.status}`);
+
+        const text = await response.text();
+
+        // Parse HTML and extract valid subdirectory names
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, 'text/html');
+        battles = Array.from(doc.querySelectorAll('li > a.icon-directory'))
+            .map(link => link.getAttribute('title')) // Extract the title attribute
+            .filter(title => title && !title.startsWith('.')); // Exclude ".." or hidden files
+
+        console.log('Loaded Battles:', battles);
+
+        // Fetch metadata from each valid subdirectory
+        const metadatas = await Promise.all(
+            battles.map(async dir => {
+                const metadataURL = `${baseDir}/${dir}/battle_metadata.json`;
+                try {
+                    const metadataResponse = await fetch(metadataURL);
+                    if (!metadataResponse.ok) throw new Error(`HTTP error! Status: ${metadataResponse.status}`);
+                    return await metadataResponse.json(); // Return raw metadata
+                } catch (error) {
+                    console.error(`Error fetching metadata for ${dir}:`, error);
+                    return null; // Skip directories with errors
+                }
+            })
+        );
+
+        return metadatas.filter(Boolean); // Remove null entries
     } catch (error) {
-        console.error('Error fetching JSON:', error);
+        console.error('Error fetching battles:', error);
+        return [];
     }
 }
+
+
+function generateMetadataStrings(metadataList, sep = ".", sepBattleName = "_", sepBig = "__", extraInfo = false, addBattleName = true) {
+    return metadataList.map(metadata => {
+        const collectionId = metadata.collectionId || 'unknownCollection';
+        const collectionBookId = metadata.collectionBookId || 'unknownBook';
+        const bookBattleId = metadata.bookBattleId || 'unknownBookBattle';
+        const battleId = metadata.battleId || 'unknownBattle';
+        const battleName = metadata.battle_name || 'unknownBattle';
+        let metadataStr = `${collectionId}${sep}${collectionId}${sep}${collectionBookId}${sep}${bookBattleId}`;
+        if (addBattleName) { metadataStr = `${metadataStr}${sepBig}${battleName.replace(/ /g, sepBattleName)}`; }
+        if (extraInfo === true) { metadataStr = `battle${sepBig}${metadataStr}${sepBig}${battleId}`; }
+        return metadataStr
+    });
+}
+
+async function fetchBattlesToChoose(baseDir = '.') {
+    return fetchBattleMetadatas(baseDir).then(generateMetadataStrings)
+
+}
+
+
 
 async function fetchBattleData() {
     try {
@@ -96,17 +146,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-function defineHtmlElementsAndCallbacks() {
+function defineHtmlElementsAndCallbacks(battleStrs) {
+
     dropdown.addEventListener('change', handleBattleChange);
     dropdown.addEventListener('change', () => {
         fetchBattleData().then(createBattle);
     });
-    battles.forEach(battle => {
+    console.log(battles)
+
+    battleStrs.forEach((battleStr, index) => {
         const option = document.createElement('option');
-        option.value = battle;
-        option.textContent = battle;
+        option.value = battleStr;
+        option.dataset.path = battles[index];
+        option.textContent = battleStr;
         dropdown.appendChild(option);
     });
+
+    // Order dropdown options lexicographically
+    const options = Array.from(dropdown.options);
+    options.sort((a, b) => a.text.localeCompare(b.text));
+    dropdown.innerHTML = '';
+    options.forEach(option => dropdown.add(option));
 
 
 
@@ -125,7 +185,7 @@ function defineHtmlElementsAndCallbacks() {
 
 async function handleBattleChange(event) {
     selectedBattle = event.target.value;
-    selectedBattleDir = `${selectedBattle}`
+    selectedBattleDir = event.target.selectedOptions[0].dataset.path;
 
     if (!selectedBattle) {
         detailsDiv.textContent = 'Select a battle to view details.';
@@ -133,6 +193,7 @@ async function handleBattleChange(event) {
     }
 
     try {
+        console.log(`${selectedBattleDir}/battle_metadata.json`)
         const response = await fetch(`${selectedBattleDir}/battle_metadata.json`);
         if (!response.ok) {
             throw new Error(`Failed to fetch metadata for ${selectedBattle}`);
@@ -169,8 +230,8 @@ function getMetadata() {
     nodeYOffset = configNodeSizeToPx(battle_metadata["nodeYOffset"]);
     nodeXScale = battle_metadata["nodeXScale"];
     nodeYScale = battle_metadata["nodeYScale"];
-    battleMapFile = `${selectedBattle}/${battle_metadata["battle_map_file"]}`;
-    battleMapInfoHTML = `${selectedBattle}/${battle_metadata["battle_map_info_html"]}`;
+    battleMapFile = `${selectedBattleDir}/${battle_metadata["battle_map_file"]}`;
+    battleMapInfoHTML = `${selectedBattleDir}/${battle_metadata["battle_map_info_html"]}`;
 
     // Update HTML elements
     document.title = battleName;
