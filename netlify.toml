@@ -1,4 +1,2 @@
 [functions]
 directory = "functions"
-[build]
-command = "node functions/writeBattlesToLocalJson.js && npm run build"
