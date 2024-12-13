@@ -184,6 +184,8 @@
         }
 
         let userName
+        let collectionId
+        let collectionBookId
         function submitFeedback() {
 
             const chapterIndex = document.querySelector('.tab.active').dataset.index;            
@@ -199,7 +201,7 @@
                     return {
                         username: userName,
                         collectionId: story_metadata["collectionId"],
-                        collectionBookId: story_metadata["collectionId"],
+                        collectionBookId: story_metadata["collectionBookId"],
                         storyId: story_metadata["story_id"],
                         storyName: story_metadata["story_name"],
                         date: new Date().toISOString(),
@@ -215,7 +217,7 @@
                 slider = document.querySelector(`#slider-${chapterIndex}`)
                 feedbackData = [{
                     collectionId: collectionId,
-                    collectionBookId: collectionId,
+                    collectionBookId: collectionBookId,
                     username: userName,
                     storyId: story_metadata["story_id"],
                     storyName: story_metadata["story_name"],
