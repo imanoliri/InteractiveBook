@@ -1,7 +1,7 @@
 {
     "battleId": 4,
     "collectionId": 1,
-    "bookId": 3,
+    "collectionBookId": 3,
     "bookBattleId": 2,
     "battle_name": "Battle of Broken Shard Passage",
     "battle_map_file": "battle_4__broken_shard_passage.png",

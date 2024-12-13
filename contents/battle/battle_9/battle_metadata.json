@@ -1,7 +1,7 @@
 {
     "battleId": 9,
     "collectionId": 1,
-    "bookId": 2,
+    "collectionBookId": 2,
     "bookBattleId": 4,
     "battle_name": "Battle of the Ice Castle",
     "battle_map_file": "battle_9__ice_castle.png",

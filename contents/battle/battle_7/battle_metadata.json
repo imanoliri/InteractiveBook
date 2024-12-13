@@ -1,7 +1,7 @@
 {
     "battleId": 7,
     "collectionId": 1,
-    "bookId": 2,
+    "collectionBookId": 2,
     "bookBattleId": 1,
     "battle_name": "Defend the caravan!",
     "battle_map_file": "battle_7__defend_the_caravan.png",

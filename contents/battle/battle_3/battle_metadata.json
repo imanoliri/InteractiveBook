@@ -1,7 +1,7 @@
 {
     "battleId": 3,
     "collectionId": 1,
-    "bookId": 1,
+    "collectionBookId": 1,
     "bookBattleId": 2,
     "battle_name": "Battle of Tarn Castle",
     "battle_map_file": "battle_3__tarn_castle.png",

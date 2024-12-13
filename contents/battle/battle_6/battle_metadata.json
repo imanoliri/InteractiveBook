@@ -1,7 +1,7 @@
 {
     "battleId": 6,
     "collectionId": 1,
-    "bookId": 2,
+    "collectionBookId": 2,
     "bookBattleId": 2,
     "battle_name": "Battle of River City (frozen)",
     "battle_map_file": "battle_6__river_city_frozen.png",

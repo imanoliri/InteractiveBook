@@ -1,7 +1,7 @@
 {
     "battleId": 8,
     "collectionId": 1,
-    "bookId": 2,
+    "collectionBookId": 2,
     "bookBattleId": 3,
     "battle_name": "Battle of the frozen Tundra",
     "battle_map_file": "battle_8__frozen_tundra.png",

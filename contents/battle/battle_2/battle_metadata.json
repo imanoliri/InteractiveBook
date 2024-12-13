@@ -1,7 +1,7 @@
 {
     "battleId": 2,
     "collectionId": 1,
-    "bookId": 1,
+    "collectionBookId": 1,
     "bookBattleId": 1,
     "battle_name": "Battle of Greystone Pass",
     "battle_map_file": "battle_2__greystone_pass.png",

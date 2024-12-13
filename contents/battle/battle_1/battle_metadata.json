@@ -1,7 +1,7 @@
 {
     "battleId": 1,
     "collectionId": 1,
-    "bookId": 3,
+    "collectionBookId": 3,
     "bookBattleId": 1,
     "battle_name": "Battle of Durin's Chasm",
     "battle_map_file": "battle_1__durins_chasm.png",
