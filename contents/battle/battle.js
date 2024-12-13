@@ -4,17 +4,9 @@ import { definenetworkConfigs, toggleNetwork } from './networks.js';
 
 async function fetchBattleMetadatas(baseDir = './') {
     try {
-        const response = await fetch(`${baseDir}`);
-        if (!response.ok) throw new Error(`Failed to fetch directory listing: ${response.status}`);
-
-        const text = await response.text();
-
-        // Parse HTML and extract valid subdirectory names
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(text, 'text/html');
-        battles = Array.from(doc.querySelectorAll('li > a.icon-directory'))
-            .map(link => link.getAttribute('title')) // Extract the title attribute
-            .filter(title => title && !title.startsWith('.')); // Exclude ".." or hidden files
+        const response = await fetch('battles.json');
+        if (!response.ok) throw new Error(`Failed to fetch battle list: ${response.status}`);
+        battles = await response.json();
 
         console.log('Loaded Battles:', battles);
 
