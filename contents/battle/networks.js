@@ -123,8 +123,8 @@ function createConnections({ svg, nodes, nodeSize, nodeXOffset, nodeYOffset, net
         const node2 = nodes.find(node => node.id === pair[1]);
         if (node1 && node2) {
             drawLine(svg, networkType,
-                nodeXOffset + node1.x * nodeSize + nodeSize / 2, nodeYOffset + node1.y * nodeSize + nodeSize / 2,
-                nodeXOffset + node2.x * nodeSize + nodeSize / 2, nodeYOffset + node2.y * nodeSize + nodeSize / 2,
+                nodeXOffset + (node1.x - 1) * nodeSize + nodeSize / 2, nodeYOffset + (node1.y - 1) * nodeSize + nodeSize / 2,
+                nodeXOffset + (node2.x - 1) * nodeSize + nodeSize / 2, nodeYOffset + (node2.y - 1) * nodeSize + nodeSize / 2,
                 color, width, dashArray, curvedLine, focalPointX, focalPointY, curvatureStrength
             );
         }

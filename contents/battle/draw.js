@@ -33,8 +33,8 @@ function drawNodes(nodes, units, unitTypes, meleeNetwork, nodeSize, nodeXOffset,
     nodes.forEach(node => {
         const div = document.createElement("div");
         div.classList.add("node");
-        div.style.left = `${nodeXOffset + node.x * nodeSize * nodeXScale}px`;
-        div.style.top = `${nodeYOffset + node.y * nodeSize * nodeYScale}px`;
+        div.style.left = `${nodeXOffset + (node.x - 1) * nodeSize * nodeXScale}px`;
+        div.style.top = `${nodeYOffset + (node.y - 1) * nodeSize * nodeYScale}px`;
         div.dataset.nodeId = node.id; // Assign the node ID as a data attribute
 
         // Create a tooltip to show unit details on hover
@@ -79,8 +79,8 @@ function drawUnits(nodes, units, unitTypes, meleeNetwork, nodeSize, nodeXOffset,
         }
 
         // Position the circle at the node's coordinates
-        circle.style.left = `${nodeXOffset + node.x * nodeSize * nodeXScale}px`;
-        circle.style.top = `${nodeYOffset + node.y * nodeSize * nodeYScale}px`;
+        circle.style.left = `${nodeXOffset + (node.x - 1) * nodeSize * nodeXScale}px`;
+        circle.style.top = `${nodeYOffset + (node.y - 1) * nodeSize * nodeYScale}px`;
 
         // Set unit ID as a data attribute for reference
         circle.dataset.unitId = unit.id;
