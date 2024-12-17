@@ -33,7 +33,7 @@ async function fetchBattleMetadatas(baseDir = './') {
 }
 
 
-function generateMetadataStrings(metadataList, sep = ".", sepBattleName = "_", sepBig = "__", extraInfo = false, addBattleName = true) {
+function generateMetadataStrings(metadataList, sep = "_", sepBattleName = "_", sepBig = "__", extraInfo = false, addBattleName = true) {
     return metadataList.map(metadata => {
         const collectionId = metadata.collectionId || 'unknownCollection';
         const collectionBookId = metadata.collectionBookId || 'unknownBook';
