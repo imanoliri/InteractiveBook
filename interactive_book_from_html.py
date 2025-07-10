@@ -19,10 +19,6 @@ def read_html_book(html_file_path: str):
         return file.read()
 
 
-def read_json(filepath):
-    with open(filepath, "r") as file:
-        return json.load(file)
-
 
 def extract_media(html_content):
 
@@ -198,7 +194,7 @@ def generate_contents_page(content_links):
     def get_name_from_file_path(fp):
         return snake_to_camel_with_spaces(fp.split("/")[-1].split(".")[0])
 
-    button_html = "\n\t\t\t".join(
+    button_html = "\n\t\t\t\t".join(
         f"<button onclick=\"window.location.href='{content}'\">{get_name_from_file_path(content)}</button>"
         for content in content_links
     )
@@ -218,6 +214,35 @@ def add_story_feedback_tab(chapters, tab_names, feedback_html_link):
     tab_names.append("Story Feedback")
 
     return chapters, tab_names
+
+
+def generate_static_html(chapters, tab_names, title):
+    html_template = """
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="interactive_book.css">
+</head>
+<body>
+    <h1>{{ title }}</h1>
+    <div class="tab-buttons">
+        {% for i in range(chapters|length) %}
+        <button class="tab-button" onclick="showTab({{ i }})">{{ tab_names[i] }}</button>
+        {% endfor %}
+    </div>
+    <div class="tab-content">
+        {% for chapter in chapters %}
+        <div class="tab">{{ chapter|safe }}</div>
+        {% endfor %}
+    </div>
+    <script src="interactive_book.js"></script>
+</body>
+</html>
+    """
+    template = Template(html_template)
+    return template.render(chapters=chapters, tab_names=tab_names, title=title.replace("_", " "))
 
 
 def save_to_json(data, filepath):
@@ -248,6 +273,8 @@ def main():
     contents_dir = "contents"
     images_dir = "images"
     feedback_html_path = "story_feedback.html"
+    title = html_file_path.split("/")[-1].split(".")[0]
+    output_file_path = "index.html"
 
     # Read html
     html_book = read_html_book(html_file_path)
@@ -261,10 +288,12 @@ def main():
     chapters, tab_names = parse_html_book(html_book)
     save_to_json(get_chapters_to_json(chapters, tab_names), "story_by_chapters.json")
     chapters, tab_names = add_content_tab(chapters, tab_names, contents_dir)
+    interactive_book = generate_static_html(chapters, tab_names, title)
     chapters, tab_names = add_story_feedback_tab(chapters, tab_names, feedback_html_path)
 
+
     # Save book locally
-    save_to_json(dict(zip(tab_names, chapters)), "interactive_book_tabs.json")
+    save_html(interactive_book, output_file_path)
 
 
 if __name__ == "__main__":
