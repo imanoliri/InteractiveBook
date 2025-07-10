@@ -21,7 +21,7 @@ body::-webkit-scrollbar-thumb {
 }
 
 .tab-content {
-    display: none;
+    display: block;
 }
 
 .tab-contents {
